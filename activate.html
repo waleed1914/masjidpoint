@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="Activate your MasjidPoint account.">
+  <title>Activate your account — MasjidPoint</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="site-nav.css?v=1"><link rel="stylesheet" href="activation.css">
+</head>
+<body class="activation-page">
+  <header data-site-nav></header><script src="site-nav.js?v=1"></script>
+  <main class="activation-shell">
+    <section class="activation-art" aria-label="MasjidPoint account security">
+      <div class="art-pattern"></div><div class="activation-emblem"><span>◇</span><strong>Verified community access</strong><small>One secure account for your MasjidPoint portal</small></div>
+      <blockquote>“Trust is at the heart of every strong community.”</blockquote>
+    </section>
+    <section class="activation-content">
+      <div class="activation-card">
+        <div class="activation-progress" aria-label="Activation progress"><i class="active">1</i><span></span><i>2</i><span></span><i>3</i></div>
+
+        <section class="activation-step active" data-step="1">
+          <p class="step-kicker">Account activation</p><h1>Let’s find your approved account</h1><p>Use the same email address provided in your approved application.</p>
+          <form id="email-form" novalidate><label class="activation-field"><span>Email address</span><input id="activation-email" type="email" required autocomplete="email" placeholder="name@example.co.uk"><small class="input-error" hidden>Enter a valid email address.</small></label><button class="button full-button" type="submit">Send verification code →</button></form>
+          <div class="help-note"><span>i</span><p><strong>Has your application been approved?</strong><small>A code can only be sent after an administrator approves the account.</small></p></div>
+        </section>
+
+        <section class="activation-step" data-step="2">
+          <button class="inline-back" id="otp-back" type="button">← Change email</button><p class="step-kicker">Verify your email</p><h1>Enter your six-digit code</h1><p>We sent a verification code to <strong id="masked-email"></strong>.</p>
+          <div class="demo-code">Prototype test code: <strong>123456</strong></div>
+          <form id="otp-form" novalidate><fieldset class="otp-group"><legend class="sr-only">Six-digit verification code</legend><input inputmode="numeric" maxlength="1" aria-label="Digit 1"><input inputmode="numeric" maxlength="1" aria-label="Digit 2"><input inputmode="numeric" maxlength="1" aria-label="Digit 3"><input inputmode="numeric" maxlength="1" aria-label="Digit 4"><input inputmode="numeric" maxlength="1" aria-label="Digit 5"><input inputmode="numeric" maxlength="1" aria-label="Digit 6"></fieldset><p class="otp-error" id="otp-error" hidden>The code is incorrect. Use 123456 for this prototype.</p><button class="button full-button" type="submit">Verify email →</button></form>
+          <p class="resend-line">Didn’t receive it? <button id="resend-code" type="button" disabled>Resend in <span id="resend-timer">30</span>s</button></p>
+        </section>
+
+        <section class="activation-step" data-step="3">
+          <p class="step-kicker">Secure your account</p><h1>Create a new password</h1><p>Choose a strong password you haven’t used elsewhere.</p>
+          <form id="password-form" novalidate>
+            <label class="activation-field"><span>New password</span><span class="password-input"><input id="new-password" type="password" required autocomplete="new-password"><button type="button" data-toggle-password="new-password">Show</button></span></label>
+            <div class="strength-bars"><i></i><i></i><i></i><i></i></div>
+            <ul class="password-rules"><li data-rule="length">At least 8 characters</li><li data-rule="upper">One uppercase letter</li><li data-rule="number">One number</li><li data-rule="special">One special character</li></ul>
+            <label class="activation-field"><span>Confirm password</span><span class="password-input"><input id="confirm-password" type="password" required autocomplete="new-password"><button type="button" data-toggle-password="confirm-password">Show</button></span><small class="input-error" id="password-error" hidden>Passwords must match and meet every requirement.</small></label>
+            <button class="button full-button" type="submit">Activate my account →</button>
+          </form>
+        </section>
+
+<section class="activation-success" id="activation-success" hidden><div class="success-icon">✓</div><p class="step-kicker">Account activated</p><h1>Welcome to MasjidPoint</h1><p>Your email is verified and your password has been created. Sign in securely to continue.</p><div class="activated-account"><small>Activated account</small><strong id="activated-email"></strong><span>✓ Email verified</span></div><a class="button full-button" href="login">Sign in to masjid portal →</a></section>
+      </div>
+      <footer>Need help? <a href="mailto:support@masjidpoint.co.uk">Contact support</a> · Your information is protected under UK GDPR.</footer>
+    </section>
+  </main>
+<script src="local-db.js?v=10"></script><script src="activate.js?v=10"></script>
+</body>
+</html>

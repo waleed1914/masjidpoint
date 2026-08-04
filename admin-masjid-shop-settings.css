@@ -1,0 +1,13 @@
+.shop-fulfilment-card .shop-fulfilment-intro{margin:0 0 14px;font-size:12px;color:#566a64;line-height:1.5}
+.shop-fulfilment-option{display:flex;gap:11px;align-items:flex-start;padding:11px 12px;margin-bottom:9px;border:1px solid #c2cdc6;background:#fffdf8;cursor:pointer}
+.shop-fulfilment-option:hover{border-color:#174d40}
+.shop-fulfilment-option input{margin-top:3px;flex:none}
+.shop-fulfilment-option span{display:grid;gap:3px}
+.shop-fulfilment-option strong{font-size:13px;color:#123f35}
+.shop-fulfilment-option small{font-size:11px;color:#687a75;line-height:1.45}
+.shop-delivery-fee{display:grid;gap:5px;margin-top:14px}
+.shop-delivery-fee span{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#566a64}
+.shop-delivery-fee input{padding:9px 11px;border:1px solid #c2cdc6;background:#fff}
+.shop-delivery-fee.disabled{opacity:.5}
+.shop-fulfilment-card .shop-fulfilment-hint{margin:7px 0 0;font-size:11px;color:#687a75;line-height:1.45}
+.shop-fulfilment-card button[type=submit]{margin-top:15px;width:100%}

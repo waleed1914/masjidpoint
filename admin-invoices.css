@@ -1,0 +1,45 @@
+.invoice-summary{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:22px}
+.invoice-summary article{background:var(--paper);border:1px solid var(--line);padding:18px}
+.invoice-summary small{display:block;color:var(--muted);font-size:8px;text-transform:uppercase;letter-spacing:1px}
+.invoice-summary strong{display:block;font-family:var(--font-display);font-size:26px;margin-top:5px}
+.invoice-summary span{display:block;margin-top:5px;font-size:10px;color:var(--muted);line-height:1.45}
+.invoice-summary .tile-alert{background:#fdf4e8;border-color:#d2bd8d}
+.invoice-summary .tile-alert strong{color:#8a5b22}
+.invoice-summary .tile-alert.quiet{background:var(--paper);border-color:var(--line)}
+.invoice-summary .tile-alert.quiet strong{color:inherit}
+
+.invoice-heading-actions{display:flex;align-items:flex-start;gap:9px}
+.invoice-filter-row{display:flex;gap:9px;flex-wrap:wrap}
+.invoice-filter-row select{height:38px;border:1px solid var(--line);background:white;padding:0 30px 0 10px;font-size:10px}
+
+/* References, codes and dates are read as single tokens — never break them across lines. */
+#invoice-rows td:nth-child(1),#invoice-rows td:nth-child(5),#invoice-rows td:nth-child(6),#invoice-rows td:nth-child(7){white-space:nowrap}
+#invoice-rows td:nth-child(2){min-width:210px}
+#invoice-rows td:nth-child(4){min-width:150px}
+#invoice-rows .applicant-cell strong{display:block;line-height:1.35}
+#invoice-rows .applicant-cell small{overflow-wrap:anywhere;line-height:1.35}
+.invoice-cell{display:flex;flex-direction:column;gap:5px;align-items:flex-start}
+.invoice-cell strong{font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.invoice-purpose{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+.invoice-purpose small{color:var(--muted)}
+
+.type-badge{padding:3px 8px;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+.type-badge.type-job{background:#e5efe9;color:#174d40}
+.type-badge.type-advertising{background:#eae6f5;color:#4b3d69}
+.type-badge.type-mixed{background:#e6eef5;color:#2f5068}
+.type-badge.type-shop{background:#f6eeda;color:#8a6d3b}
+
+.route-badge{padding:2px 7px;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;background:#eef1ef;color:#566a64;white-space:nowrap}
+.route-badge.delivery{background:#ede6f5;color:#4b3d69}
+.route-badge.collect_pay_at_mosque{background:#f6eeda;color:#8a6d3b}
+
+.status-badge.cancelled{background:#ecebe8;color:#6b6b66}
+.status-badge.refunded{background:#e6eef5;color:#2f5068}
+
+.invoice-actions{white-space:nowrap}
+.invoice-actions .review-link+.review-link{margin-left:11px}
+.invoice-actions .review-link.quiet{color:var(--muted)}
+.invoice-actions .review-link.quiet:hover{color:var(--green)}
+
+@media(max-width:1200px){.invoice-summary{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:800px){.invoice-summary{grid-template-columns:1fr 1fr}}

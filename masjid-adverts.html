@@ -1,0 +1,45 @@
+<!doctype html><html lang="en-GB"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Masjid directory — MasjidPoint</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="site-nav.css?v=1"><link rel="stylesheet" href="masjid-adverts.css?v=1"></head>
+<body class="adverts-page">
+<header data-site-nav></header><script src="site-nav.js?v=1"></script>
+
+<section class="adverts-hero">
+  <p class="eyebrow light"><span></span> Masjid directory</p>
+  <h1 id="masjid-name">Masjid</h1>
+  <p id="masjid-location">—</p>
+  <div class="adverts-hero-actions">
+    <a class="button" id="shop-link" href="#">Visit the shop →</a>
+    <a class="button secondary" id="jobs-link" href="public-jobs">See all jobs</a>
+  </div>
+  <div class="adverts-stats" id="adverts-stats"></div>
+</section>
+
+<main class="adverts-content">
+  <section class="adverts-block" id="businesses-block">
+    <div class="block-heading">
+      <div><p class="eyebrow"><span></span> Trusted locally</p><h2>Businesses advertising here</h2><p>Every listing below is approved by this masjid and paid for through MasjidPoint.</p></div>
+      <div class="adverts-tools"><input id="advert-search" type="search" placeholder="Search business or service"><select id="advert-category"><option value="all">All categories</option></select></div>
+    </div>
+    <div class="advert-grid" id="advert-grid"></div>
+    <p class="adverts-empty" id="advert-empty" hidden>No businesses are advertising through this masjid yet.</p>
+  </section>
+
+  <section class="adverts-block" id="jobs-block">
+    <div class="block-heading"><div><p class="eyebrow"><span></span> Opportunities</p><h2>Jobs through this masjid</h2><p>Roles shared with this community by local employers.</p></div></div>
+    <div class="advert-job-list" id="job-list"></div>
+    <p class="adverts-empty" id="job-empty" hidden>No live jobs are advertised through this masjid right now.</p>
+  </section>
+
+  <section class="adverts-cta">
+    <div>
+      <h2>Advertise through this masjid</h2>
+      <p id="cta-pricing">Reach this community directly. Your listing is reviewed by the masjid before it goes live.</p>
+    </div>
+    <a class="button" id="cta-advertise" href="advertise">Apply to advertise →</a>
+  </section>
+</main>
+
+<footer class="adverts-footer"><p>MasjidPoint — supporting local Muslim communities.</p><a href="/">Browse all masjids</a></footer>
+
+<script src="local-db.js?v=20"></script>
+<script src="masjid-adverts.js?v=1"></script>
+</body></html>

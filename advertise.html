@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Apply to advertise your business through a local masjid.">
+  <title>Advertise your business — MasjidPoint</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="site-nav.css?v=1">
+  <link rel="stylesheet" href="form.css">
+</head>
+<body class="form-page">
+  <header data-site-nav></header><script src="site-nav.js?v=1"></script>
+
+  <main class="application-shell">
+    <aside class="application-aside">
+      <p class="eyebrow light"><span></span> Grow with purpose</p>
+      <h1>Advertise through your local masjid.</h1>
+      <p>Reach people nearby, build community trust and contribute directly to a participating masjid.</p>
+      <ol class="progress-list" aria-label="Application progress">
+        <li class="active" data-progress="1"><b>1</b><span><strong>Choose a masjid</strong><small>Where you want to advertise</small></span></li>
+        <li data-progress="2"><b>2</b><span><strong>Your details</strong><small>Who the masjid can contact</small></span></li>
+        <li data-progress="3"><b>3</b><span><strong>Business details</strong><small>What the community will see</small></span></li>
+        <li data-progress="4"><b>4</b><span><strong>Review</strong><small>Check and submit</small></span></li>
+      </ol>
+      <div class="aside-note"><span>◇</span><p><strong>Masjid reviewed</strong><small>Your application goes directly to the selected masjid for approval.</small></p></div>
+    </aside>
+
+    <section class="application-main">
+      <div class="mobile-progress"><span id="mobile-step">Step 1 of 4</span><div><i id="progress-bar"></i></div></div>
+      <form id="advertising-form" novalidate>
+        <section class="form-step active" data-step="1">
+          <p class="step-kicker">Step 1 of 4</p>
+          <h2>Which masjid would you like to support?</h2>
+          <p class="step-intro">Your advert will appear under this masjid in the public directory.</p>
+          <label class="masjid-search">
+            <span aria-hidden="true">⌕</span>
+            <input id="masjid-search" type="search" autocomplete="postal-code" placeholder="Search by masjid name, area or postcode" aria-label="Search for a masjid">
+            <button id="clear-masjid-search" type="button" aria-label="Clear search" hidden>×</button>
+          </label>
+          <fieldset class="masjid-options">
+            <legend class="sr-only">Select a masjid</legend>
+            <label class="masjid-option"><input type="radio" name="masjid" value="Central Masjid" required><span class="option-icon">⌂</span><span><strong>Central Masjid</strong><small>Birmingham · B12 0XS</small></span><i>42 businesses</i></label>
+            <label class="masjid-option"><input type="radio" name="masjid" value="Masjid Al-Noor" required><span class="option-icon">⌂</span><span><strong>Masjid Al-Noor</strong><small>Manchester · M14 5TB</small></span><i>31 businesses</i></label>
+            <label class="masjid-option"><input type="radio" name="masjid" value="Green Lane Masjid" required><span class="option-icon">⌂</span><span><strong>Green Lane Masjid</strong><small>London · E1 1JX</small></span><i>27 businesses</i></label>
+          </fieldset>
+          <div class="masjid-empty" id="masjid-empty" hidden><span>⌕</span><strong>No masjids found</strong><p>Try a different name, area or postcode.</p></div>
+          <p class="field-error" id="masjid-error" hidden>Please select a masjid to continue.</p>
+        </section>
+
+        <section class="form-step" data-step="2">
+          <p class="step-kicker">Step 2 of 4</p><h2>Tell us who you are</h2><p class="step-intro">These details are private and will only be used to review your application.</p>
+          <div class="fields-grid">
+            <label class="field full"><span>Contact name <em>*</em></span><input name="contactName" autocomplete="name" required placeholder="e.g. Ahmed Hussain"></label>
+            <label class="field"><span>Contact number <em>*</em></span><input name="contactNumber" type="tel" autocomplete="tel" required pattern="[0-9+() -]{10,}" placeholder="e.g. 07123 456789"></label>
+            <label class="field"><span>Contact email <em>*</em></span><input name="contactEmail" type="email" autocomplete="email" required placeholder="name@example.co.uk"></label>
+          </div>
+          <div class="privacy-note"><span>▣</span><p><strong>Your information is handled securely</strong><small>We only share it with the selected masjid and platform administrators.</small></p></div>
+        </section>
+
+        <section class="form-step" data-step="3">
+          <p class="step-kicker">Step 3 of 4</p><h2>Tell us about your business</h2><p class="step-intro">This information will form your public listing after approval.</p>
+          <div class="fields-grid">
+            <label class="field full"><span>Business name <em>*</em></span><input name="businessName" autocomplete="organization" required placeholder="Your registered or trading name"></label>
+            <label class="field"><span>Business category <em>*</em></span><select name="category" required><option value="">Choose a category</option><option>Food & catering</option><option>Professional services</option><option>Home & trades</option><option>Education</option><option>Health & wellbeing</option><option>Retail</option><option>Other</option></select></label>
+            <label class="field"><span>Business phone <em>*</em></span><input name="businessNumber" type="tel" required pattern="[0-9+() -]{10,}" placeholder="e.g. 0121 555 0101"></label>
+            <label class="field full"><span>Brief description <em>*</em></span><textarea name="description" required minlength="20" maxlength="280" placeholder="Describe what you offer and the areas you serve"></textarea><small><span id="character-count">0</span>/280 characters</small></label>
+            <label class="field"><span>Business email <em>*</em></span><input name="businessEmail" type="email" required placeholder="hello@yourbusiness.co.uk"></label>
+            <label class="field"><span>Website <em>*</em></span><input name="website" type="url" required placeholder="www.yourbusiness.co.uk"><small class="field-hint">Your listing links to this. You can enter it with or without https://</small></label>
+            <label class="field full upload-field"><span>Business logo <small>(optional)</small></span><input id="logo-input" name="logo" type="file" accept="image/png,image/jpeg,image/webp"><span class="upload-box"><b>↑</b><strong id="upload-label">Choose a logo to upload</strong><small>PNG, JPG or WebP · Maximum 5 MB</small></span></label>
+          </div>
+        </section>
+
+        <section class="form-step" data-step="4">
+          <p class="step-kicker">Step 4 of 4</p><h2>Review your application</h2><p class="step-intro">Please make sure everything is correct before sending it to the masjid.</p>
+          <div class="review-card" id="review-content"></div>
+          <label class="consent"><input name="consent" type="checkbox" required><span>I confirm that the information provided is accurate and I agree to the <a href="#">terms</a> and <a href="#">privacy policy</a>.</span></label>
+        </section>
+
+        <section class="success-step" id="success-step" hidden>
+          <div class="success-icon">✓</div><p class="step-kicker">Application received</p><h2>JazakAllahu Khairan</h2><p>Your request has been sent to <strong id="success-masjid"></strong>. They will review it and you’ll receive an email when its status changes.</p>
+          <div class="reference-box"><span>Your application reference</span><strong id="reference-number"></strong><small>Keep this number for your records</small></div>
+          <div class="success-links"><a class="button" id="check-status-link" href="status">Check application status</a><a class="text-link" href="/">Return to the directory</a></div>
+        </section>
+
+        <div class="form-actions" id="form-actions"><button class="button button-back" id="previous-button" type="button" hidden>← Back</button><button class="button button-next" id="next-button" type="button">Continue →</button></div>
+      </form>
+    </section>
+  </main>
+<script src="local-db.js?v=8"></script><script src="advertise.js?v=8"></script><script src="advertise-context.js?v=1"></script>
+</body>
+</html>

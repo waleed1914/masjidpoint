@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="Check your MasjidPoint application status.">
+  <title>Check application status — MasjidPoint</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="site-nav.css?v=1"><link rel="stylesheet" href="status.css">
+</head>
+<body class="status-page">
+  <header data-site-nav></header><script src="site-nav.js?v=1"></script>
+  <main class="status-shell">
+    <section class="status-intro"><p class="eyebrow light"><span></span> Application tracking</p><h1>Know exactly where your application stands.</h1><p>Use your reference and email—or recover the application using your email and postcode.</p><div class="status-steps"><span><b>1</b> Submitted</span><i></i><span><b>2</b> Admin review</span><i></i><span><b>3</b> Account activation</span></div></section>
+    <section class="status-content">
+      <div class="status-card" id="lookup-card">
+        <p class="step-kicker">Check your status</p><h2>Find your application</h2><p id="lookup-help">Enter the reference and email used in the original application.</p>
+        <form id="status-form" novalidate>
+          <label><span>Application reference</span><input id="reference-input" required autocomplete="off" placeholder="e.g. MSJ-2026-A1B2C3"></label>
+          <label><span>Email address</span><input id="status-email" type="email" required autocomplete="email" placeholder="name@example.co.uk"></label>
+          <label id="postcode-lookup" hidden><span>Masjid postcode</span><input id="status-postcode" autocomplete="postal-code" placeholder="e.g. B12 0XS"></label>
+          <p class="lookup-error" id="lookup-error" hidden>We couldn’t find a matching application. Check the reference and email, then try again.</p>
+          <button class="button" type="submit">Check status →</button>
+          <button class="forgot-reference" id="forgot-reference" type="button">Forgot your application reference?</button>
+        </form>
+        <small class="prototype-note">Prototype tip: registrations submitted in this browser can be checked here.</small>
+      </div>
+      <div class="status-result" id="status-result" hidden>
+        <button class="new-search" id="new-search" type="button">← Check another application</button>
+        <div class="result-heading"><span class="result-icon" id="result-icon"></span><div><p class="step-kicker" id="result-type"></p><h2 id="result-title"></h2><span class="status-pill" id="result-pill"></span></div></div>
+        <div class="status-timeline">
+          <article class="complete"><b>✓</b><div><strong>Application submitted</strong><small id="submitted-date"></small></div></article>
+          <article id="review-stage"><b>2</b><div><strong>Administrator review</strong><small id="review-message"></small></div></article>
+          <article id="activation-stage"><b>3</b><div><strong>Account activation</strong><small id="activation-message"></small></div></article>
+        </div>
+        <div class="decision-note-result" id="decision-note-result" hidden><small>Administrator note</small><p id="status-note"></p></div>
+        <div class="result-action" id="result-action"></div>
+        <div class="reference-summary"><span>Application reference</span><strong id="result-reference"></strong></div>
+      </div>
+    </section>
+  </main>
+  <script src="local-db.js?v=6"></script><script src="status.js?v=6"></script>
+</body>
+</html>

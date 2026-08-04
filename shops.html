@@ -1,0 +1,37 @@
+<!doctype html><html lang="en-GB"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Masjid shops — MasjidPoint</title><meta name="description" content="Browse every masjid community shop. Search by masjid or product and filter by city, category and delivery."><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="site-nav.css?v=1"><link rel="stylesheet" href="directory.css?v=1"><link rel="stylesheet" href="shops.css?v=1"></head>
+<body class="directory-page shops-directory">
+<header data-site-nav></header><script src="site-nav.js?v=1"></script>
+
+<section class="directory-hero">
+  <p class="eyebrow"><span></span> Masjid shops</p>
+  <h1>Shop with your masjid</h1>
+  <p>Order everyday essentials from a masjid community shop. Collect from the masjid, pay when you collect, or have it delivered — a share of every purchase goes back to the masjid.</p>
+  <div class="directory-filters">
+    <label>Search<input id="shop-search" type="search" placeholder="Masjid or product name"></label>
+    <label>City<select id="city-filter"><option value="all">All cities</option></select></label>
+    <label>Area<select id="area-filter"><option value="all">All areas</option></select></label>
+    <label>Masjid<select id="masjid-filter"><option value="all">All masjids</option></select></label>
+    <label>Product type<select id="category-filter"><option value="all">All product types</option></select></label>
+    <label>Receiving<select id="method-filter"><option value="all">Any method</option><option value="delivery">Delivery available</option><option value="collect_pay_at_mosque">Pay at the masjid</option><option value="collect_pay_now">Pay now, collect</option></select></label>
+    <button id="clear-filters" type="button">Clear</button>
+  </div>
+</section>
+
+<p class="directory-count" id="result-count"></p>
+<main class="directory-body">
+  <div class="directory-grid" id="shop-results"></div>
+  <p class="directory-empty" id="shop-empty" hidden>No masjid shops match your search. Try another city or product type.</p>
+</main>
+
+<footer>
+  <a class="brand brand-light" href="/"><span class="brand-mark" aria-hidden="true"><span></span></span><span>Masjid<span>Point</span></span></a>
+  <p>Connecting communities. Strengthening masjids.</p>
+  <div><a href="/#how-it-works">How it works</a><a href="masjids">All masjids</a><a href="signup">Sign up</a><a href="status">Check status</a></div>
+  <small>© 2026 MasjidPoint. All rights reserved.</small>
+</footer>
+
+<script src="local-db.js?v=20"></script>
+<script src="shop-fulfilment.js?v=1"></script>
+<script src="directory-data.js?v=1"></script>
+<script src="shops.js?v=1"></script>
+</body></html>

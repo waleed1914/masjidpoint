@@ -1,0 +1,65 @@
+<!doctype html><html lang="en-GB"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>My account — MasjidPoint</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="site-nav.css?v=1"><link rel="stylesheet" href="customer.css?v=1"></head>
+<body class="customer-page account-page">
+<header data-site-nav></header><script src="site-nav.js?v=1"></script>
+
+<section class="account-hero">
+  <div>
+    <p class="eyebrow"><span></span> My account</p>
+    <h1 id="account-name">Welcome back</h1>
+    <p id="account-email">—</p>
+  </div>
+  <button class="button secondary" id="sign-out" type="button">Sign out</button>
+</section>
+
+<nav class="account-tabs" id="account-tabs">
+  <button class="active" data-tab="applications" type="button">Job applications <b id="count-applications">0</b></button>
+  <button data-tab="orders" type="button">Shop orders <b id="count-orders">0</b></button>
+  <button data-tab="details" type="button">My details</button>
+</nav>
+
+<main class="account-body">
+  <section id="panel-applications">
+    <div id="applications-list"></div>
+    <p class="account-empty" id="applications-empty" hidden>You haven't applied for any jobs yet. <a href="public-jobs">Browse community jobs →</a></p>
+  </section>
+
+  <section id="panel-orders" hidden>
+    <div id="orders-list"></div>
+    <p class="account-empty" id="orders-empty" hidden>You haven't ordered anything yet. <a href="shops">Visit a masjid shop →</a></p>
+  </section>
+
+  <section id="panel-details" hidden>
+    <form class="account-details" id="details-form" novalidate>
+      <h2>Your details</h2>
+      <p class="customer-lede">We only ask for what we need. Fill in the rest whenever you like — it saves you typing next time you apply or order.</p>
+      <div class="customer-fields">
+        <label class="wide"><span>Full name <em>*</em></span><input name="name" required></label>
+        <label class="wide"><span>Email</span><input name="email" disabled><small>Your email links your applications and orders, so it cannot be changed here.</small></label>
+        <label><span>Phone number</span><input name="phone"></label>
+        <label><span>Postcode</span><input name="postcode" maxlength="8"></label>
+        <label class="wide"><span>Address</span><input name="line1" placeholder="Street address"></label>
+        <label><span>Town or city</span><input name="city"></label>
+      </div>
+      <h2>Change password</h2>
+      <div class="customer-fields">
+        <label class="wide"><span>New password <small>(leave blank to keep your current one)</small></span><input name="newPassword" type="password" minlength="8" autocomplete="new-password"></label>
+        <label class="wide"><span>Current password <em>*</em></span><input name="currentPassword" type="password" required autocomplete="current-password"><small>Needed to save any change.</small></label>
+      </div>
+      <p class="customer-error" id="details-error" hidden></p>
+      <p class="customer-success" id="details-success" hidden>Your details have been saved.</p>
+      <button class="button" type="submit" id="save-details">Save changes</button>
+    </form>
+  </section>
+</main>
+
+<footer>
+  <a class="brand brand-light" href="/"><span class="brand-mark" aria-hidden="true"><span></span></span><span>Masjid<span>Point</span></span></a>
+  <p>Connecting communities. Strengthening masjids.</p>
+  <div><a href="public-jobs">Jobs</a><a href="shops">Masjid shops</a><a href="status">Check status</a></div>
+  <small>© 2026 MasjidPoint. All rights reserved.</small>
+</footer>
+
+<script src="local-db.js?v=20"></script>
+<script src="shop-fulfilment.js?v=1"></script>
+<script src="my-account.js?v=1"></script>
+</body></html>

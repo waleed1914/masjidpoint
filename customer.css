@@ -1,0 +1,83 @@
+.customer-page{background:var(--cream);min-height:100vh;display:flex;flex-direction:column}
+.customer-page>footer{margin-top:auto}
+
+/* --- sign-up --- */
+.customer-main{flex:1;display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:22px;align-items:start;padding:48px 6vw 64px;max-width:1140px;margin:0 auto;width:100%}
+.customer-form-card{background:var(--paper);border:1px solid var(--line);padding:36px}
+.customer-form-card h1{font-family:var(--font-display);font-size:clamp(30px,3.6vw,42px);margin:0 0 12px;line-height:1.12}
+.customer-lede{margin:0 0 20px;color:var(--muted);line-height:1.6}
+.prefill-note{margin:0 0 22px;padding:14px 16px;background:var(--green-3);border-left:3px solid var(--green-2);font-size:13px;line-height:1.55;color:var(--green)}
+
+.customer-fields{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.customer-fields label{display:grid;gap:6px;font-size:11px;font-weight:700}
+.customer-fields label.wide{grid-column:1/-1}
+.customer-fields input{height:46px;border:1px solid var(--line);background:#fff;padding:0 13px;font-size:14px;transition:.18s}
+.customer-fields input:focus{outline:0;border-color:var(--green-2);box-shadow:0 0 0 3px rgba(29,89,74,.13)}
+.customer-fields input:disabled{background:#f2f0ea;color:var(--muted)}
+.customer-fields small{font-weight:400;color:var(--muted);font-size:11px;line-height:1.45}
+.customer-fields em{color:#a64035;font-style:normal}
+.field-spacer{display:block;height:46px}
+.customer-error{margin:16px 0 0;padding:12px 14px;background:#fbeceb;border:1px solid #e4b7b1;color:#8c3229;font-size:13px}
+.customer-success{margin:16px 0 0;padding:12px 14px;background:#e7f1eb;border:1px solid #b6d3c3;color:#15503f;font-size:13px}
+.customer-form-card button[type=submit]{margin-top:22px;width:100%}
+.customer-alt{margin:16px 0 0;text-align:center;font-size:13px;color:var(--muted)}
+.customer-alt a{color:var(--green-2);text-decoration:underline}
+
+.customer-aside{background:var(--paper);border:1px solid var(--line);padding:24px;position:sticky;top:96px}
+.customer-aside h2{font-family:var(--font-display);font-size:19px;margin:0 0 6px}
+.customer-aside>p{margin:0 0 16px;color:var(--muted);font-size:12px;line-height:1.5}
+.customer-aside ul{margin:0;padding:0;list-style:none;display:grid;gap:11px}
+.customer-aside li{display:grid;gap:3px;padding:12px;background:var(--cream);border:1px solid var(--line)}
+.customer-aside li strong{font-size:13px}
+.customer-aside li small{color:var(--muted);font-size:11px}
+
+/* --- account portal --- */
+.account-hero{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;padding:44px 6vw 26px;background:var(--paper);border-bottom:1px solid var(--line)}
+.account-hero h1{font-family:var(--font-display);font-size:clamp(28px,3.4vw,40px);margin:0 0 6px}
+.account-hero p{margin:0;color:var(--muted);font-size:14px}
+.account-hero .button.secondary{background:transparent;color:var(--green);border-color:var(--line)}
+.account-hero .button.secondary:hover{background:var(--green);color:#fff}
+
+.account-tabs{display:flex;gap:0;padding:0 6vw;background:var(--paper);border-bottom:1px solid var(--line);overflow-x:auto}
+.account-tabs button{border:0;border-bottom:3px solid transparent;background:none;padding:15px 20px;font-size:13px;font-weight:700;color:var(--muted);white-space:nowrap;transition:.18s}
+.account-tabs button:hover{color:var(--green-2)}
+.account-tabs button.active{color:var(--green);border-bottom-color:var(--gold)}
+.account-tabs b{display:inline-grid;place-items:center;min-width:20px;height:20px;margin-left:7px;padding:0 6px;border-radius:10px;background:var(--green-3);color:var(--green);font-size:11px}
+
+.account-body{flex:1;padding:28px 6vw 64px;display:grid;gap:16px}
+.account-body>section{display:grid;gap:16px}
+/* An explicit display beats the hidden attribute, so restore it for the tab panels. */
+.account-body>section[hidden],.customer-page [hidden]{display:none}
+.account-card{background:var(--paper);border:1px solid var(--line);padding:22px}
+.account-card>header{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding:0 0 14px;margin-bottom:14px;border-bottom:1px solid var(--line);background:none}
+.account-card h3{font-family:var(--font-display);font-size:20px;margin:0 0 3px}
+.account-card header small{color:var(--muted);font-size:12px}
+.account-badge{padding:5px 11px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+.account-badge.pending{background:#f6eeda;color:#8a6d3b}
+.account-badge.approved{background:#e5efe9;color:#174d40}
+.account-badge.rejected{background:#fbeceb;color:#8c3229}
+.account-badge.quiet{background:#eef1ef;color:#68736f}
+.account-card dl{margin:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.account-card dl div{display:grid;gap:3px}
+.account-card dt{font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.account-card dd{margin:0;font-size:13px}
+.account-items{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.account-items span{display:flex;align-items:center;gap:8px;font-size:12px}
+.account-items img{width:38px;height:38px;object-fit:cover;border:1px solid var(--line)}
+.account-items em{font-style:normal;color:var(--muted)}
+.account-link{display:inline-block;margin-top:14px;color:var(--green-2);font-weight:700;font-size:13px;text-decoration:underline}
+.account-empty{margin:0;padding:40px;background:var(--paper);border:1px solid var(--line);color:var(--muted);text-align:center}
+.account-empty a{color:var(--green-2);text-decoration:underline}
+.account-details{background:var(--paper);border:1px solid var(--line);padding:30px;max-width:760px}
+.account-details h2{font-family:var(--font-display);font-size:22px;margin:0 0 8px}
+.account-details h2+.customer-lede{margin-bottom:18px}
+.account-details .customer-fields+h2{margin-top:30px}
+.account-details button[type=submit]{margin-top:22px}
+
+@media(max-width:900px){
+  .customer-main{grid-template-columns:1fr}
+  .customer-aside{position:static;order:-1}
+  .customer-fields{grid-template-columns:1fr}
+  .field-spacer{display:none}
+  .customer-fields label:has(.field-spacer){display:none}
+}

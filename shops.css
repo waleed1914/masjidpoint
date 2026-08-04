@@ -1,0 +1,15 @@
+.shop-tile{display:flex;flex-direction:column;background:#fff;border:1px solid var(--line);overflow:hidden;transition:.18s}
+.shop-tile:hover{border-color:var(--green-2);box-shadow:0 12px 30px rgba(18,63,53,.1);transform:translateY(-3px)}
+.shop-tile-preview{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);height:128px}
+.shop-tile-preview img{width:100%;height:100%;object-fit:cover;display:block;background:var(--cream)}
+.shop-tile-preview:has(img:only-child){grid-template-columns:1fr}
+.shop-tile-body{padding:20px;display:flex;flex-direction:column;gap:9px;flex:1}
+.shop-tile-city{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--gold)}
+.shop-tile h2{font-family:var(--font-display);font-size:21px;margin:0;line-height:1.25}
+.shop-tile-meta{margin:0;color:var(--muted);font-size:12px}
+.shop-tile-methods{display:flex;gap:6px;flex-wrap:wrap}
+.shop-tile-methods em{font-style:normal;padding:4px 9px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;background:#e5efe9;color:#174d40}
+.shop-tile-methods em.delivery{background:#ede6f5;color:#4b3d69}
+.shop-tile-methods em.collect_pay_at_mosque{background:#f6eeda;color:#8a6d3b}
+.shop-tile-delivery{color:var(--muted);font-size:11px}
+.shop-tile-go{margin-top:auto;padding-top:12px;color:var(--green-2);font-weight:700;font-size:13px}

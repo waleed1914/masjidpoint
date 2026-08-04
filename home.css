@@ -1,0 +1,192 @@
+/* Home page. The palette is the platform's own — deep green, cream, gold — and every image is
+   drawn artwork rather than photography, so nothing depends on stock imagery or shows people. */
+
+.home-page main{display:flex;flex-direction:column}
+.home-page .section{padding:64px 6vw}
+
+/* ---------- hero ---------- */
+.hero{position:relative;overflow:hidden;background:linear-gradient(145deg,#0c3128 0%,#123f35 45%,#17513f 100%);color:#e9f1ed;padding:70px 6vw 76px}
+.hero-pattern{position:absolute;inset:0;background:url("assets/pattern-girih.svg") repeat;background-size:150px 150px;opacity:.22;animation:pattern-drift 90s linear infinite}
+.hero-glow{position:absolute;inset:-30% -10%;background:radial-gradient(40% 52% at 20% 26%,rgba(232,200,135,.26),transparent 62%),radial-gradient(38% 50% at 82% 70%,rgba(63,163,112,.32),transparent 64%);animation:hero-bloom 26s ease-in-out infinite alternate}
+@keyframes pattern-drift{to{background-position:600px 600px}}
+@keyframes hero-bloom{0%{transform:translate3d(-2%,-1%,0) scale(1)}100%{transform:translate3d(3%,2%,0) scale(1.08)}}
+
+.hero-inner{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:5vw;align-items:center;max-width:1320px;margin:0 auto}
+.hero h1{font-family:var(--font-display);font-size:clamp(38px,5.4vw,62px);line-height:1.06;margin:14px 0 0;color:#fff;letter-spacing:-1px}
+.hero h1 em{font-style:normal;color:var(--gold)}
+.hero-intro{max-width:52ch;margin:16px 0 0;font-size:12px;line-height:1.75;color:#c2d5cd}
+
+.search-panel{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-top:26px;padding:14px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.16);border-radius:14px;backdrop-filter:blur(4px)}
+.search-field{flex:1 1 210px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.search-field>span:first-child{font-size:8px;font-weight:700;letter-spacing:.9px;text-transform:uppercase;color:#bed2ca}
+.field-row{display:flex;align-items:center;gap:9px;background:#fffdf8;border-radius:9px;padding:0 12px;height:44px}
+.field-row>span{color:#8a978f;font-size:13px}
+.field-row input,.field-row select{flex:1;min-width:0;border:0;outline:0;background:transparent;font:inherit;font-size:12px;color:var(--ink)}
+.search-button{height:44px;padding:0 22px;border-radius:9px;font-size:11px;flex:0 0 auto}
+
+.hero-quick{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.hero-quick a{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.06);color:#e9f1ed;font-size:10px;font-weight:600;text-decoration:none;transition:background .18s,border-color .18s,transform .18s}
+.hero-quick a:hover{background:rgba(255,255,255,.16);border-color:#fff;transform:translateY(-2px)}
+.hero-quick b{color:var(--gold);font-size:11px}
+
+.trust-row{display:flex;flex-wrap:wrap;gap:32px;margin-top:30px;padding-top:24px;border-top:1px solid rgba(255,255,255,.14)}
+.trust-row div{display:flex;flex-direction:column}
+.trust-row strong{font-family:var(--font-display);font-size:30px;color:#fff;line-height:1}
+.trust-row span{font-size:9px;letter-spacing:.7px;text-transform:uppercase;color:#a9c1b8;margin-top:5px}
+
+.hero-visual{position:relative}
+.hero-visual img{width:100%;height:auto;display:block;filter:drop-shadow(0 26px 46px rgba(0,0,0,.34))}
+.hero-badge{position:absolute;left:-14px;bottom:34px;display:flex;align-items:center;gap:11px;padding:12px 16px;border-radius:12px;background:#fffdf8;color:var(--ink);box-shadow:0 18px 36px rgba(0,0,0,.26);animation:badge-float 6s ease-in-out infinite}
+.hero-badge span{width:30px;height:30px;flex:none;border-radius:50%;display:grid;place-items:center;background:#e3f1e8;color:#1f6b4f;font-weight:700}
+.hero-badge p{display:flex;flex-direction:column;margin:0}
+.hero-badge strong{font-size:11px}
+.hero-badge small{font-size:9px;color:var(--muted);margin-top:2px}
+@keyframes badge-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+
+/* ---------- promise strip ---------- */
+.promise{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px;background:var(--cream);padding-top:52px;padding-bottom:52px}
+.promise article{background:#fffdf8;border:1px solid rgba(18,63,53,.12);border-radius:14px;padding:24px;box-shadow:0 3px 14px rgba(18,63,53,.06);transition:transform .18s,box-shadow .18s}
+.promise article:hover{transform:translateY(-3px);box-shadow:0 18px 36px rgba(18,63,53,.13)}
+.promise-mark{width:42px;height:42px;border-radius:11px;display:grid;place-items:center;background:linear-gradient(145deg,#17513f,#0e3529);color:var(--gold);font-size:16px;font-weight:700}
+.promise h3{font-family:var(--font-display);font-size:18px;margin:14px 0 7px}
+.promise p{margin:0;font-size:10px;line-height:1.7;color:#6f7f79}
+
+/* ---------- shared section heading ---------- */
+.section-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:24px}
+.section-heading h2{font-family:var(--font-display);font-size:clamp(25px,3vw,34px);line-height:1.15;margin:6px 0 0}
+.section-sub{margin:9px 0 0;font-size:11px;line-height:1.7;color:#6f7f79;max-width:56ch}
+.arrow-link{font-size:10px;font-weight:700;color:var(--green);text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.arrow-link span{transition:transform .18s}
+.arrow-link:hover span{transform:translateX(4px)}
+
+/* ---------- shop banner ---------- */
+.shop-banner{position:relative;overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.85fr);gap:5vw;align-items:center;background:linear-gradient(140deg,#123f35,#0b2a22);color:#e9f1ed}
+.shop-banner:before{content:"";position:absolute;inset:0;background:url("assets/pattern-girih.svg") repeat;background-size:132px 132px;opacity:.14}
+.shop-banner>*{position:relative;z-index:1}
+.shop-banner h2{font-family:var(--font-display);font-size:clamp(26px,3.2vw,36px);color:#fff;line-height:1.14;margin:12px 0 0}
+.shop-banner p{font-size:11px;line-height:1.75;color:#c2d5cd;max-width:48ch;margin:14px 0 0}
+.shop-banner-ways{display:flex;flex-wrap:wrap;gap:7px;margin:18px 0 22px}
+.shop-banner-ways em{font-style:normal;padding:6px 11px;border-radius:999px;border:1px solid rgba(255,255,255,.26);background:rgba(255,255,255,.08);font-size:8px;font-weight:700;letter-spacing:.6px;text-transform:uppercase}
+.shop-banner-art{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.shop-banner-art a{display:block;border-radius:12px;overflow:hidden;background:#0e3529;border:1px solid rgba(255,255,255,.14);text-decoration:none;transition:transform .2s,border-color .2s}
+.shop-banner-art a:hover{transform:translateY(-4px);border-color:var(--gold)}
+.shop-banner-art img{width:100%;aspect-ratio:1;object-fit:cover;display:block}
+.shop-banner-art span{display:block;padding:9px 11px;font-size:9px;font-weight:600;color:#e9f1ed}
+.shop-banner-art b{display:block;font-family:var(--font-display);font-size:13px;color:var(--gold);margin-top:2px}
+
+/* ---------- how it works ---------- */
+.how-section{background:var(--cream)}
+.how-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;counter-reset:step}
+.how-grid article{position:relative;background:#fffdf8;border:1px solid rgba(18,63,53,.12);border-radius:14px;padding:26px 22px 24px}
+.how-grid article>span{position:absolute;top:-16px;left:22px;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--green);color:var(--gold);font-family:var(--font-display);font-size:16px;font-weight:700;box-shadow:0 8px 18px rgba(18,63,53,.24)}
+.how-grid h3{font-family:var(--font-display);font-size:17px;margin:12px 0 8px}
+.how-grid p{margin:0;font-size:10px;line-height:1.7;color:#6f7f79}
+
+/* ---------- routes ---------- */
+.routes{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
+.route{border:1px solid rgba(18,63,53,.14);border-radius:16px;padding:30px 28px;background:#fffdf8}
+.route h3{font-family:var(--font-display);font-size:22px;line-height:1.2;margin:10px 0 10px}
+.route>p{margin:0;font-size:11px;line-height:1.7;color:#6f7f79}
+.route ul{list-style:none;margin:16px 0 20px;padding:0;display:flex;flex-direction:column;gap:8px}
+.route li{position:relative;padding-left:20px;font-size:10px;line-height:1.6}
+.route li:before{content:"✓";position:absolute;left:0;color:#2f8a5c;font-weight:700}
+.route-dark{position:relative;overflow:hidden;background:linear-gradient(140deg,#123f35,#0b2a22);border-color:transparent;color:#e9f1ed}
+.route-dark:before{content:"";position:absolute;inset:0;background:url("assets/pattern-girih.svg") repeat;background-size:120px 120px;opacity:.13}
+.route-dark>*{position:relative;z-index:1}
+.route-dark h3{color:#fff}
+.route-dark>p,.route-dark li{color:#c2d5cd}
+.route-dark li:before{color:var(--gold)}
+
+/* ---------- faq ---------- */
+.faq{background:var(--cream)}
+.faq-list{display:flex;flex-direction:column;gap:10px;max-width:920px}
+.faq details{background:#fffdf8;border:1px solid rgba(18,63,53,.12);border-radius:12px;padding:0 18px;transition:border-color .18s,box-shadow .18s}
+.faq details[open]{border-color:rgba(18,63,53,.28);box-shadow:0 10px 24px rgba(18,63,53,.08)}
+.faq summary{cursor:pointer;list-style:none;padding:16px 0;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:space-between;gap:14px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary:after{content:"+";color:var(--gold);font-size:17px;font-weight:700;transition:transform .2s}
+.faq details[open] summary:after{transform:rotate(45deg)}
+.faq details p{margin:0;padding:0 0 18px;font-size:10px;line-height:1.75;color:#6f7f79;max-width:70ch}
+
+/* ---------- reveal ---------- */
+[data-reveal]{opacity:0;transform:translateY(16px);transition:opacity .6s cubic-bezier(.22,.61,.36,1),transform .6s cubic-bezier(.22,.61,.36,1)}
+[data-reveal].in-view{opacity:1;transform:none}
+
+@media(prefers-reduced-motion:reduce){
+  .hero-pattern,.hero-glow,.hero-badge{animation:none}
+  [data-reveal]{opacity:1;transform:none;transition:none}
+}
+
+@media(max-width:960px){
+  .hero-inner,.shop-banner{grid-template-columns:1fr}
+  .hero-visual{order:-1;max-width:460px}
+  .hero-badge{left:auto;right:10px}
+}
+@media(max-width:560px){
+  .home-page .section{padding:44px 5vw}
+  .hero{padding:48px 5vw 56px}
+  .trust-row{gap:22px}
+  .search-panel{padding:12px}
+}
+
+/* styles.css already styles a two-column .hero from the previous design. This page nests its own
+   layout inside, so the outer element is reset to a plain block — otherwise the pattern and glow
+   layers are treated as grid columns and the copy is squeezed into a sliver. */
+.home-page .hero{display:block;min-height:0;grid-template-columns:none;background:linear-gradient(145deg,#0c3128 0%,#123f35 45%,#17513f 100%)}
+.home-page .hero-copy{padding:0;z-index:auto}
+.home-page .hero-intro{font-size:12px;max-width:52ch;margin:16px 0 0;color:#c2d5cd}
+.home-page .hero-visual{background:none;overflow:visible}
+.home-page .hero-visual:after{content:none}
+.home-page .trust-row{gap:32px;margin-top:30px}
+.home-page .trust-row strong{font-size:30px;color:#fff}
+.home-page .trust-row span{color:#a9c1b8;font-size:9px}
+/* Explicit placement so nothing inherited from the previous hero can move these: the old
+   stylesheet was putting both children in the second column, stacked on top of each other. */
+.home-page .hero-inner>.hero-copy{grid-column:1;grid-row:1}
+.home-page .hero-inner>.hero-visual{grid-column:2;grid-row:1}
+@media(max-width:960px){
+  .home-page .hero-inner>.hero-copy{grid-column:1;grid-row:2}
+  .home-page .hero-inner>.hero-visual{grid-column:1;grid-row:1}
+}
+
+/* "View all" beneath a trimmed grid on the home page. */
+.view-all{display:inline-flex;align-items:center;gap:8px;margin-top:20px;font-size:11px;padding:12px 20px;border-radius:9px}
+.home-page .business-grid+.view-all,.home-page .masjid-grid+.view-all{align-self:flex-start}
+
+/* The home business grid was inheriting a single-column layout with an oversized image panel,
+   so five listings filled the screen. Three across, with the panel scaled to the card. */
+.home-page .business-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:18px;align-items:stretch}
+.home-page .business-card{display:flex;flex-direction:column;border-radius:14px;overflow:hidden;border:1px solid rgba(18,63,53,.13);background:linear-gradient(180deg,#fffdf8 0%,#f8f3e7 100%);box-shadow:0 3px 14px rgba(18,63,53,.07);transition:transform .18s,box-shadow .18s,border-color .18s}
+.home-page .business-card:hover{transform:translateY(-3px);box-shadow:0 20px 40px rgba(18,63,53,.16);border-color:rgba(18,63,53,.28)}
+.home-page .business-card .card-image{position:relative;height:112px;flex:none;display:grid;place-items:center}
+.home-page .business-card .card-mark{font-family:var(--font-display);font-size:30px;font-weight:700;opacity:.55}
+.home-page .business-card .verified{position:absolute;top:10px;left:10px;padding:5px 9px;border-radius:999px;background:rgba(255,253,248,.94);font-size:8px;font-weight:700;letter-spacing:.4px}
+.home-page .business-card .card-body{display:flex;flex-direction:column;gap:6px;padding:15px 16px 16px;flex:1}
+.home-page .business-card .category{font-size:8px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--gold)}
+.home-page .business-card h3{font-family:var(--font-display);font-size:16px;line-height:1.3;margin:0}
+.home-page .business-card .card-body>p{margin:0;font-size:10px;line-height:1.65;color:#6f7f79;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.home-page .business-card .card-meta{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:auto;padding-top:11px;border-top:1px solid rgba(18,63,53,.1);font-size:9px}
+.home-page .business-card .card-meta a{font-weight:700;color:var(--green)}
+.home-page .masjid-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px}
+
+/* Cards are flex containers, and a class display beats the hidden attribute — without this the
+   trimming and the search filter both set hidden and nothing actually disappears. */
+.home-page [hidden]{display:none!important}
+
+/* ---- one image shape everywhere ----
+   Masjid imagery is 16:10 on every surface: the home cards, the directory tiles and the card
+   previews. A masjid uploads one picture and it crops the same way in all of them, instead of
+   being letterboxed in one place and cropped to a sliver in a 410px-tall portrait card. */
+.home-page .masjid-card{height:auto;aspect-ratio:16/10;border-radius:12px}
+.home-page .masjid-card-large{grid-column:auto}
+.home-page .masjid-card-art{background:#123f35 url("assets/masjid-default.svg") center/cover no-repeat}
+.home-page .masjid-card-art:before{content:none}
+.home-page .masjid-card-art i,.home-page .masjid-card-art b{display:none}
+.home-page .masjid-card-art:after{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(8,32,26,.05) 42%,rgba(8,32,26,.78) 100%)}
+.home-page .masjid-overlay{left:16px;right:16px;bottom:14px}
+.home-page .masjid-overlay strong{font-size:17px;line-height:1.25}
+.home-page .masjid-overlay small{font-size:8px;letter-spacing:1.1px;margin-bottom:4px}
+.home-page .masjid-overlay em{font-size:9px;margin-top:5px}
+
+/* The uploaded photo sits in the same frame as the illustration it replaces. */
+.masjid-tile-art,.masjid-card-art{aspect-ratio:16/10}

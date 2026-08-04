@@ -1,0 +1,168 @@
+// Where a masjid manages how it appears. Until now a photo could only be attached during
+// registration, so every masjid already on the platform had no way to add one.
+(async function () {
+  const session = JSON.parse(sessionStorage.getItem('masjidPointSession') || 'null');
+  if (!session?.reference) return;
+
+  const state = await MasjidDB.state();
+  const applications = state.masjidPointAdminApplications || [];
+  const masjid = applications.find(app => app.type === 'masjid'
+    && (app.reference === session.reference || app.id === session.reference));
+  if (!masjid) return;
+
+  const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const details = masjid.details || {};
+  const city = (details.Address || '').split(',').slice(-2, -1)[0]?.trim() || 'United Kingdom';
+
+  document.querySelector('.masjid-identity>span').textContent = masjid.name.split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
+  document.querySelector('.masjid-identity strong').textContent = masjid.name;
+  document.querySelector('.masjid-identity small').textContent = `${city} · Verified`;
+  document.querySelector('#view-public').href = `masjid-adverts?reference=${encodeURIComponent(masjid.reference)}`;
+
+  const toast = message => {
+    const element = document.querySelector('#portal-toast');
+    element.textContent = message;
+    element.hidden = false;
+    setTimeout(() => element.hidden = true, 2600);
+  };
+
+  // Saving writes the whole applications collection back, so it is always re-read first to avoid
+  // overwriting a change an administrator made in the meantime.
+  async function persist(mutate) {
+    const latest = await MasjidDB.state();
+    const list = latest.masjidPointAdminApplications || [];
+    const record = list.find(app => app.reference === masjid.reference || app.id === masjid.reference);
+    if (!record) throw Error('This masjid record no longer exists.');
+    mutate(record);
+    await MasjidDB.save('masjidPointAdminApplications', list);
+  }
+
+  // ---- photo ----
+  const MAX_BYTES = 3 * 1024 * 1024;
+  const input = document.querySelector('#masjid-photo');
+  const image = document.querySelector('#photo-current');
+  const empty = document.querySelector('#photo-empty');
+  const removeButton = document.querySelector('#remove-photo');
+  const error = document.querySelector('#photo-error');
+  const hint = document.querySelector('#photo-hint');
+
+  function showPhoto(dataUrl) {
+    if (dataUrl) {
+      image.src = dataUrl;
+      image.hidden = false;
+      empty.hidden = true;
+      removeButton.hidden = false;
+    } else {
+      image.removeAttribute('src');
+      image.hidden = true;
+      empty.hidden = false;
+      removeButton.hidden = true;
+    }
+  }
+  showPhoto(masjid.photo);
+
+  input.addEventListener('change', async () => {
+    const file = input.files[0];
+    if (!file) return;
+    error.hidden = true;
+    if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
+      error.textContent = 'Choose a PNG, JPG or WebP image.';
+      error.hidden = false;
+      input.value = '';
+      return;
+    }
+    if (file.size > MAX_BYTES) {
+      error.textContent = 'That photo is larger than 3 MB. Choose a smaller image.';
+      error.hidden = false;
+      input.value = '';
+      return;
+    }
+    hint.textContent = 'Resizing and saving…';
+    try {
+      const photo = await ImageDownscale.fromFile(file);
+      await persist(record => { record.photo = photo; });
+      masjid.photo = photo;
+      showPhoto(photo);
+      hint.textContent = `Saved. ${Math.round(photo.length / 1024)} KB stored — visitors see this on the directory.`;
+      toast('Photo updated.');
+    } catch (failure) {
+      error.textContent = `${failure.message} Your photo was not saved.`;
+      error.hidden = false;
+      hint.textContent = 'Your photo is resized automatically before it is saved.';
+    } finally {
+      input.value = '';
+    }
+  });
+
+  removeButton.addEventListener('click', async () => {
+    try {
+      await persist(record => { delete record.photo; });
+      delete masjid.photo;
+      showPhoto('');
+      hint.textContent = 'Photo removed. The directory shows the illustration again.';
+      toast('Photo removed.');
+    } catch (failure) {
+      error.textContent = failure.message;
+      error.hidden = false;
+    }
+  });
+
+  // ---- contact details ----
+  const form = document.querySelector('#contact-form');
+  const FIELDS = {
+    masjidPhone: 'Masjid phone',
+    primaryContact: 'Primary contact',
+    contactNumber: 'Contact number',
+    role: 'Role'
+  };
+  for (const [field, key] of Object.entries(FIELDS)) form.elements[field].value = details[key] || '';
+
+  form.addEventListener('submit', async event => {
+    event.preventDefault();
+    const problem = document.querySelector('#contact-error');
+    const saved = document.querySelector('#contact-saved');
+    problem.hidden = true;
+    saved.hidden = true;
+
+    // Checked here rather than left to the pattern attribute: the browser reports these values as
+    // valid against it, so a three-digit phone number would otherwise be saved without complaint.
+    const phones = ['masjidPhone', 'contactNumber'];
+    const invalid = phones.map(name => form.elements[name])
+      .find(field => field.value.trim() && field.value.replace(/\D/g, '').length < 10);
+    if (invalid) {
+      problem.textContent = 'Enter a full phone number — at least 10 digits.';
+      problem.hidden = false;
+      invalid.classList.add('invalid');
+      invalid.focus();
+      return;
+    }
+    phones.forEach(name => form.elements[name].classList.remove('invalid'));
+
+    try {
+      await persist(record => {
+        record.details = record.details || {};
+        for (const [field, key] of Object.entries(FIELDS)) {
+          const value = form.elements[field].value.trim();
+          if (value) record.details[key] = value; else delete record.details[key];
+        }
+      });
+      saved.hidden = false;
+      setTimeout(() => saved.hidden = true, 2600);
+      toast('Contact details saved.');
+    } catch (failure) {
+      problem.textContent = failure.message;
+      problem.hidden = false;
+    }
+  });
+
+  // ---- registered details (read-only) ----
+  document.querySelector('#registered-details').innerHTML = [
+    ['Masjid name', masjid.name],
+    ['Reference', masjid.reference],
+    ['Address', details.Address],
+    ['Postcode', details.Postcode],
+    ['Account email', masjid.email],
+    ['Status', masjid.status === 'activated' ? 'Activated' : 'Approved']
+  ].filter(([, value]) => value)
+    .map(([label, value]) => `<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`).join('');
+})();

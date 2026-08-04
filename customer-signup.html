@@ -1,0 +1,47 @@
+<!doctype html><html lang="en-GB"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Create your account — MasjidPoint</title><meta name="description" content="Create a MasjidPoint account to track your job applications and shop orders."><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="site-nav.css?v=1"><link rel="stylesheet" href="customer.css?v=1"></head>
+<body class="customer-page">
+<header data-site-nav></header><script src="site-nav.js?v=1"></script>
+
+<main class="customer-main">
+  <section class="customer-form-card">
+    <p class="eyebrow"><span></span> Create your account</p>
+    <h1 id="signup-heading">Keep track of everything</h1>
+    <p class="customer-lede" id="signup-lede">One account to follow your job applications and shop orders, and to save your details for next time.</p>
+
+    <div class="prefill-note" id="prefill-note" hidden></div>
+
+    <form id="customer-signup-form" novalidate>
+      <div class="customer-fields">
+        <label class="wide"><span>Full name <em>*</em></span><input name="name" required autocomplete="name"></label>
+        <label class="wide"><span>Email <em>*</em></span><input name="email" type="email" required autocomplete="email"><small>We use this to match your existing applications and orders.</small></label>
+        <label><span>Phone number</span><input name="phone" autocomplete="tel"></label>
+        <label><span>Postcode</span><input name="postcode" maxlength="8" autocomplete="postal-code"></label>
+        <label class="wide"><span>Address <small>(optional — you can add this later)</small></span><input name="line1" placeholder="Street address" autocomplete="address-line1"></label>
+        <label><span>Town or city</span><input name="city" autocomplete="address-level2"></label>
+        <label><span>&nbsp;</span><span class="field-spacer"></span></label>
+        <label class="wide"><span>Password <em>*</em></span><input name="password" type="password" required minlength="8" autocomplete="new-password"><small>At least 8 characters.</small></label>
+        <label class="wide"><span>Confirm password <em>*</em></span><input name="confirm" type="password" required autocomplete="new-password"></label>
+      </div>
+      <p class="customer-error" id="signup-error" hidden></p>
+      <button class="button" type="submit" id="create-account">Create account →</button>
+      <p class="customer-alt">Already have an account? <a href="login">Sign in</a></p>
+    </form>
+  </section>
+
+  <aside class="customer-aside" id="linked-preview" hidden>
+    <h2>We found these already</h2>
+    <p>Creating your account links them straight away.</p>
+    <ul id="linked-list"></ul>
+  </aside>
+</main>
+
+<footer>
+  <a class="brand brand-light" href="/"><span class="brand-mark" aria-hidden="true"><span></span></span><span>Masjid<span>Point</span></span></a>
+  <p>Connecting communities. Strengthening masjids.</p>
+  <div><a href="/#how-it-works">How it works</a><a href="login">Sign in</a><a href="status">Check status</a></div>
+  <small>© 2026 MasjidPoint. All rights reserved.</small>
+</footer>
+
+<script src="local-db.js?v=20"></script>
+<script src="customer-signup.js?v=1"></script>
+</body></html>

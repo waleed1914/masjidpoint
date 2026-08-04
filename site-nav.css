@@ -1,0 +1,49 @@
+/* The one public header. Loaded by every public page; nothing else should style it. */
+.site-nav{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:30px;height:76px;padding:0 max(5vw,22px);background:rgba(255,253,248,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.site-nav-brand{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:700;letter-spacing:-.5px;color:var(--green);white-space:nowrap}
+.site-nav-brand>span:last-child>span{color:var(--gold)}
+.site-nav-brand .brand-mark{width:30px;height:34px;background:var(--green);display:grid;place-items:center;clip-path:polygon(50% 0,95% 25%,95% 100%,5% 100%,5% 25%)}
+.site-nav-brand .brand-mark span{width:11px;height:19px;background:var(--cream);border-radius:11px 11px 0 0;margin-top:8px}
+
+.site-nav-links{display:flex;gap:26px;margin-right:auto;font-size:14px;font-weight:600}
+.site-nav-links a{color:var(--ink);padding:6px 0;border-bottom:2px solid transparent;transition:.18s}
+.site-nav-links a:hover{color:var(--green-2);border-bottom-color:var(--gold)}
+.site-nav-links a.active{color:var(--green-2);border-bottom-color:var(--gold)}
+
+.site-nav-actions{display:flex;align-items:center;gap:16px;font-size:14px;font-weight:600}
+.site-nav-signin{color:var(--ink);transition:.18s}
+.site-nav-signin:hover{color:var(--green-2)}
+
+.site-nav-toggle{display:none;border:0;background:none;padding:8px;margin-left:auto}
+.site-nav-toggle span{display:block;width:22px;height:2px;margin:5px;background:var(--green);transition:.18s}
+
+@media(max-width:900px){
+  .site-nav{flex-wrap:wrap;height:auto;padding:14px max(5vw,18px);gap:14px}
+  .site-nav-toggle{display:block}
+  .site-nav-links{order:3;flex-basis:100%;flex-direction:column;gap:0;display:none;margin:0;border-top:1px solid var(--line);padding-top:6px}
+  .site-nav.open .site-nav-links{display:flex}
+  .site-nav-links a{padding:12px 0;border-bottom:1px solid var(--line)}
+  .site-nav-actions{order:2;gap:12px}
+  .site-nav-toggle{order:1}
+}
+/* Page-specific action injected by the shop (the only one that needs it). */
+.site-nav-basket{display:inline-flex;align-items:center;gap:9px;background:var(--green);color:#fff;border:1px solid var(--green);padding:10px 15px;font-weight:700;font-size:13px;border-radius:4px;transition:.18s}
+.site-nav-basket:hover{background:var(--green-2);transform:translateY(-1px)}
+.site-nav-basket b{background:var(--gold);color:var(--green);min-width:20px;height:20px;border-radius:10px;display:grid;place-items:center;font-size:11px;padding:0 5px}
+
+/* --- signed-in account --- */
+.site-nav-account{position:relative}
+.site-nav-avatar{display:inline-flex;align-items:center;gap:10px;border:1px solid var(--line);background:var(--paper);padding:6px 12px 6px 6px;border-radius:999px;font-size:13px;font-weight:600;color:var(--ink);transition:.18s}
+.site-nav-avatar:hover{border-color:var(--green-2);background:#fff}
+.site-nav-initials{width:30px;height:30px;flex:none;display:grid;place-items:center;border-radius:50%;background:var(--green);color:#fff;font-size:11px;font-weight:700;letter-spacing:.02em}
+.site-nav-who{max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.site-nav-caret{color:var(--muted);font-size:10px}
+.site-nav-menu{position:absolute;right:0;top:calc(100% + 10px);min-width:230px;background:var(--paper);border:1px solid var(--line);box-shadow:0 16px 38px rgba(18,63,53,.14);padding:6px;z-index:50}
+.site-nav-menu[hidden]{display:none}
+.site-nav-menu p{display:grid;gap:2px;margin:0;padding:12px 13px;border-bottom:1px solid var(--line)}
+.site-nav-menu p strong{font-size:13px}
+.site-nav-menu p small{color:var(--muted);font-size:11px;overflow:hidden;text-overflow:ellipsis}
+.site-nav-menu a,.site-nav-menu button{display:block;width:100%;text-align:left;border:0;background:none;padding:11px 13px;font-size:13px;font-weight:600;color:var(--ink);transition:.18s}
+.site-nav-menu a:hover,.site-nav-menu button:hover{background:var(--green-3);color:var(--green)}
+.site-nav-menu [data-sign-out]{color:#8c3229}
+@media(max-width:900px){.site-nav-who{display:none}.site-nav-avatar{padding:5px}}

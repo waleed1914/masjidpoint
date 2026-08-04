@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 460" role="img" aria-label="Masjid arches at dusk">
+  <defs>
+    <linearGradient id="dusk" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0d3529"/>
+      <stop offset="60%" stop-color="#164b3c"/>
+      <stop offset="100%" stop-color="#0b2a22"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f0d295"/>
+      <stop offset="100%" stop-color="#c49a52"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e8c887" stop-opacity="0.42"/>
+      <stop offset="100%" stop-color="#e8c887" stop-opacity="0"/>
+    </linearGradient>
+    <clipPath id="archClip">
+      <path d="M110 420V196a150 150 0 0 1 300 0v224z"/>
+    </clipPath>
+  </defs>
+
+  <rect width="520" height="460" rx="18" fill="url(#dusk)"/>
+
+  <!-- moon -->
+  <circle cx="392" cy="96" r="30" fill="url(#gold)" opacity="0.9"/>
+  <circle cx="380" cy="88" r="26" fill="#0f3a2f"/>
+
+  <!-- distant skyline seen through the arch -->
+  <g clip-path="url(#archClip)">
+    <rect x="110" y="70" width="300" height="350" fill="#0a2c23"/>
+    <circle cx="260" cy="300" r="150" fill="url(#glow)"/>
+    <g fill="#123f35">
+      <path d="M170 300c22 22 44 34 44 58 0 17-20 28-44 28s-44-11-44-28c0-24 22-36 44-58z"/>
+      <path d="M350 300c22 22 44 34 44 58 0 17-20 28-44 28s-44-11-44-28c0-24 22-36 44-58z"/>
+      <rect x="146" y="336" width="48" height="84" rx="4"/>
+      <rect x="326" y="336" width="48" height="84" rx="4"/>
+    </g>
+    <path d="M260 210c34 34 70 54 70 92 0 26-31 44-70 44s-70-18-70-44c0-38 36-58 70-92z" fill="#17513f"/>
+    <g transform="translate(260 186)">
+      <rect x="-2" y="-6" width="4" height="24" rx="2" fill="#e8c887"/>
+      <path d="M0-26a14 14 0 1 0 9.7 24A11 11 0 1 1 0-26z" fill="#e8c887"/>
+    </g>
+    <rect x="110" y="404" width="300" height="16" fill="#0b2a22"/>
+  </g>
+
+  <!-- the arch frame itself -->
+  <path d="M110 420V196a150 150 0 0 1 300 0v224" fill="none" stroke="url(#gold)" stroke-width="7"/>
+  <path d="M132 420V198a128 128 0 0 1 256 0v222" fill="none" stroke="#e8c887" stroke-width="1.5" opacity="0.45"/>
+
+  <!-- side columns -->
+  <g fill="url(#gold)" opacity="0.9">
+    <rect x="46" y="250" width="26" height="170" rx="5"/>
+    <rect x="448" y="250" width="26" height="170" rx="5"/>
+    <path d="M59 250c-11 0-18-8-18-15 0-9 9-15 18-25 9 10 18 16 18 25 0 7-7 15-18 15z"/>
+    <path d="M461 250c-11 0-18-8-18-15 0-9 9-15 18-25 9 10 18 16 18 25 0 7-7 15-18 15z"/>
+  </g>
+
+  <rect x="30" y="418" width="460" height="9" rx="4" fill="#e8c887" opacity="0.75"/>
+</svg>

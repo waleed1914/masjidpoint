@@ -1,0 +1,202 @@
+/* Shared layout for the public masjid and business directory pages. */
+.directory-page{background:var(--paper);min-height:100vh;display:flex;flex-direction:column}
+.directory-page .shop-header{padding:18px 6vw;background:var(--paper);border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:26px}
+.directory-page .shop-header .brand{font-size:21px;font-weight:700;letter-spacing:-.5px;color:var(--green)}
+.directory-page .shop-header .brand span{color:var(--gold)}
+.directory-page .shop-nav{display:flex;gap:24px;margin-right:auto;font-size:13px;font-weight:600}
+.directory-page .shop-nav a{color:var(--ink);padding:4px 0;border-bottom:2px solid transparent;transition:.18s}
+.directory-page .shop-nav a:hover,.directory-page .shop-nav a.active{color:var(--green-2);border-bottom-color:var(--gold)}
+.directory-page .shop-header>div{display:flex;gap:16px;align-items:center;font-size:13px;font-weight:600}
+
+.directory-hero{padding:56px 6vw 40px;background:var(--cream);border-bottom:1px solid var(--line)}
+.directory-hero h1{font-family:var(--font-display);font-size:clamp(34px,4.4vw,54px);margin:0 0 12px;line-height:1.1}
+.directory-hero p{margin:0;color:var(--muted);max-width:640px;font-size:16px;line-height:1.6}
+
+.directory-filters{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-top:28px}
+.directory-filters label{display:grid;gap:6px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.directory-filters input,.directory-filters select{height:46px;min-width:190px;border:1px solid var(--line);background:#fff;padding:0 14px;font-size:14px;transition:.18s}
+.directory-filters input{min-width:290px}
+.directory-filters input:focus,.directory-filters select:focus{outline:0;border-color:var(--green-2);box-shadow:0 0 0 3px rgba(29,89,74,.13)}
+.directory-filters button{height:46px;border:1px solid var(--line);background:#fff;padding:0 16px;font-size:13px;font-weight:600;color:var(--muted);transition:.18s}
+.directory-filters button:hover{border-color:var(--green-2);color:var(--green-2)}
+
+.directory-count{padding:22px 6vw 0;color:var(--muted);font-size:13px}
+.directory-count strong{color:var(--ink)}
+.directory-body{flex:1;padding:18px 6vw 70px}
+.directory-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:18px}
+.directory-empty{margin:0;padding:44px;background:var(--cream);border:1px solid var(--line);color:var(--muted);text-align:center}
+
+/* masjid card */
+.masjid-tile{display:flex;flex-direction:column;background:#fff;border:1px solid var(--line);overflow:hidden;transition:.18s}
+.masjid-tile:hover{border-color:var(--green-2);box-shadow:0 12px 30px rgba(18,63,53,.1);transform:translateY(-3px)}
+.masjid-tile-art{position:relative;height:132px;background:linear-gradient(158deg,#1c5648,#0f362d 62%);overflow:hidden}
+.masjid-tile-art:before{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(198,161,91,.18) 1px,transparent 1px);background-size:18px 18px}
+.masjid-tile-art i{position:absolute;left:50%;bottom:-32px;width:118px;height:118px;transform:translateX(-50%);border-radius:80px 80px 10px 10px;background:rgba(248,244,233,.14)}
+.masjid-tile-art b{position:absolute;left:50%;bottom:44px;width:2px;height:34px;margin-left:-1px;background:var(--gold);opacity:.8}
+.masjid-tile-city{position:absolute;left:16px;top:14px;background:rgba(255,253,248,.92);color:var(--green);padding:4px 10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em}
+.masjid-tile-body{padding:20px;display:flex;flex-direction:column;gap:10px;flex:1}
+.masjid-tile h2{font-family:var(--font-display);font-size:21px;margin:0;line-height:1.25}
+.masjid-tile-address{margin:0;color:var(--muted);font-size:12px;line-height:1.5}
+.masjid-tile-stats{display:flex;gap:16px;margin-top:auto;padding-top:14px;border-top:1px solid var(--line)}
+.masjid-tile-stats div{display:grid;gap:2px}
+.masjid-tile-stats strong{font-family:var(--font-display);font-size:19px;color:var(--green)}
+.masjid-tile-stats span{font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.masjid-tile-go{color:var(--green-2);font-weight:700;font-size:13px}
+
+/* business card */
+.business-tile{display:flex;flex-direction:column;gap:12px;background:#fff;border:1px solid var(--line);padding:22px;transition:.18s}
+.business-tile:hover{border-color:var(--green-2);box-shadow:0 12px 30px rgba(18,63,53,.1);transform:translateY(-3px)}
+.business-tile header{display:flex;gap:13px;align-items:center}
+.business-mark{width:46px;height:46px;flex:none;display:grid;place-items:center;background:var(--green-3);color:var(--green);font-weight:700;font-size:14px}
+.business-tile h2{font-family:var(--font-display);font-size:20px;margin:0;line-height:1.25}
+.business-tile header small{display:block;margin-top:3px;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.07em}
+.business-tile>p{margin:0;color:var(--muted);line-height:1.6;font-size:13px;flex:1}
+.business-tile dl{margin:0;display:grid;gap:6px;font-size:12px}
+.business-tile dl div{display:flex;justify-content:space-between;gap:12px}
+.business-tile dt{color:var(--muted)}
+.business-tile dd{margin:0;font-weight:600;text-align:right}
+.business-tile dd a{color:var(--green-2);text-decoration:underline}
+.business-tile footer{background:none;color:inherit;padding:12px 0 0;margin:0;display:flex;justify-content:space-between;align-items:center;gap:10px;border-top:1px solid var(--line);font-size:12px}
+.business-tile .via-masjid{color:var(--green-2);font-weight:700}
+.business-tile .via-masjid:hover{text-decoration:underline}
+
+@media(max-width:820px){
+  .directory-filters input,.directory-filters select{min-width:0;width:100%}
+  .directory-filters label{width:100%}
+  .directory-page .shop-nav{display:none}
+}
+
+/* Masjid shop directory tiles - rebuilt: the preview grid is bounded so a shop with one
+   product cannot stretch its picture across the whole card. */
+.shop-tile{display:flex;flex-direction:column;background:#fffdf8;border:1px solid rgba(18,63,53,.1);border-radius:12px;overflow:hidden;text-decoration:none;color:inherit;transition:transform .18s,box-shadow .18s,border-color .18s}
+.shop-tile:hover{transform:translateY(-4px);box-shadow:0 16px 34px rgba(18,63,53,.14);border-color:rgba(18,63,53,.22)}
+.shop-tile-preview{position:relative;display:grid;gap:2px;aspect-ratio:16/10;background:#efeade;overflow:hidden}
+.shop-tile-preview img{width:100%;height:100%;min-width:0;min-height:0;object-fit:cover;display:block;transition:transform .35s ease}
+.shop-tile:hover .shop-tile-preview img{transform:scale(1.04)}
+.shop-tile-preview[data-count="1"]{grid-template-columns:1fr}
+.shop-tile-preview[data-count="2"]{grid-template-columns:1fr 1fr}
+.shop-tile-preview[data-count="3"]{grid-template-columns:2fr 1fr;grid-template-rows:1fr 1fr}
+.shop-tile-preview[data-count="3"] img:first-child{grid-row:1 / span 2}
+.shop-tile-count{position:absolute;left:10px;bottom:10px;padding:5px 10px;border-radius:999px;background:rgba(11,40,33,.82);color:#fff;font-size:8px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;backdrop-filter:blur(2px)}
+.shop-tile-body{display:flex;flex-direction:column;gap:5px;padding:15px 16px 16px;flex:1}
+.shop-tile-city{font-size:8px;font-weight:700;letter-spacing:.9px;text-transform:uppercase;color:var(--gold)}
+.shop-tile h2{font-family:var(--font-display);font-size:19px;line-height:1.25;margin:0}
+.shop-tile-meta{margin:0;font-size:10px;color:#6f7f79}
+.shop-tile-meta strong{font-size:13px;color:var(--ink)}
+.shop-tile-methods{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.shop-tile-methods em{font-style:normal;padding:5px 9px;border-radius:999px;font-size:8px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;background:#e7efe9;color:#1f6b4f;border:1px solid rgba(31,107,79,.18)}
+.shop-tile-methods em.delivery{background:#f3ecdd;color:#8a5a12;border-color:rgba(138,90,18,.2)}
+.shop-tile-methods em.collect_pay_at_mosque{background:#eceff0;color:#4d5c58;border-color:rgba(77,92,88,.18)}
+.shop-tile-delivery{font-size:9px;color:#8a978f;margin-top:6px}
+.shop-tile-go{margin-top:auto;padding-top:12px;font-size:10px;font-weight:700;color:var(--green);display:inline-flex;align-items:center;gap:6px}
+.shop-tile-go b{transition:transform .18s}
+.shop-tile:hover .shop-tile-go b{transform:translateX(3px)}
+@media(max-width:520px){.shop-tile-preview{aspect-ratio:16/9}}
+
+/* The directories read as white-on-white: cards were nearly the same tone as the page behind
+   them, so nothing separated them. Warm the page, keep the cards white, and let shadow do the
+   work of lifting them off it. */
+.directory-page{background:#efe9dc}
+.directory-hero{background:linear-gradient(180deg,#e9e1cf 0%,#f3ecdd 100%);border-bottom:1px solid rgba(18,63,53,.13)}
+.directory-body{background:transparent}
+.directory-count{color:#5f6f69}
+.shop-tile,.masjid-tile,.business-tile{background:#fff;border-color:rgba(18,63,53,.13);box-shadow:0 2px 10px rgba(18,63,53,.06)}
+.shop-tile:hover,.masjid-tile:hover{box-shadow:0 18px 38px rgba(18,63,53,.17)}
+.shop-tile-preview{background:#e3ddcd}
+.directory-filters label{color:#3d4a46}
+.directory-filters input,.directory-filters select{background:#fff;border:1px solid rgba(18,63,53,.18);border-radius:8px}
+.directory-filters input:focus,.directory-filters select:focus{outline:0;border-color:var(--green);box-shadow:0 0 0 3px rgba(29,89,74,.12)}
+#clear-filters{background:#fff;border:1px solid rgba(18,63,53,.18);border-radius:8px;color:#3d4a46;font-weight:600}
+#clear-filters:hover{border-color:var(--green);color:var(--green)}
+/* Layer the page: deepest tone in the hero, lighter page beneath it, white cards on top. */
+.directory-hero{background:linear-gradient(180deg,#e6ddc8 0%,#ece4d3 100%)}
+.directory-page{background:#f5f1e7}
+.directory-count strong{color:var(--green)}
+
+/* Green hero. The drifting blobs live on a pseudo-element behind the content so nothing in the
+   filter bar moves, and the whole thing is switched off for reduced-motion users. */
+.directory-hero{position:relative;overflow:hidden;border-bottom:0;background:linear-gradient(140deg,#0c3128 0%,#123f35 48%,#17513f 100%);color:#e9f1ed}
+.directory-hero>*{position:relative;z-index:1}
+.directory-hero::before{content:"";position:absolute;inset:-35% -15%;pointer-events:none;background:radial-gradient(42% 55% at 22% 28%,rgba(198,164,92,.30),transparent 62%),radial-gradient(38% 52% at 78% 68%,rgba(63,163,112,.34),transparent 64%);animation:hero-drift 24s ease-in-out infinite alternate;will-change:transform}
+.directory-hero::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(120% 90% at 50% 0%,transparent 55%,rgba(6,26,21,.45) 100%)}
+@keyframes hero-drift{0%{transform:translate3d(-3%,-2%,0) scale(1)}50%{transform:translate3d(3%,3%,0) scale(1.09)}100%{transform:translate3d(5%,-3%,0) scale(1.04)}}
+.directory-hero h1{color:#fff}
+.directory-hero>p:not(.eyebrow){color:#bed2ca}
+.directory-hero .eyebrow{color:var(--gold)}
+.directory-hero .eyebrow span{background:var(--gold)}
+.directory-hero .directory-filters label{color:#bed2ca}
+.directory-hero .directory-filters input,.directory-hero .directory-filters select{background:#fffdf8;border-color:rgba(255,255,255,.22)}
+.directory-hero #clear-filters{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.32);color:#fff}
+.directory-hero #clear-filters:hover{background:rgba(255,255,255,.18);border-color:#fff;color:#fff}
+@media(prefers-reduced-motion:reduce){.directory-hero::before{animation:none}}
+
+/* Masjid cards: a photo when the masjid uploaded one, otherwise the drawn dome and arch, which
+   is the default rather than a broken image. Both animate on hover the same way. */
+.masjid-tile-art{position:relative;overflow:hidden;isolation:isolate}
+.masjid-tile-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;transition:transform .5s cubic-bezier(.22,.61,.36,1),filter .35s}
+.masjid-tile-art.has-photo>i,.masjid-tile-art.has-photo>b{opacity:.16;transition:opacity .35s}
+.masjid-tile-art.has-photo:after{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(8,32,26,.05) 0%,rgba(8,32,26,.55) 78%,rgba(8,32,26,.78) 100%)}
+.masjid-tile-art>i,.masjid-tile-art>b{transition:transform .5s cubic-bezier(.22,.61,.36,1)}
+.masjid-tile:hover .masjid-tile-photo{transform:scale(1.07)}
+.masjid-tile:hover .masjid-tile-art:not(.has-photo)>b{transform:translateY(-4px) scale(1.04)}
+.masjid-tile:hover .masjid-tile-art:not(.has-photo)>i{transform:translateY(-2px)}
+.masjid-tile-city{position:relative;z-index:2}
+.masjid-tile-art.has-photo .masjid-tile-city{background:rgba(8,32,26,.62);backdrop-filter:blur(3px);color:#fff}
+@media(prefers-reduced-motion:reduce){.masjid-tile-photo,.masjid-tile-art>i,.masjid-tile-art>b{transition:none}.masjid-tile:hover .masjid-tile-photo{transform:none}}
+
+/* The drawn default: a masjid illustration in the site palette, used whenever no photo exists.
+   It replaces the two abstract shapes that stood in for one before. */
+.masjid-tile-art:not(.has-photo){background-image:url("assets/masjid-default.svg");background-size:cover;background-position:center 62%;background-repeat:no-repeat}
+.masjid-tile-art:not(.has-photo)>i,.masjid-tile-art:not(.has-photo)>b{display:none}
+.masjid-tile-art:not(.has-photo):after{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(8,32,26,0) 45%,rgba(8,32,26,.55) 100%)}
+.masjid-tile-art:not(.has-photo){transition:background-size .5s cubic-bezier(.22,.61,.36,1),background-position .5s}
+.masjid-tile:hover .masjid-tile-art:not(.has-photo){background-size:112%}
+@media(prefers-reduced-motion:reduce){.masjid-tile-art:not(.has-photo){transition:none}.masjid-tile:hover .masjid-tile-art:not(.has-photo){background-size:cover}}
+
+/* Shop tiles read as white boxes on a cream page. Warm the card itself, give the body a tinted
+   base so the text sits on something, and separate the action row from the detail above it. */
+.shop-tile{background:linear-gradient(180deg,#fffdf8 0%,#f8f3e7 100%);border-color:rgba(18,63,53,.16);box-shadow:0 3px 14px rgba(18,63,53,.07)}
+.shop-tile:hover{box-shadow:0 20px 40px rgba(18,63,53,.18);border-color:rgba(18,63,53,.3)}
+.shop-tile-body{background:linear-gradient(180deg,rgba(255,253,248,.9) 0%,rgba(244,238,226,.75) 100%);border-top:1px solid rgba(18,63,53,.09)}
+.shop-tile h2{letter-spacing:-.2px}
+.shop-tile-meta{display:flex;align-items:baseline;gap:6px;padding-bottom:2px}
+.shop-tile-meta strong{color:var(--green)}
+.shop-tile-methods{padding-top:2px}
+.shop-tile-go{border-top:1px solid rgba(18,63,53,.12);margin-top:12px;padding-top:12px}
+.shop-tile-count{background:rgba(11,40,33,.88);letter-spacing:.8px}
+.shop-tile-delivery{color:#7c6a45;font-weight:600}
+
+/* Business directory cards. These are the paid listings, so they should look like a considered
+   entry rather than a contact dump: identity first, then what they do, then how to reach them. */
+.business-tile{display:flex;flex-direction:column;gap:12px;padding:20px;border-radius:12px;border:1px solid rgba(18,63,53,.14);background:linear-gradient(180deg,#fffdf8 0%,#f8f3e7 100%);box-shadow:0 3px 14px rgba(18,63,53,.07);transition:transform .18s,box-shadow .18s,border-color .18s}
+.business-tile:hover{transform:translateY(-3px);box-shadow:0 20px 40px rgba(18,63,53,.16);border-color:rgba(18,63,53,.28)}
+.business-tile>header{display:flex;align-items:flex-start;gap:12px}
+.business-mark{width:44px;height:44px;flex:none;border-radius:10px;display:grid;place-items:center;background:linear-gradient(145deg,#17513f,#0e3529);color:#e8c887;font-family:var(--font-display);font-size:15px;font-weight:700;letter-spacing:.5px}
+.business-tile h2{font-family:var(--font-display);font-size:17px;line-height:1.25;margin:0;overflow-wrap:anywhere}
+.business-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.business-tags em{font-style:normal;padding:4px 8px;border-radius:999px;font-size:8px;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
+.business-category{background:#e7efe9;color:#1f6b4f;border:1px solid rgba(31,107,79,.2)}
+.business-place{background:#f3ecdd;color:#8a5a12;border:1px solid rgba(138,90,18,.2)}
+.business-tile>p{margin:0;font-size:10px;line-height:1.65;color:#6f7f79;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;min-height:calc(1.65em * 2)}
+.business-tile dl{display:flex;flex-direction:column;gap:7px;margin:0;padding:12px 0 0;border-top:1px solid rgba(18,63,53,.1)}
+.business-tile dl div{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.business-tile dt{font-size:8px;text-transform:uppercase;letter-spacing:.7px;color:#8a978f}
+.business-tile dd{margin:0;font-size:10px;font-weight:600;text-align:right;overflow-wrap:anywhere}
+.business-tile dd a{color:var(--green);text-decoration:none}
+.business-tile dd a:hover{text-decoration:underline}
+.business-tile>footer{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:auto;padding-top:12px;border-top:1px solid rgba(18,63,53,.1)}
+.business-verified{display:inline-flex;align-items:center;gap:5px;font-size:9px;font-weight:700;color:#1f6b4f}
+.via-masjid{display:inline-flex;align-items:center;gap:5px;font-size:9px;font-weight:700;color:var(--green);text-decoration:none;text-align:right}
+.via-masjid b{transition:transform .18s}
+.business-tile:hover .via-masjid b{transform:translateX(3px)}
+.via-masjid:hover{color:var(--gold)}
+
+/* A card that opens the business's site says so: it takes a pointer and lifts a little further. */
+.business-tile[data-website]{cursor:pointer}
+.business-tile[data-website]:hover{border-color:rgba(18,63,53,.34)}
+.business-name-link{color:inherit;text-decoration:none}
+.business-tile[data-website]:hover .business-name-link{text-decoration:underline;text-underline-offset:2px}
+.business-name-link:focus-visible{outline:2px solid var(--green);outline-offset:3px;border-radius:3px}
+
+/* Same 16:10 frame as the home cards, so one uploaded photo crops identically in both. */
+.masjid-tile-art{aspect-ratio:16/10;height:auto;min-height:0}

@@ -1,0 +1,11 @@
+.shop-payment-state{display:flex;gap:25px;align-items:center;padding:13px 18px;background:#fff8e8;border-bottom:1px solid #ccd4cf}.shop-payment-state.paid{background:#e7f1eb}.shop-payment-state span{display:grid}.shop-payment-state small{text-transform:uppercase;font-size:8px;color:#687a75}.shop-payment-state strong{text-transform:capitalize}.shop-payment-state .shop-proof-link{margin-left:auto;color:#174d40;font-weight:700;text-decoration:underline}.shop-payment-state .shop-proof-missing{margin-left:auto}.shop-payment-state .shop-proof-missing strong{color:#8a6d3b;text-transform:none}.shop-payment-state .shop-proof-link+button,.shop-payment-state .shop-proof-missing+button{margin-left:18px}.shop-payment-state button{margin-left:auto;border:1px solid #174d40;background:#174d40;color:#fff;padding:9px 13px;font-weight:700}.shop-payment-state b{margin-left:auto;color:#174d40}
+.shop-payment-state.pay_at_mosque{background:#f3f0e6}
+.shop-payment-state .shop-payment-at-mosque{color:#8a6d3b;font-weight:700}
+.shop-order-method{display:flex;gap:13px;align-items:center;flex-wrap:wrap;padding:11px 18px;border-bottom:1px solid #ccd4cf}
+.shop-method-badge{padding:4px 10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;background:#e5efe9;color:#174d40}
+.shop-method-badge.delivery{background:#ede6f5;color:#4b3d69}
+.shop-method-badge.collect_pay_at_mosque{background:#f6eeda;color:#8a6d3b}
+.shop-order-method small{color:#687a75;font-size:11px}
+.shop-invoice-link{margin-left:auto;color:#174d40;font-weight:700;font-size:11px;text-decoration:underline;white-space:nowrap}
+.shop-order-fee{display:flex;justify-content:space-between;align-items:center}
+.shop-order-fee span strong{color:#566a64}

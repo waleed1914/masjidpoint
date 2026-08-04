@@ -1,0 +1,25 @@
+{
+  "name": "masjidpoint-local",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "check": "node --check server.js && node --check db.js && node --check object-storage.js && node --check email-service.js && node --check finance-service.js && node --check shop-fulfilment.js && node --check shop-invoice.js && node --check invoice-register.js && node --check settlement-register.js && node --check local-db.js && node --check notifications.js",
+    "seed": "node scripts/seed-demo-data.js",
+    "reset": "node scripts/reset-data.js",
+    "seed:print": "node scripts/seed-demo-data.js --print",
+    "test": "node scripts/run-tests.js",
+    "migrate:postgres": "node scripts/migrate-json-to-postgres.js",
+    "backup": "node scripts/backup.js",
+    "restore": "node scripts/restore.js"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1101.0",
+    "@aws-sdk/s3-request-presigner": "^3.1101.0",
+    "busboy": "^1.6.0",
+    "dotenv": "^17.4.2",
+    "nodemailer": "^9.0.3",
+    "pdfkit": "^0.19.1",
+    "pg": "^8.22.0"
+  }
+}

@@ -1,0 +1,14 @@
+﻿.pagination{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin:22px 0 6px;padding:14px 16px;background:#fffdf8;border:1px solid rgba(18,63,53,.11);border-radius:12px;box-shadow:0 2px 10px rgba(18,63,53,.05)}
+.pagination-summary{margin:0;font-size:10px;color:#6f7f79}
+.pagination-summary strong{color:var(--ink)}
+.pagination-pages{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.pagination-pages button{min-width:32px;height:32px;padding:0 9px;border:1px solid rgba(18,63,53,.16);background:#fff;color:var(--green);border-radius:8px;font:inherit;font-size:11px;font-weight:700;cursor:pointer;transition:background .15s,border-color .15s,transform .15s}
+.pagination-pages button:hover:not(:disabled){border-color:var(--green);transform:translateY(-1px)}
+.pagination-pages button.current{background:var(--green);border-color:var(--green);color:#fff}
+.pagination-pages button:disabled{opacity:.4;cursor:default}
+.pagination-pages button:focus-visible{outline:0;box-shadow:0 0 0 3px rgba(29,89,74,.25)}
+.pagination-gap{color:#8a978f;font-size:11px;padding:0 2px}
+.pagination-size{display:inline-flex;align-items:center;gap:8px;font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#6f7f79}
+.pagination-size select{border:1px solid rgba(18,63,53,.16);background:#fff;border-radius:8px;padding:7px 9px;font:inherit;font-size:11px;font-weight:600;color:var(--ink);cursor:pointer}
+.pagination-size select:focus{outline:0;border-color:var(--green);box-shadow:0 0 0 3px rgba(29,89,74,.12)}
+@media(max-width:560px){.pagination{justify-content:center;text-align:center}}

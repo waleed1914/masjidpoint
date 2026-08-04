@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Discover trusted businesses, jobs and community shops through your local masjid. Every listing is approved by a masjid, and a share of what it pays goes straight back.">
+  <title>MasjidPoint — Community, connected</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="site-nav.css?v=1"><link rel="stylesheet" href="home.css?v=1">
+</head>
+<body class="home-page">
+  <header data-site-nav></header><script src="site-nav.js?v=1"></script>
+
+  <main>
+    <section class="hero">
+      <div class="hero-pattern" aria-hidden="true"></div>
+      <div class="hero-glow" aria-hidden="true"></div>
+      <div class="hero-inner">
+        <div class="hero-copy">
+          <p class="eyebrow light"><span></span> Supporting local Muslim communities</p>
+          <h1>Discover local.<br><em>Support your masjid.</em></h1>
+          <p class="hero-intro">Find trusted businesses, jobs and everyday essentials — each one approved by a masjid in your community, with a share of every listing going straight back to it.</p>
+
+          <form class="search-panel" id="search-form">
+            <label class="search-field">
+              <span>What are you looking for?</span>
+              <span class="field-row"><span aria-hidden="true">⌕</span><input id="search-input" type="search" placeholder="Business, service or category"></span>
+            </label>
+            <label class="search-field">
+              <span>Near which masjid?</span>
+              <span class="field-row"><span aria-hidden="true">⌖</span><select id="masjid-filter"><option value="">All masjids</option></select></span>
+            </label>
+            <button class="button search-button" type="submit">Search</button>
+          </form>
+
+          <div class="hero-quick">
+            <a href="businesses"><b>◇</b> Businesses</a>
+            <a href="shops"><b>▥</b> Masjid shops</a>
+            <a href="public-jobs"><b>▣</b> Jobs</a>
+            <a href="masjids"><b>⌂</b> Masjids</a>
+          </div>
+
+          <div class="trust-row" id="trust-row">
+            <div><strong id="stat-businesses">—</strong><span>Local businesses</span></div>
+            <div><strong id="stat-masjids">—</strong><span>Partner masjids</span></div>
+            <div><strong id="stat-support">—</strong><span>Raised for masjids</span></div>
+          </div>
+        </div>
+
+        <div class="hero-visual" aria-hidden="true">
+          <img src="assets/arch-scene.svg" alt="" width="520" height="460">
+          <div class="hero-badge"><span>✓</span><p><strong>Community verified</strong><small>Approved by your local masjid</small></p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="promise section" data-reveal>
+      <article><span class="promise-mark">✓</span><h3>Approved, not just listed</h3><p>Every business is reviewed by the masjid it advertises through before it appears anywhere on the platform.</p></article>
+      <article><span class="promise-mark">£</span><h3>A share goes back</h3><p>Each masjid sets its own price and keeps an agreed share of everything paid through it — settled transparently.</p></article>
+      <article><span class="promise-mark">⌂</span><h3>Genuinely local</h3><p>Shops you can collect from, jobs within reach, and traders your neighbours already know by name.</p></article>
+    </section>
+
+    <section class="section" id="discover" data-reveal>
+      <div class="section-heading">
+        <div><p class="eyebrow"><span></span> Explore nearby</p><h2>Businesses your community trusts</h2><p class="section-sub">Every listing is reviewed by the masjid it advertises through before it appears here.</p></div>
+        <a class="arrow-link" href="businesses">View all businesses <span>→</span></a>
+      </div>
+      <div class="filter-chips" role="group" aria-label="Business categories" id="category-chips">
+        <button class="chip active" data-category="all">All businesses</button>
+      </div>
+      <div class="business-grid" id="business-grid"></div>
+      <p class="empty-state" id="empty-state" hidden>No matching businesses found. Try another search.</p>
+    </section>
+
+    <section class="shop-banner section" id="shop" data-reveal>
+      <div class="shop-banner-copy">
+        <p class="eyebrow light"><span></span> Masjid shop</p>
+        <h2>Everyday essentials.<br>Meaningful impact.</h2>
+        <p>Order online and collect from your masjid, pay when you collect, or have it delivered to your door. A share of every purchase goes to the masjid.</p>
+        <div class="shop-banner-ways"><em>Pay now, collect</em><em>Pay at the masjid</em><em>Delivery</em></div>
+        <a class="button button-cream" id="shop-cta" href="shops">Visit a masjid shop</a>
+      </div>
+      <div class="shop-banner-art" aria-hidden="true" id="shop-preview"></div>
+    </section>
+
+    <section class="masjids-section section" id="masjids" data-reveal>
+      <div class="section-heading">
+        <div><p class="eyebrow"><span></span> At the heart of it all</p><h2>Find a masjid near you</h2><p class="section-sub">Open a masjid to see the businesses it trusts, the jobs it shares and its community shop.</p></div>
+        <a class="arrow-link" href="masjids">Browse all masjids <span>→</span></a>
+      </div>
+      <div class="masjid-grid" id="masjid-grid"></div>
+      <p class="empty-state" id="masjid-empty" hidden>No masjids are listed yet.</p>
+    </section>
+
+    <section class="feature-row section" id="jobs" data-reveal>
+      <div class="feature-copy">
+        <p class="eyebrow"><span></span> Local opportunities</p>
+        <h2>Find work with businesses you know</h2>
+        <p>Roles shared by trusted businesses in your community — from flexible local work to the next step in your career, all advertised through a masjid.</p>
+        <a class="button button-outline" href="public-jobs">Browse community jobs</a>
+      </div>
+      <div id="home-job-preview"></div>
+    </section>
+
+    <section class="how-section section" id="how-it-works" data-reveal>
+      <div class="section-heading"><div><p class="eyebrow"><span></span> How it works</p><h2>Simple for everyone involved</h2><p class="section-sub">One flow, three parties, nothing hidden.</p></div></div>
+      <div class="how-grid">
+        <article><span>1</span><h3>A masjid joins</h3><p>The masjid registers, sets its own listing prices and decides what share it keeps.</p></article>
+        <article><span>2</span><h3>Businesses apply</h3><p>Local businesses ask to advertise or post a job through that masjid, and the masjid approves.</p></article>
+        <article><span>3</span><h3>The community benefits</h3><p>Listings go live once paid, and the masjid's share is settled back to it.</p></article>
+      </div>
+    </section>
+
+    <section class="routes section" data-reveal>
+      <article class="route">
+        <p class="eyebrow"><span></span> For masjids</p>
+        <h3>Turn your community into support for your masjid</h3>
+        <p>Set your own prices, approve who represents you, and track every payment owed to you from one portal.</p>
+        <ul><li>Full control over who advertises</li><li>Your own advertising, job and shop rates</li><li>Settlements recorded and traceable</li></ul>
+        <a class="button" href="register-masjid">Register your masjid →</a>
+      </article>
+      <article class="route route-dark">
+        <p class="eyebrow light"><span></span> For businesses</p>
+        <h3>Reach people who already trust the masjid</h3>
+        <p>One listing puts you in front of a local community and supports the masjid at the same time.</p>
+        <ul><li>Approved listings carry real weight</li><li>Advertise, post jobs, or sell in the shop</li><li>Clear monthly pricing, no surprises</li></ul>
+        <a class="button button-cream" href="advertise">Start advertising →</a>
+      </article>
+    </section>
+
+    <section class="faq section" data-reveal>
+      <div class="section-heading"><div><p class="eyebrow"><span></span> Questions</p><h2>Things people ask</h2></div></div>
+      <div class="faq-list">
+        <details><summary>Who decides which businesses appear?</summary><p>The masjid does. A business applies to advertise through a specific masjid, and nothing goes live until that masjid approves it and the payment is verified.</p></details>
+        <details><summary>How much does a masjid keep?</summary><p>Each masjid sets its own monthly advertising price, job fee and split. The share is agreed up front, recorded against every invoice, and settled back to the masjid.</p></details>
+        <details><summary>Is the price fixed once I apply?</summary><p>Yes. The rate is captured when you apply, so a later change to a masjid's pricing never re-prices an application already in progress.</p></details>
+        <details><summary>How does the masjid shop work?</summary><p>Order online, then collect from the masjid or have it delivered where offered. You can pay by bank transfer up front or pay the masjid when you collect.</p></details>
+        <details><summary>What does it cost to register a masjid?</summary><p>Nothing. A masjid registers free, sets its own rates, and only ever receives money through the platform.</p></details>
+      </div>
+    </section>
+
+    <section class="cta section" id="advertise" data-reveal>
+      <div><p class="eyebrow"><span></span> Grow with purpose</p><h2>Put your business in front of your local community.</h2></div>
+      <div><p>Build trust, reach new customers and support a masjid — all through one simple listing.</p><a class="button" href="advertise">Start advertising <span>→</span></a></div>
+    </section>
+  </main>
+
+  <footer>
+    <a class="brand brand-light" href="/"><span class="brand-mark" aria-hidden="true"><span></span></span><span>Masjid<span>Point</span></span></a>
+    <p>Connecting communities. Strengthening masjids.</p>
+    <div><a href="#how-it-works">How it works</a><a href="signup">Sign up</a><a href="register-masjid">Register a masjid</a><a href="advertise">Advertise</a><a href="status">Check status</a></div>
+    <small>© 2026 MasjidPoint. All rights reserved.</small>
+  </footer>
+  <script src="local-db.js?v=15"></script><script src="script.js"></script><script src="public-businesses.js?v=2"></script><script src="public-masjids.js?v=2"></script><script src="home.js?v=1"></script>
+</body>
+</html>

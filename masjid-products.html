@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="The products stocked in your masjid shop on MasjidPoint.">
+  <title>Shop products — MasjidPoint</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="portal.css"><link rel="stylesheet" href="notifications.css">
+</head>
+<body class="portal-page"><script src="portal-auth.js"></script>
+  <aside class="portal-sidebar">
+    <a class="brand brand-light" href="/"><span class="brand-mark"><span></span></span><span>Masjid<span>Point</span></span></a>
+    <div class="masjid-identity"><span>··</span><p><strong>Masjid</strong><small>Verified</small></p></div>
+    <nav></nav>
+    <a class="portal-signout" href="/">← Sign out</a>
+  </aside>
+  <main class="portal-main">
+    <header class="portal-topbar"><button class="portal-menu" type="button">☰</button><div><small>Masjid portal</small><h1>Shop products</h1></div><a class="button" id="view-shop" href="masjid-shop" target="_blank" rel="noopener">View public shop ↗</a></header>
+    <section class="portal-content">
+      <div class="portal-welcome"><div><p class="eyebrow"><span></span> Community shop</p><h2>What your shop is selling</h2><p>Every product the platform has stocked for your masjid, with the share your masjid keeps on each sale. The catalogue itself is maintained by the MasjidPoint administrator.</p></div></div>
+      <div class="portal-stats" id="product-stats"></div>
+
+      <section class="request-panel">
+        <header>
+          <div><h2>Your products</h2><p id="fulfilment-summary">How customers can receive an order from your shop.</p></div>
+          <div class="request-tools"><label><span>⌕</span><input id="product-search" type="search" placeholder="Search products"></label><select id="product-filter"><option value="all">All products</option><option value="onsale">On sale now</option><option value="out">Out of stock</option><option value="hidden">Hidden</option></select></div>
+        </header>
+        <div class="product-grid" id="product-grid"></div>
+        <div class="portal-empty" id="product-empty" hidden><span>⌗</span><strong>No products yet</strong><p>When the administrator stocks your shop, everything on sale appears here.</p></div>
+      </section>
+    </section>
+  </main>
+  <div class="toast" id="portal-toast" hidden></div>
+  <script src="local-db.js?v=7"></script><script src="shop-fulfilment.js?v=1"></script><script src="portal-nav.js?v=1"></script><script src="masjid-products.js?v=1"></script><script src="notifications.js"></script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Register your UK masjid with MasjidPoint.">
+  <title>Register your masjid — MasjidPoint</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="site-nav.css?v=1"><link rel="stylesheet" href="form.css">
+</head>
+<body class="form-page">
+  <header data-site-nav></header><script src="site-nav.js?v=1"></script>
+  <main class="application-shell">
+    <aside class="application-aside">
+      <p class="eyebrow light"><span></span> Join MasjidPoint</p><h1>Strengthen your masjid’s local network.</h1>
+      <p>Connect local businesses with your community and create a transparent new source of support for your masjid.</p>
+      <ol class="progress-list" aria-label="Registration progress">
+        <li class="active" data-progress="1"><b>1</b><span><strong>Masjid details</strong><small>Name and UK address</small></span></li>
+        <li data-progress="2"><b>2</b><span><strong>Primary contact</strong><small>Authorised representative</small></span></li>
+        <li data-progress="3"><b>3</b><span><strong>Review</strong><small>Check and submit</small></span></li>
+      </ol>
+      <div class="aside-note"><span>◇</span><p><strong>Admin approval required</strong><small>We verify every masjid before activating its account.</small></p></div>
+    </aside>
+    <section class="application-main">
+      <div class="mobile-progress"><span id="mobile-step">Step 1 of 3</span><div><i id="progress-bar" style="width:33.33%"></i></div></div>
+      <form id="masjid-registration-form" novalidate>
+        <section class="form-step active" data-step="1">
+          <p class="step-kicker">Step 1 of 3</p><h2>Tell us about your masjid</h2><p class="step-intro">Enter the official details that should appear on the platform.</p>
+          <div class="fields-grid">
+            <label class="field full"><span>Masjid name <em>*</em></span><input name="masjidName" required autocomplete="organization" placeholder="e.g. Birmingham Central Masjid"></label>
+            <label class="field full"><span>Address line 1 <em>*</em></span><input name="address1" required autocomplete="address-line1" placeholder="Building number and street"></label>
+            <label class="field full"><span>Address line 2 <small>(optional)</small></span><input name="address2" autocomplete="address-line2" placeholder="Locality or district"></label>
+            <label class="field"><span>Town or city <em>*</em></span><input name="city" required autocomplete="address-level2" placeholder="e.g. Birmingham"></label>
+            <label class="field"><span>UK postcode <em>*</em></span><input name="postcode" required autocomplete="postal-code" placeholder="e.g. B12 0XS" pattern="[A-Za-z0-9 ]{5,8}" maxlength="8"><small class="field-hint">You can enter it with or without a space, for example B12 0XS or B120XS.</small></label>
+            <label class="field full"><span>Masjid phone number <em>*</em></span><input name="masjidPhone" required type="tel" autocomplete="tel" pattern="[0-9+() -]{10,}" placeholder="e.g. 0121 555 0101"></label>
+            <label class="field full"><span>Masjid photo <small>(optional)</small></span><input id="masjid-photo" name="photo" type="file" accept="image/png,image/jpeg,image/webp"><small class="field-hint">A photo of the building helps your community recognise you. PNG, JPG or WebP, up to 3 MB. You can add or change this later from your portal.</small><span class="photo-preview" id="photo-preview" hidden><img id="photo-preview-image" alt="Preview of the selected masjid photo"><span><strong id="photo-preview-name"></strong><button type="button" id="remove-photo">Remove photo</button></span></span></label>
+          </div>
+        </section>
+        <section class="form-step" data-step="2">
+          <p class="step-kicker">Step 2 of 3</p><h2>Who should manage the account?</h2><p class="step-intro">This person will receive the verification email and become the initial masjid account administrator.</p>
+          <div class="fields-grid">
+            <label class="field full"><span>Full name <em>*</em></span><input name="contactName" required autocomplete="name" placeholder="Full name of authorised representative"></label>
+            <label class="field"><span>Role at the masjid <em>*</em></span><select name="role" required><option value="">Choose a role</option><option>Imam</option><option>Trustee</option><option>Administrator</option><option>Committee member</option><option>Other authorised representative</option></select></label>
+            <label class="field"><span>Contact number <em>*</em></span><input name="contactPhone" required type="tel" autocomplete="tel" pattern="[0-9+() -]{10,}" placeholder="e.g. 07123 456789"></label>
+            <label class="field full"><span>Email address <em>*</em></span><input name="email" required type="email" autocomplete="email" placeholder="This will be used to activate the account"></label>
+          </div>
+          <div class="privacy-note"><span>▣</span><p><strong>Email verification</strong><small>After admin approval, we’ll send an activation link and OTP to this email address.</small></p></div>
+        </section>
+        <section class="form-step" data-step="3">
+          <p class="step-kicker">Step 3 of 3</p><h2>Review your registration</h2><p class="step-intro">Confirm these details are correct before submitting them for approval.</p>
+          <div class="review-card" id="review-content"></div>
+          <label class="consent"><input name="authority" type="checkbox" required><span>I confirm that I am authorised to register this masjid and that the information provided is accurate.</span></label>
+          <label class="consent"><input name="consent" type="checkbox" required><span>I agree to the <a href="#">terms</a> and acknowledge the <a href="#">privacy policy</a>.</span></label>
+        </section>
+        <section class="success-step" id="success-step" hidden>
+          <div class="success-icon">✓</div><p class="step-kicker">Registration received</p><h2>JazakAllahu Khairan</h2>
+          <p><strong id="success-name"></strong> has been submitted for administrator review. We’ll email the primary contact when the registration has been approved.</p>
+          <div class="reference-box"><span>Registration reference</span><strong id="reference-number"></strong><small>Keep this number for your records</small></div>
+          <div class="success-links"><a class="button" id="check-status-link" href="status">Check application status</a><a class="text-link" href="/">Return to the home page</a></div>
+        </section>
+        <div class="form-actions" id="form-actions"><button class="button button-back" id="previous-button" type="button" hidden>← Back</button><button class="button button-next" id="next-button" type="button">Continue →</button></div>
+      </form>
+    </section>
+  </main>
+  <script src="local-db.js"></script><script src="register-masjid.js"></script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+.mosque-shop-orders{margin-top:24px}.mosque-order{margin:18px;border:1px solid #c2cdc6}.mosque-order>header,.mosque-order>footer{padding:14px 17px;background:#f5f1e8;display:flex;justify-content:space-between;align-items:center}.mosque-order>header div,.mosque-order-customer{display:grid}.mosque-order>header span{text-transform:capitalize}.mosque-order-customer{padding:13px 17px;border-bottom:1px solid #ccd4cf}.mosque-order-item{display:grid;grid-template-columns:58px 1fr auto;gap:13px;align-items:center;padding:13px 17px}.mosque-order-item img{width:58px;height:58px;object-fit:cover}.mosque-order-item span{display:grid}.mosque-order-item small{color:#687a75}.mosque-order footer small{color:#687a75}
+.mosque-order.admin-fulfilled{border-left:3px solid #4b3d69}
+.mosque-order-method{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:11px 17px;border-bottom:1px solid #ccd4cf;background:#fffdf8}
+.mosque-order-method small{color:#687a75;font-size:11px}
+.mosque-order-method .mosque-order-address{flex-basis:100%}
+.mosque-order .shop-method-badge{padding:4px 10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;background:#e5efe9;color:#174d40}
+.mosque-order .shop-method-badge.delivery{background:#ede6f5;color:#4b3d69}
+.mosque-order .shop-method-badge.collect_pay_at_mosque{background:#f6eeda;color:#8a6d3b}
+.mosque-order .shop-invoice-link{margin-left:auto;color:#174d40;font-weight:700;font-size:11px;text-decoration:underline;white-space:nowrap}
+.mosque-order-fee{grid-template-columns:1fr auto}
+.mosque-order-fee span strong{color:#566a64}
+.cash-owed-banner{display:flex;gap:34px;flex-wrap:wrap;margin:18px 18px 0;padding:16px 20px;background:#f6eeda;border:1px solid #d2bd8d}
+.cash-owed-banner>div{display:grid;gap:2px}
+.cash-owed-banner small{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#8a6d3b}
+.cash-owed-banner strong{font:700 24px var(--font-display);color:#6d5522}
+.cash-owed-banner span{font-size:11px;color:#8a7a5c}
+.mosque-order .order-owed{display:block;margin-top:3px;font-size:11px;color:#8a6d3b}
+.cash-handover-body{padding:24px}
+.cash-handover-body p{margin:0 0 16px;line-height:1.55}
+.cash-breakdown{display:grid;gap:1px;background:#c8d2cb;border:1px solid #c8d2cb}
+.cash-breakdown>div{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:14px 18px;background:#fffdf8}
+.cash-breakdown small{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#687a75}
+.cash-breakdown strong{font:700 21px var(--font-display);color:#123f35}
+.cash-breakdown .cash-take{background:#e5efe9}
+.cash-breakdown .cash-owed{background:#f6eeda}
+.cash-breakdown .cash-owed small{color:#8a6d3b}
+.cash-breakdown .cash-owed strong{color:#6d5522}
+.cash-handover-body .cash-note{margin:16px 0 0;font-size:12px;color:#687a75}
+.cash-handover-actions{display:flex;justify-content:flex-end;gap:11px;padding:18px 24px;background:#f5f1e8;border-top:1px solid #c8d2cb}
+.cash-handover-actions button[data-cash-cancel]{border:1px solid #b4c2ba;background:#fff;padding:11px 18px}

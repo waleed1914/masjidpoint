@@ -1,0 +1,22 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+npm-debug.log*
+
+# Runtime state, not source: the JSON store, generated emails and uploaded evidence
+data/
+backups/
+
+# Throwaway browser profiles created by the e2e suites (these reach gigabytes)
+tests/.*/
+tests/*-edge-*/
+tests/qa-*/
+
+# OS and editor noise
+.DS_Store
+Thumbs.db
+*.swp

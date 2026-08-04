@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="MasjidPoint administration dashboard."><title>Admin dashboard — MasjidPoint</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="admin.css"><link rel="stylesheet" href="notifications.css">
+</head>
+<body class="admin-page">
+  <aside class="admin-sidebar">
+    <a class="brand brand-light" href="/"><span class="brand-mark"><span></span></span><span>Masjid<span>Point</span></span></a>
+    <nav aria-label="Administration">
+      <a class="active" href="#"><span>▦</span> Overview</a>
+      <a href="admin-applications"><span>◇</span> Applications <b id="nav-pending-count">0</b></a>
+      <a href="admin-masjids"><span>⌂</span> Masjids</a><a href="admin-businesses"><span>▤</span> Businesses</a><a href="admin-payments"><span>▣</span> Invoices</a><a href="admin-payments"><span>£</span> Payments</a><a href="#"><span>⚙</span> Settings</a>
+    </nav>
+    <div class="admin-profile"><span>SA</span><p><strong>Super Admin</strong><small>admin@masjidpoint.co.uk</small></p></div>
+  </aside>
+  <main class="admin-main">
+    <header class="admin-topbar"><button class="sidebar-toggle" type="button" aria-label="Toggle menu">☰</button><div><small>Sunday, 2 August 2026</small><h1>Assalamu Alaikum, Admin</h1></div><a class="view-site" href="/">View public website ↗</a></header>
+    <section class="dashboard-content">
+      <div class="overview-heading"><div><p class="eyebrow"><span></span> Platform overview</p><h2>Today at a glance</h2></div><button class="button button-outline" id="refresh-data" type="button">↻ Refresh data</button></div>
+      <div class="stat-grid">
+        <a class="stat-card" href="admin-masjids?status=approved" aria-label="View active masjids"><span class="stat-icon">⌂</span><p><small>Active masjids</small><strong id="active-masjids">18</strong><em>+2 this month</em></p><i>View →</i></a>
+        <a class="stat-card" href="admin-businesses?status=approved" aria-label="View active businesses"><span class="stat-icon">▤</span><p><small>Active businesses</small><strong id="active-businesses">120</strong><em>+14 this month</em></p><i>View →</i></a>
+        <a class="stat-card attention" href="admin-applications?status=pending" aria-label="Review pending applications"><span class="stat-icon">◇</span><p><small>Awaiting review</small><strong id="pending-total">0</strong><em>Needs attention</em></p><i>Review →</i></a>
+        <a class="stat-card" href="admin-payments#accounts" aria-label="View outstanding invoices"><span class="stat-icon">£</span><p><small>Outstanding</small><strong>£3,480</strong><em>Across 24 invoices</em></p><i>View →</i></a>
+      </div>
+
+      <section class="applications-panel" id="applications">
+        <header class="panel-header"><div><h2>Application review</h2><p>Review new masjid and business requests.</p></div><div class="panel-tools"><label class="admin-search"><span>⌕</span><input id="application-search" type="search" placeholder="Search name, email or reference"></label><select id="status-filter"><option value="all">All statuses</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option></select></div></header>
+        <div class="application-tabs" role="tablist"><button class="active" data-type="all">All <b id="all-count">0</b></button><button data-type="masjid">Masjids <b id="masjid-count">0</b></button><button data-type="business">Businesses <b id="business-count">0</b></button></div>
+        <div class="table-wrap"><table><thead><tr><th>Applicant</th><th>Type</th><th>Submitted</th><th>Reference</th><th>Status</th><th></th></tr></thead><tbody id="application-rows"></tbody></table></div>
+        <div class="admin-empty" id="admin-empty" hidden><span>⌕</span><strong>No matching applications</strong><p>Try changing the search or status filter.</p></div>
+      </section>
+    </section>
+  </main>
+
+  <div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
+  <aside class="review-drawer" id="review-drawer" aria-hidden="true">
+    <header><div><p class="step-kicker" id="drawer-type"></p><h2 id="drawer-title"></h2></div><button id="close-drawer" type="button" aria-label="Close">×</button></header>
+    <div class="drawer-body"><div class="drawer-status" id="drawer-status"></div><div id="drawer-details"></div><label class="decision-note"><span>Internal decision note <small>(optional)</small></span><textarea id="decision-note" placeholder="Add a note for the audit record"></textarea></label></div>
+    <footer id="drawer-actions"><button class="reject-button" id="reject-application" type="button">Reject</button><button class="button" id="approve-application" type="button">Approve application</button></footer>
+    <footer class="account-actions" id="account-actions" hidden><button class="block-button" id="block-account" type="button">Block account</button><button class="deactivate-button" id="deactivate-account" type="button">Deactivate</button><button class="button" id="reactivate-account" type="button" hidden>Reactivate account</button></footer>
+  </aside>
+  <div class="toast" id="toast" role="status" hidden></div>
+  <script src="local-db.js"></script><script src="admin.js"></script><script src="notifications.js"></script>
+</body>
+</html>
