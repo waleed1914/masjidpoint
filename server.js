@@ -3,13 +3,13 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 require('dotenv').config();
-const {StateRepository}=require('./db');
-const {EmailService}=require('./email-service');
-const {audit,locateInvoice,cancelInvoice,refund,csv,invoicePdf}=require('./finance-service');
-const fulfilment=require('./shop-fulfilment');
-const {shopInvoicePdf}=require('./shop-invoice');
-const invoiceRegister=require('./invoice-register');
-const settlementRegister=require('./settlement-register');
+const {StateRepository}=require('./lib/db');
+const {EmailService}=require('./lib/email-service');
+const {audit,locateInvoice,cancelInvoice,refund,csv,invoicePdf}=require('./lib/finance-service');
+const fulfilment=require('./lib/shop-fulfilment');
+const {shopInvoicePdf}=require('./lib/shop-invoice');
+const invoiceRegister=require('./lib/invoice-register');
+const settlementRegister=require('./lib/settlement-register');
 
 const root = __dirname;
 const dataDir = path.join(root, 'data');
@@ -366,12 +366,23 @@ const server=http.createServer(async (req,res)=>{
       shopShares.forEach(item=>finance.settlementHistory.push(entry({id:`${settlementId}-${item.id}`,orderId:item.id,amount:item.share}))); finance.settled[masjid]=(finance.settled[masjid]||0)+amount;audit(db,{action:'settlement.sent',entityType:'masjid',entityId:masjid,reason:String(note||'').trim(),before:{settled:Number(finance.settled[masjid])-amount},after:{settled:finance.settled[masjid]},metadata:{amount,transactionReference,settlementId}});const masjidApp=(db.masjidPointAdminApplications||[]).find(x=>x.type==='masjid'&&x.name===masjid);try{await emailService.settlement(masjidApp?.email,masjid,amount)}catch(error){console.error('Settlement email failed:',error.message)}
       if(savedEvidence)finance.settlementHistory.filter(item=>item.id.startsWith(settlementId)).forEach(item=>item.evidence=savedEvidence);notify(db,`masjid:${masjid}`,'Settlement sent',`Admin marked £${amount.toFixed(2)} as transferred to your mosque.`,'masjid-portal#settlements',`settled-${masjid}-${Date.now()}`); save(db); return json(res,200,{ok:true,amount,state:db});
     }
-    let file=path.join(root,decodeURIComponent(url.pathname==='/'?'/index':url.pathname));
-    if(!file.startsWith(root))return json(res,403,{error:'Forbidden'});
-    // Pages are linked without their extension ("/masjids"), so fall back to the .html file.
-    // The extension still resolves, which keeps older links and bookmarks working.
-    if((!fs.existsSync(file)||fs.statSync(file).isDirectory())&&!path.extname(file)&&fs.existsSync(`${file}.html`))file=`${file}.html`;
-    if(!fs.existsSync(file)||fs.statSync(file).isDirectory())return json(res,404,{error:'Not found'});
+    // The URL space stays flat — /styles.css, /masjid-shop.js, /assets/logo.svg — while the files
+    // themselves are filed by kind. Each request is resolved against these roots in order, so
+    // moving a file between them never changes the address anything links to.
+    const staticRoots=[path.join(root,'public'),path.join(root,'public','css'),path.join(root,'public','js'),path.join(root,'lib'),root];
+    const requested=decodeURIComponent(url.pathname==='/'?'/index':url.pathname);
+    const usable=candidate=>fs.existsSync(candidate)&&!fs.statSync(candidate).isDirectory();
+    let file=null;
+    for(const base of staticRoots){
+      const candidate=path.join(base,requested);
+      // Keep a traversing path ("/../server.js") inside the root it was resolved against.
+      if(!candidate.startsWith(base))return json(res,403,{error:'Forbidden'});
+      if(usable(candidate)){file=candidate;break}
+      // Pages are linked without their extension ("/masjids"), so fall back to the .html file.
+      // The extension still resolves, which keeps older links and bookmarks working.
+      if(!path.extname(candidate)&&usable(`${candidate}.html`)){file=`${candidate}.html`;break}
+    }
+    if(!file)return json(res,404,{error:'Not found'});
     const type={'.html':'text/html','.js':'application/javascript','.css':'text/css','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.svg':'image/svg+xml','.json':'application/json'}[path.extname(file).toLowerCase()]||'application/octet-stream'; res.writeHead(200,{'Content-Type':type,'Cache-Control':['.html','.js','.css'].includes(path.extname(file).toLowerCase())?'no-store':'public, max-age=3600'}); fs.createReadStream(file).pipe(res);
   } catch(e) { json(res,500,{error:e.message}); }
 });

@@ -7,8 +7,8 @@ async function ev(expression){const r=await cdp('Runtime.evaluate',{expression,a
 const go=async(u,ms=2800)=>{exceptions=[];await cdp('Page.navigate',{url:u});await sleep(ms)};
 
 // The register is shared with the server, so its rules can be checked directly.
-globalThis.ShopFulfilment=require('../shop-fulfilment');
-const Register=require('../invoice-register');
+globalThis.ShopFulfilment=require('../lib/shop-fulfilment');
+const Register=require('../lib/invoice-register');
 
 (async()=>{
  // A cancelled or refunded invoice must not be reported as due or paid.

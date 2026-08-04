@@ -88,11 +88,23 @@ formatSalary=function(job){if(!job.salaryFrom)return'Salary not specified';const
     apply.parentElement.insertBefore(note, apply);
   };
 
-  // A ?job= deep link opens the drawer before this block finishes loading the applications,
-  // so re-open it now that we know whether it was already applied for.
+  // A ?job= deep link opens the drawer before this block finishes loading the applications, so it
+  // has to be re-opened once we know whether it was already applied for. Which of the two wins the
+  // race varies, so rather than checking once, wait for the drawer and act when it appears.
   const wanted = new URLSearchParams(location.search).get('job');
-  if (wanted && applied.has(wanted) && document.querySelector('#public-job-drawer')?.classList.contains('open')) {
-    openJob(wanted);
+  if (wanted && applied.has(wanted)) {
+    const drawer = document.querySelector('#public-job-drawer');
+    const applyState = () => {
+      if (!drawer?.classList.contains('open')) return false;
+      openJob(wanted);
+      return true;
+    };
+    if (!applyState() && drawer) {
+      const observer = new MutationObserver(() => { if (applyState()) observer.disconnect(); });
+      observer.observe(drawer, { attributes: true, attributeFilter: ['class'] });
+      // The drawer may already have been opening when this ran, so stop waiting eventually.
+      setTimeout(() => observer.disconnect(), 8000);
+    }
   }
 })();
 

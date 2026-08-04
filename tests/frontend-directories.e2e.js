@@ -8,8 +8,8 @@ const cdp=(method,params={})=>new Promise(res=>{pending.set(++id,res);ws.send(JS
 async function ev(expression){const r=await cdp('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true});if(r.exceptionDetails)throw Error(r.exceptionDetails.exception?.description||'Browser error');return r.result.value}
 const go=async(u,ms=3200)=>{exceptions=[];await cdp('Page.navigate',{url:u});await sleep(ms)};
 const state=()=>fetch(`${base}/api/state`).then(r=>r.json());
-globalThis.ShopFulfilment=require('../shop-fulfilment');
-const D=require('../directory-data.js');
+globalThis.ShopFulfilment=require('../lib/shop-fulfilment');
+const D=require('../lib/directory-data.js');
 
 (async()=>{
  const db=await state();

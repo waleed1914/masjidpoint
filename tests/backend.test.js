@@ -5,10 +5,10 @@
 const assert = require('assert');
 const accounts = require('./seed-accounts.js');
 
-globalThis.ShopFulfilment = require('../shop-fulfilment');
-const fulfilment = require('../shop-fulfilment');
-const invoices = require('../invoice-register');
-const settlements = require('../settlement-register');
+globalThis.ShopFulfilment = require('../lib/shop-fulfilment');
+const fulfilment = require('../lib/shop-fulfilment');
+const invoices = require('../lib/invoice-register');
+const settlements = require('../lib/settlement-register');
 
 const BASE = accounts.BASE;
 const state = () => fetch(`${BASE}/api/state`).then(r => r.json());

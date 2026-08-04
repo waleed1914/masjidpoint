@@ -7,8 +7,8 @@ async function ev(expression){const r=await cdp('Runtime.evaluate',{expression,a
 const go=async(u,ms=3400)=>{exceptions=[];await cdp('Page.navigate',{url:u});await sleep(ms)};
 const state=()=>fetch(`${base}/api/state`).then(r=>r.json());
 
-globalThis.ShopFulfilment=require('../shop-fulfilment');
-const Register=require('../settlement-register');
+globalThis.ShopFulfilment=require('../lib/shop-fulfilment');
+const Register=require('../lib/settlement-register');
 
 (async()=>{
  let db=await state();

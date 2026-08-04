@@ -80,6 +80,9 @@
     hint.textContent = 'Resizing and saving…';
     try {
       const photo = await ImageDownscale.fromFile(file);
+      // An unreadable or empty file produces nothing. Saving that would replace a good photo with
+      // a blank one and still report success.
+      if (!photo || !photo.startsWith('data:image/')) throw Error('That image could not be read.');
       await persist(record => { record.photo = photo; });
       masjid.photo = photo;
       showPhoto(photo);
