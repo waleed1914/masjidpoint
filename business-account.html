@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="Manage your MasjidPoint business account and sign-in details.">
+  <title>Account settings — MasjidPoint</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="business-portal.css"><link rel="stylesheet" href="notifications.css"><link rel="stylesheet" href="account-settings.css?v=1">
+</head>
+<body class="business-page"><script src="business-auth.js"></script>
+  <aside class="business-sidebar">
+    <a class="brand brand-light" href="/"><span class="brand-mark"><span></span></span><span>Masjid<span>Point</span></span></a>
+    <div class="business-identity"><span>··</span><p><strong>Business</strong><small>Ref: —</small></p></div>
+    <nav>
+      <a href="business-portal"><span>▦</span> Dashboard</a>
+      <a href="business-portal#advertising"><span>◇</span> My advertising</a>
+      <a href="business-portal#profile"><span>▤</span> Business profile</a>
+      <a href="business-jobs"><span>▣</span> Job listings</a>
+      <a href="business-portal#invoices"><span>£</span> Invoices</a>
+      <a class="active" href="business-account"><span>⚙</span> Account settings</a>
+    </nav>
+    <a class="business-signout" href="/">← Sign out</a>
+  </aside>
+  <main class="business-main">
+    <header class="business-topbar"><button class="business-menu" type="button">☰</button><div><small>Business portal</small><h1>Account settings</h1></div><a class="public-profile-link" id="public-listing" href="businesses">View your listing ↗</a></header>
+    <section class="business-content">
+      <section class="business-welcome"><div><p class="eyebrow"><span></span> Your account</p><h2>Sign-in and contact details</h2><p>Your business details and advertising are managed from the dashboard. This page covers the account itself.</p></div></section>
+
+      <section class="account-panel">
+        <header><div><h2>Account</h2><p>What identifies this business on MasjidPoint.</p></div></header>
+        <div class="account-body"><dl class="account-readonly" id="account-summary"></dl></div>
+      </section>
+
+      <section class="account-panel">
+        <header><div><h2>Who we contact</h2><p>Used for approvals, payment reminders and job applications.</p></div></header>
+        <form class="account-body" id="contact-form" novalidate>
+          <div class="account-fields">
+            <label><span>Contact name</span><input name="contactName" autocomplete="name" placeholder="Full name"></label>
+            <label><span>Contact number</span><input name="contactNumber" type="tel" autocomplete="tel" placeholder="e.g. 07123 456789"></label>
+            <label class="wide"><span>Contact email</span><input name="contactEmail" type="email" autocomplete="email" placeholder="name@business.co.uk"></label>
+          </div>
+          <p class="account-error" id="contact-error" hidden></p>
+          <footer><button class="button" type="submit">Save contact details</button><span class="account-saved" id="contact-saved" hidden>Saved ✓</span></footer>
+        </form>
+      </section>
+
+      <section class="account-panel">
+        <header><div><h2>Password</h2><p>Changing this signs you in with the new password from now on.</p></div></header>
+        <form class="account-body" id="password-form" novalidate>
+          <div class="account-fields">
+            <label class="wide"><span>Current password <em>*</em></span><input name="current" type="password" autocomplete="current-password" required></label>
+            <label><span>New password <em>*</em></span><input name="next" type="password" autocomplete="new-password" minlength="8" required></label>
+            <label><span>Confirm new password <em>*</em></span><input name="confirm" type="password" autocomplete="new-password" minlength="8" required></label>
+          </div>
+          <p class="account-hint">At least 8 characters. Use something you do not use elsewhere.</p>
+          <p class="account-error" id="password-error" hidden></p>
+          <footer><button class="button" type="submit">Change password</button><span class="account-saved" id="password-saved" hidden>Password changed ✓</span></footer>
+        </form>
+      </section>
+    </section>
+  </main>
+  <div class="toast" id="account-toast" hidden></div>
+  <script src="local-db.js?v=13"></script><script src="business-account.js?v=1"></script><script src="notifications.js"></script>
+</body>
+</html>

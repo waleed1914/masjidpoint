@@ -1,0 +1,136 @@
+// Business account settings. Until now the sidebar's "Account settings" went nowhere, and there
+// was no way for a business to change its password after activation — the only route was the
+// forgotten-password email.
+(async function () {
+  const session = JSON.parse(sessionStorage.getItem('masjidPointSession') || 'null');
+  if (session?.role !== 'business' || !session.reference) return;
+
+  const state = await MasjidDB.state();
+  const application = (state.masjidPointAdminApplications || []).find(a => a.reference === session.reference);
+  if (!application) return;
+
+  const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const hash = async value => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value))))
+    .map(b => b.toString(16).padStart(2, '0')).join('');
+
+  const details = application.details || {};
+  const name = application.name;
+  const initials = name.split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
+  document.querySelector('.business-identity>span').textContent = initials;
+  document.querySelector('.business-identity strong').textContent = name;
+  document.querySelector('.business-identity small').textContent = `Ref: ${application.businessCode || application.reference}`;
+  document.querySelector('.business-menu').onclick = () => document.querySelector('.business-sidebar').classList.toggle('open');
+
+  const toast = message => {
+    const element = document.querySelector('#account-toast');
+    element.textContent = message;
+    element.hidden = false;
+    setTimeout(() => element.hidden = true, 2600);
+  };
+
+  // Always re-read before writing: these collections are shared with the administrator.
+  async function persistApplication(mutate) {
+    const latest = await MasjidDB.state();
+    const list = latest.masjidPointAdminApplications || [];
+    const record = list.find(a => a.reference === application.reference);
+    if (!record) throw Error('This account no longer exists.');
+    mutate(record);
+    await MasjidDB.save('masjidPointAdminApplications', list);
+  }
+
+  const listing = (state.masjidPointBusinessRequests || []).find(r => r.reference === application.reference);
+  document.querySelector('#account-summary').innerHTML = [
+    ['Business name', name],
+    ['Payment reference', application.businessCode || '—'],
+    ['Application reference', application.reference],
+    ['Sign-in email', application.email],
+    ['Advertising through', listing?.masjid || 'Not advertising yet'],
+    ['Listing status', listing ? `${listing.status} · ${listing.paymentStatus} · ${listing.listing}` : '—'],
+    ['Account status', application.accountStatus === 'active' ? 'Active' : (application.accountStatus || 'Pending')]
+  ].map(([label, value]) => `<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`).join('');
+
+  const publicLink = document.querySelector('#public-listing');
+  if (publicLink && listing?.masjid) publicLink.href = `businesses?masjid=${encodeURIComponent(listing.masjid)}`;
+
+  // ---- contact details ----
+  const contactForm = document.querySelector('#contact-form');
+  const CONTACT = { contactName: 'Contact name', contactNumber: 'Contact number', contactEmail: 'Contact email' };
+  contactForm.elements.contactName.value = details['Contact name'] || details.Contact || '';
+  contactForm.elements.contactNumber.value = details['Contact number'] || '';
+  contactForm.elements.contactEmail.value = details['Contact email'] || application.email || '';
+
+  contactForm.addEventListener('submit', async event => {
+    event.preventDefault();
+    const error = document.querySelector('#contact-error');
+    const saved = document.querySelector('#contact-saved');
+    error.hidden = true; saved.hidden = true;
+
+    const phone = contactForm.elements.contactNumber.value.trim();
+    if (phone && phone.replace(/\D/g, '').length < 10) {
+      error.textContent = 'Enter a full contact number — at least 10 digits.';
+      error.hidden = false;
+      contactForm.elements.contactNumber.focus();
+      return;
+    }
+    const email = contactForm.elements.contactEmail.value.trim();
+    if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      error.textContent = 'Enter a valid contact email address.';
+      error.hidden = false;
+      contactForm.elements.contactEmail.focus();
+      return;
+    }
+
+    try {
+      await persistApplication(record => {
+        record.details = record.details || {};
+        for (const [field, key] of Object.entries(CONTACT)) {
+          const value = contactForm.elements[field].value.trim();
+          if (value) record.details[key] = value; else delete record.details[key];
+        }
+      });
+      saved.hidden = false;
+      setTimeout(() => saved.hidden = true, 2600);
+      toast('Contact details saved.');
+    } catch (failure) {
+      error.textContent = failure.message;
+      error.hidden = false;
+    }
+  });
+
+  // ---- password ----
+  const passwordForm = document.querySelector('#password-form');
+  passwordForm.addEventListener('submit', async event => {
+    event.preventDefault();
+    const error = document.querySelector('#password-error');
+    const saved = document.querySelector('#password-saved');
+    error.hidden = true; saved.hidden = true;
+
+    const current = passwordForm.elements.current.value;
+    const next = passwordForm.elements.next.value;
+    const confirm = passwordForm.elements.confirm.value;
+
+    const fail = message => { error.textContent = message; error.hidden = false; };
+    if (!current || !next) return fail('Fill in your current and new password.');
+    if (next.length < 8) return fail('Your new password needs at least 8 characters.');
+    if (next !== confirm) return fail('The new passwords do not match.');
+    if (next === current) return fail('Your new password is the same as your current one.');
+
+    const fresh = await MasjidDB.state();
+    const accounts = fresh.masjidPointActivatedAccounts || [];
+    const account = accounts.find(a => a.reference === application.reference);
+    if (!account) return fail('This account has not completed activation yet, so there is no password to change.');
+    if (account.passwordHash !== await hash(current)) return fail('That is not your current password.');
+
+    account.passwordHash = await hash(next);
+    account.passwordChangedAt = new Date().toISOString();
+    try {
+      await MasjidDB.save('masjidPointActivatedAccounts', accounts);
+      passwordForm.reset();
+      saved.hidden = false;
+      setTimeout(() => saved.hidden = true, 3200);
+      toast('Password changed.');
+    } catch {
+      fail('Your password could not be saved. Try again.');
+    }
+  });
+})();
