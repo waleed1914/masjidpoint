@@ -63,7 +63,23 @@
 
   function openDrawer(reference) {
     activeApplication = applications.find(application => application.reference === reference || application.id === reference);
-    if (!activeApplication) return;
+    // Opening a drawer for something that is not here left an empty panel on screen with no
+    // explanation — which is what an administrator sees when they follow a link to an application
+    // that has since been removed, or one that had not finished saving when this page loaded.
+    if (!activeApplication) {
+      document.querySelector('#drawer-type').textContent = 'Application';
+      document.querySelector('#drawer-title').textContent = 'Application not found';
+      document.querySelector('#drawer-status').innerHTML = `<small>No application matches <strong>${escapeHtml(reference)}</strong>. It may have been removed, or it may not have finished saving — refresh to check.</small>`;
+      document.querySelector('#drawer-details').innerHTML = '';
+      document.querySelector('#drawer-actions').hidden = true;
+      const accountActions = document.querySelector('#account-actions');
+      if (accountActions) accountActions.hidden = true;
+      document.querySelector('#drawer-backdrop').hidden = false;
+      const drawer = document.querySelector('#review-drawer');
+      drawer.classList.add('open');
+      drawer.setAttribute('aria-hidden', 'false');
+      return;
+    }
     const status = effectiveStatus(activeApplication);
     document.querySelector('#drawer-type').textContent = `${activeApplication.type} application`;
     document.querySelector('#drawer-title').textContent = activeApplication.name;
@@ -139,5 +155,22 @@
   }
   render();
   const requestedApplication = new URLSearchParams(location.search).get('application');
-  if (requestedApplication) openDrawer(requestedApplication);
+  if (requestedApplication) {
+    // The snapshot above was taken when this page loaded. An application submitted moments ago may
+    // still have been in flight then, so a reference we cannot place is worth one re-read before
+    // being reported as missing.
+    const known = applications.some(a => a.reference === requestedApplication || a.id === requestedApplication);
+    if (!known) {
+      try {
+        const fresh = await MasjidDB.state();
+        const latest = fresh.masjidPointAdminApplications || [];
+        if (latest.some(a => a.reference === requestedApplication || a.id === requestedApplication)) {
+          applications.length = 0;
+          applications.push(...latest);
+          render();
+        }
+      } catch { /* fall through to the not-found drawer */ }
+    }
+    openDrawer(requestedApplication);
+  }
 })();
