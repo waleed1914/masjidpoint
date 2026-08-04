@@ -1,4 +1,4 @@
-﻿// A way back, on the pages a visitor lands on from somewhere else. The destination is fixed per
+// A way back, on the pages a visitor lands on from somewhere else. The destination is fixed per
 // page rather than using history, so the link reads the same whether they arrived by link,
 // search result or shared URL.
 (function backLink() {

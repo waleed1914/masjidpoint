@@ -79,8 +79,10 @@ if (-not $publicUrl) {
   exit 1
 }
 
-@{ url = $publicUrl; user = $User; password = $Password; serverPid = $server.Id; tunnelPid = $tunnel.Id } |
-  ConvertTo-Json | Set-Content -Path (Join-Path $env:TEMP 'masjidpoint-preview.json') -Encoding utf8
+# Written without a byte-order mark: PowerShell's utf8 encoding adds one, and JSON.parse in Node
+# rejects it, so anything reading this back would fail on a stray character it cannot see.
+$state = @{ url = $publicUrl; user = $User; password = $Password; serverPid = $server.Id; tunnelPid = $tunnel.Id } | ConvertTo-Json
+[IO.File]::WriteAllText((Join-Path $env:TEMP 'masjidpoint-preview.json'), $state, (New-Object Text.UTF8Encoding $false))
 
 Write-Host ""
 Write-Host "  The site is online." -ForegroundColor Green

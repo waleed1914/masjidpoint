@@ -1,4 +1,4 @@
-﻿.back-link{display:inline-flex;align-items:center;gap:8px;margin-bottom:18px;padding:8px 14px 8px 11px;border-radius:999px;border:1px solid rgba(18,63,53,.18);background:#fffdf8;color:var(--green);font-size:10px;font-weight:700;letter-spacing:.2px;text-decoration:none;transition:background .18s,border-color .18s,transform .18s,box-shadow .18s}
+.back-link{display:inline-flex;align-items:center;gap:8px;margin-bottom:18px;padding:8px 14px 8px 11px;border-radius:999px;border:1px solid rgba(18,63,53,.18);background:#fffdf8;color:var(--green);font-size:10px;font-weight:700;letter-spacing:.2px;text-decoration:none;transition:background .18s,border-color .18s,transform .18s,box-shadow .18s}
 .back-link b{display:inline-flex;font-size:12px;line-height:1;transition:transform .18s}
 .back-link:hover{border-color:var(--green);box-shadow:0 6px 16px rgba(18,63,53,.12);transform:translateY(-1px)}
 .back-link:hover b{transform:translateX(-3px)}
