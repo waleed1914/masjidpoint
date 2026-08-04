@@ -175,6 +175,24 @@ const server=http.createServer(async (req,res)=>{
   // segment as the host and the path collapses to "/", quietly serving the home page for any
   // address with a doubled slash. Collapse repeated slashes before parsing.
   const url=new URL(String(req.url||'/').replace(/\/{2,}/g,'/'),`http://${req.headers.host}`);
+  // A shared password in front of the whole site, for when it is reachable from outside this
+  // machine — a preview link for a client, say. Off unless PREVIEW_PASSWORD is set, so local
+  // development and the test suites are unaffected.
+  //
+  // This matters because the platform is built to run on a trusted machine: GET /api/state
+  // returns everything including password hashes, and PUT /api/collection/:key replaces a whole
+  // collection without authenticating. Neither is safe to expose, so nothing is served at all
+  // until the visitor has the password.
+  if(process.env.PREVIEW_PASSWORD){
+    const expected='Basic '+Buffer.from(`${process.env.PREVIEW_USER||'preview'}:${process.env.PREVIEW_PASSWORD}`).toString('base64');
+    const offered=String(req.headers.authorization||'');
+    const a=Buffer.from(offered),b=Buffer.from(expected);
+    const ok=a.length===b.length&&crypto.timingSafeEqual(a,b);
+    if(!ok){
+      res.writeHead(401,{'WWW-Authenticate':'Basic realm="MasjidPoint preview", charset="UTF-8"','Content-Type':'text/plain','Cache-Control':'no-store'});
+      return res.end('This preview is password protected.');
+    }
+  }
   try {
     if(url.pathname==='/api/admin/login'&&req.method==='POST'){const {email,passwordHash}=await body(req),db=await load(),user=(db.masjidPointAdminUsers||seed.masjidPointAdminUsers).find(x=>String(x.email).toLowerCase()===String(email||'').trim().toLowerCase()&&x.passwordHash===passwordHash&&x.status==='active');if(!user)return json(res,401,{error:'The email address or password is incorrect.'});return json(res,200,{user:{id:user.id,name:user.name,email:user.email,role:user.role}})}
     // An administrator changing their own password. Creating and suspending administrators is

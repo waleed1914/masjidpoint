@@ -23,6 +23,26 @@ npm test            # backend checks, then browser journeys (needs a server on 4
 npm run backup      # snapshot the current data
 ```
 
+## Showing it to someone remotely
+
+To put the site online from this machine — for a client to look at, not as hosting:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\preview.ps1   # prints an address and password
+powershell -ExecutionPolicy Bypass -File scripts\preview-stop.ps1
+```
+
+It starts the server with `PREVIEW_PASSWORD` set and opens a Cloudflare tunnel. That password is
+not decoration: `GET /api/state` returns every record including password hashes, and
+`PUT /api/collection/:key` rewrites a whole collection without authenticating. Both are reasonable
+on a machine only you can reach and neither is safe on the open internet, so the server refuses
+every request — pages, assets and API alike — until the visitor has the password. Nothing else in
+the app changes, and with `PREVIEW_PASSWORD` unset the gate does not exist, so local work and the
+test suites are unaffected.
+
+The PC must stay on and awake, the address changes each time, and the test suites will fail
+against a gated server. This is for a look, not for real traffic — see `PRODUCTION.md` for that.
+
 ## Layout
 
 ```
