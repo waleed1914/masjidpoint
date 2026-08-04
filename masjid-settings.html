@@ -50,6 +50,20 @@
       </section>
 
       <section class="request-panel settings-panel">
+        <header><div><h2>Password</h2><p>The password you sign in to this portal with.</p></div></header>
+        <form class="settings-body" id="password-form" novalidate>
+          <div class="settings-fields">
+            <label class="wide"><span>Current password <em>*</em></span><input name="current" type="password" autocomplete="current-password" required></label>
+            <label><span>New password <em>*</em></span><input name="next" type="password" autocomplete="new-password" minlength="8" required></label>
+            <label><span>Confirm new password <em>*</em></span><input name="confirm" type="password" autocomplete="new-password" minlength="8" required></label>
+          </div>
+          <p class="settings-hint">At least 8 characters. Use something you do not use elsewhere.</p>
+          <p class="settings-error" id="password-error" hidden></p>
+          <footer><button class="button" type="submit">Change password</button><span class="settings-saved" id="password-saved" hidden>Password changed ✓</span></footer>
+        </form>
+      </section>
+
+      <section class="request-panel settings-panel">
         <header><div><h2>Registered details</h2><p>These are fixed to what was approved. Contact MasjidPoint to change them.</p></div></header>
         <div class="settings-body"><dl class="settings-readonly" id="registered-details"></dl></div>
       </section>

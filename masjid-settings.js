@@ -155,6 +155,46 @@
     }
   });
 
+  // ---- password ----
+  // A masjid could set a password at activation and never change it again, short of the
+  // forgotten-password email. Verified against the stored hash before anything is written.
+  const hash = async value => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value))))
+    .map(b => b.toString(16).padStart(2, '0')).join('');
+  const passwordForm = document.querySelector('#password-form');
+  if (passwordForm) passwordForm.addEventListener('submit', async event => {
+    event.preventDefault();
+    const problem = document.querySelector('#password-error');
+    const done = document.querySelector('#password-saved');
+    problem.hidden = true; done.hidden = true;
+    const fail = message => { problem.textContent = message; problem.hidden = false; };
+
+    const current = passwordForm.elements.current.value;
+    const next = passwordForm.elements.next.value;
+    const confirm = passwordForm.elements.confirm.value;
+    if (!current || !next) return fail('Fill in your current and new password.');
+    if (next.length < 8) return fail('Your new password needs at least 8 characters.');
+    if (next !== confirm) return fail('The new passwords do not match.');
+    if (next === current) return fail('Your new password is the same as your current one.');
+
+    const fresh = await MasjidDB.state();
+    const accounts = fresh.masjidPointActivatedAccounts || [];
+    const account = accounts.find(a => a.reference === masjid.reference);
+    if (!account) return fail('This masjid has not completed activation yet, so there is no password to change.');
+    if (account.passwordHash !== await hash(current)) return fail('That is not your current password.');
+
+    account.passwordHash = await hash(next);
+    account.passwordChangedAt = new Date().toISOString();
+    try {
+      await MasjidDB.save('masjidPointActivatedAccounts', accounts);
+      passwordForm.reset();
+      done.hidden = false;
+      setTimeout(() => done.hidden = true, 3200);
+      toast('Password changed.');
+    } catch {
+      fail('Your password could not be saved. Try again.');
+    }
+  });
+
   // ---- registered details (read-only) ----
   document.querySelector('#registered-details').innerHTML = [
     ['Masjid name', masjid.name],

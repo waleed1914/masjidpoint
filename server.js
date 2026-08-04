@@ -177,6 +177,26 @@ const server=http.createServer(async (req,res)=>{
   const url=new URL(String(req.url||'/').replace(/\/{2,}/g,'/'),`http://${req.headers.host}`);
   try {
     if(url.pathname==='/api/admin/login'&&req.method==='POST'){const {email,passwordHash}=await body(req),db=await load(),user=(db.masjidPointAdminUsers||seed.masjidPointAdminUsers).find(x=>String(x.email).toLowerCase()===String(email||'').trim().toLowerCase()&&x.passwordHash===passwordHash&&x.status==='active');if(!user)return json(res,401,{error:'The email address or password is incorrect.'});return json(res,200,{user:{id:user.id,name:user.name,email:user.email,role:user.role}})}
+    // An administrator changing their own password. Creating and suspending administrators is
+    // restricted to the Platform Owner, but until now nobody — including the owner — could rotate
+    // their own credentials once set, so a shared or exposed password could not be replaced.
+    // Authority comes from proving the current password, not from a header a client can assert.
+    if(url.pathname==='/api/admin/password'&&req.method==='POST'){
+      const {email,currentHash,nextHash}=await body(req),db=await load();
+      if(!/^[a-f0-9]{64}$/.test(String(nextHash||''))) return json(res,400,{error:'A new password is required.'});
+      if(currentHash===nextHash) return json(res,400,{error:'The new password is the same as the current one.'});
+      const users=db.masjidPointAdminUsers||[];
+      const user=users.find(x=>String(x.email).toLowerCase()===String(email||'').trim().toLowerCase()&&x.status==='active');
+      if(!user||user.passwordHash!==currentHash) return json(res,401,{error:'That is not your current password.'});
+      user.passwordHash=nextHash;
+      user.passwordChangedAt=new Date().toISOString();
+      db.masjidPointFinance=db.masjidPointFinance||{accounts:[],unmatched:[],settled:{},settlementHistory:[],audit:[],cashRemittances:[]};
+      db.masjidPointFinance.audit=db.masjidPointFinance.audit||[];
+      db.masjidPointFinance.audit.unshift({id:`AUD-${Date.now()}-pw`,action:'admin.password.changed',entityType:'admin',entityId:user.id,
+        actor:user.name,reason:'',before:{},after:{},metadata:{email:user.email},createdAt:user.passwordChangedAt});
+      await save(db);
+      return json(res,200,{ok:true});
+    }
     if(url.pathname==='/api/admin/users'&&req.method==='GET'){if(req.headers['x-admin-role']!=='super_admin')return json(res,403,{error:'Only the Platform Owner can manage administrators.'});const db=await load();return json(res,200,{users:(db.masjidPointAdminUsers||seed.masjidPointAdminUsers).map(({passwordHash,...user})=>user)})}
     if(url.pathname==='/api/admin/users'&&req.method==='POST'){if(req.headers['x-admin-role']!=='super_admin')return json(res,403,{error:'Only the Platform Owner can create administrators.'});const input=await body(req),db=await load(),email=String(input.email||'').trim().toLowerCase(),roles=['admin','finance_admin','reviewer'];if(!input.name||!email||!roles.includes(input.role)||!/^[a-f0-9]{64}$/.test(input.passwordHash||''))return json(res,400,{error:'Name, email, role and temporary password are required.'});db.masjidPointAdminUsers||=JSON.parse(JSON.stringify(seed.masjidPointAdminUsers));if(db.masjidPointAdminUsers.some(x=>x.email===email))return json(res,409,{error:'An administrator already uses this email.'});const user={id:`ADM-${String(db.masjidPointAdminUsers.length+1).padStart(4,'0')}`,name:String(input.name).trim(),email,role:input.role,status:'active',passwordHash:input.passwordHash,createdAt:new Date().toISOString(),createdBy:String(req.headers['x-admin-name']||'Platform Owner')};db.masjidPointAdminUsers.push(user);audit(db,{action:'admin.created',entityType:'administrator',entityId:user.id,actor:user.createdBy,after:{name:user.name,email:user.email,role:user.role}});await save(db);const{passwordHash,...safe}=user;return json(res,201,{user:safe})}
     if(url.pathname==='/api/admin/users/status'&&req.method==='POST'){if(req.headers['x-admin-role']!=='super_admin')return json(res,403,{error:'Only the Platform Owner can manage administrators.'});const input=await body(req),db=await load(),user=(db.masjidPointAdminUsers||[]).find(x=>x.id===input.id);if(!user)return json(res,404,{error:'Administrator not found.'});if(user.role==='super_admin')return json(res,400,{error:'The Platform Owner account cannot be deactivated.'});const before=user.status;user.status=input.status==='active'?'active':'deactivated';audit(db,{action:`admin.${user.status}`,entityType:'administrator',entityId:user.id,actor:String(req.headers['x-admin-name']||'Platform Owner'),before:{status:before},after:{status:user.status},metadata:{name:user.name,email:user.email}});await save(db);return json(res,200,{ok:true,status:user.status})}
