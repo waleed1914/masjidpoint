@@ -12,8 +12,11 @@
 #
 # Nothing here configures PostgreSQL or SMTP, so the app runs in its development JSON mode. That is
 # deliberate: PRODUCTION.md refuses to start NODE_ENV=production without both, and this script is
-# for getting the platform visible at a fixed address, not for taking real money. The whole site
-# stays behind a shared password until that work is done.
+# for getting the platform visible at a fixed address, not for taking real money.
+#
+# The site is open — visitors land straight on it. PUT /api/collection/:key still writes without
+# authenticating, so anyone who finds the address can rewrite the data. Fine for showing the
+# platform to someone; not fine once it holds anything real. See DEPLOY.md.
 
 set -euo pipefail
 
@@ -94,8 +97,9 @@ if [[ ! -f $ENV_FILE ]]; then
   PASSWORD=$(head -c 32 /dev/urandom | base64 | tr -dc 'a-z0-9' | head -c 12)
   cat > "$ENV_FILE" <<EOF
 PORT=$APP_PORT
-PREVIEW_USER=client
-PREVIEW_PASSWORD=$PASSWORD
+# Uncomment both to put a shared password in front of the whole site while you work on it.
+# PREVIEW_USER=client
+# PREVIEW_PASSWORD=$PASSWORD
 EOF
   chown root:"$APP_USER" "$ENV_FILE"; chmod 640 "$ENV_FILE"
 fi
@@ -177,8 +181,6 @@ if systemctl is-active --quiet masjidpoint; then
   echo " MasjidPoint is running."
   echo
   echo "   http://$IP"
-  echo "   username: $(grep PREVIEW_USER $ENV_FILE | cut -d= -f2)"
-  echo "   password: $(grep PREVIEW_PASSWORD $ENV_FILE | cut -d= -f2)"
   echo
   echo " It restarts by itself on reboot and if it crashes."
   echo " Logs:    sudo journalctl -u masjidpoint -f"

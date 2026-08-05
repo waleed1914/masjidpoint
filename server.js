@@ -57,6 +57,25 @@ const WRITABLE_COLLECTIONS=new Set([...Object.keys(seed),'masjidPointEmailTokens
 const repository=new StateRepository({seed,root});
 const emailService=new EmailService(root);
 function load(){return repository.load()}
+
+// Everything the frontend reads comes from GET /api/state, which for a long time meant the whole
+// database — including every password hash. That was survivable while the platform only ran on a
+// trusted machine, and is not once it is on the open internet: a hash is not a password, but it is
+// enough to sign in with, because the browser is what does the hashing.
+//
+// So the hashes are removed on the way out. Nothing in the frontend needs them any more: signing
+// in and changing a password both go through endpoints above, which compare server-side.
+function publicState(db){
+  const withoutHash = rows => (rows||[]).map(({passwordHash,...rest})=>rest);
+  return {
+    ...db,
+    masjidPointActivatedAccounts: withoutHash(db.masjidPointActivatedAccounts),
+    masjidPointAdminUsers: withoutHash(db.masjidPointAdminUsers),
+    masjidPointCustomers: withoutHash(db.masjidPointCustomers),
+    // Single-use activation and reset tokens are as good as a password until they are spent.
+    masjidPointEmailTokens: []
+  };
+}
 function save(db){return repository.save(db)}
 const tokenHash=token=>crypto.createHash('sha256').update(token).digest('hex');
 async function emailTransitions(before,after,actor='Super Admin'){
@@ -192,14 +211,13 @@ const server=http.createServer(async (req,res)=>{
   // segment as the host and the path collapses to "/", quietly serving the home page for any
   // address with a doubled slash. Collapse repeated slashes before parsing.
   const url=new URL(String(req.url||'/').replace(/\/{2,}/g,'/'),`http://${req.headers.host}`);
-  // A shared password in front of the whole site, for when it is reachable from outside this
-  // machine — a preview link for a client, say. Off unless PREVIEW_PASSWORD is set, so local
-  // development and the test suites are unaffected.
+  // An optional shared password in front of the whole site. It is off by default now: visitors
+  // land on the site, as they should. Set PREVIEW_PASSWORD only to hide a deployment while it is
+  // being worked on.
   //
-  // This matters because the platform is built to run on a trusted machine: GET /api/state
-  // returns everything including password hashes, and PUT /api/collection/:key replaces a whole
-  // collection without authenticating. Neither is safe to expose, so nothing is served at all
-  // until the visitor has the password.
+  // What it used to be covering: GET /api/state published every password hash, which is now
+  // stripped, and PUT /api/collection/:key still replaces a whole collection without
+  // authenticating. That second one is open — see DEPLOY.md.
   if(process.env.PREVIEW_PASSWORD){
     const expected='Basic '+Buffer.from(`${process.env.PREVIEW_USER||'preview'}:${process.env.PREVIEW_PASSWORD}`).toString('base64');
     const offered=String(req.headers.authorization||'');
@@ -213,6 +231,37 @@ const server=http.createServer(async (req,res)=>{
   try {
     if(url.pathname==='/api/admin/login'&&req.method==='POST'){const {email,passwordHash}=await body(req),db=await load(),user=(db.masjidPointAdminUsers||seed.masjidPointAdminUsers).find(x=>String(x.email).toLowerCase()===String(email||'').trim().toLowerCase()&&x.passwordHash===passwordHash&&x.status==='active');if(!user)return json(res,401,{error:'The email address or password is incorrect.'});return json(res,200,{user:{id:user.id,name:user.name,email:user.email,role:user.role}})}
     // An administrator changing their own password. Creating and suspending administrators is
+    // Masjid and business sign-in. This used to happen entirely in the browser: the page fetched
+    // every account from /api/state and compared password hashes locally, which meant every hash
+    // on the platform had to be publicly readable for anyone to log in at all. The comparison
+    // happens here now, and /api/state no longer publishes hashes.
+    if(url.pathname==='/api/account/login'&&req.method==='POST'){
+      const {email,passwordHash}=await body(req),db=await load();
+      const wanted=String(email||'').trim().toLowerCase();
+      const account=(db.masjidPointActivatedAccounts||[]).find(x=>String(x.email).toLowerCase()===wanted);
+      // The same answer whether the account is unknown or the password is wrong, so this cannot be
+      // used to find out which addresses are registered.
+      if(!account||!account.passwordHash||account.passwordHash!==passwordHash)
+        return json(res,401,{error:'No activated account matches that email and password.'});
+      const {passwordHash:_ignored,...safe}=account;
+      return json(res,200,{account:safe});
+    }
+
+    // Changing a masjid or business password, for the same reason: the portal used to read the
+    // stored hash to check the current password before replacing it.
+    if(url.pathname==='/api/account/password'&&req.method==='POST'){
+      const {email,currentHash,nextHash}=await body(req),db=await load();
+      if(!/^[a-f0-9]{64}$/.test(String(nextHash||''))) return json(res,400,{error:'A new password is required.'});
+      if(currentHash===nextHash) return json(res,400,{error:'The new password is the same as the current one.'});
+      const wanted=String(email||'').trim().toLowerCase();
+      const account=(db.masjidPointActivatedAccounts||[]).find(x=>String(x.email).toLowerCase()===wanted);
+      if(!account||account.passwordHash!==currentHash) return json(res,401,{error:'That is not your current password.'});
+      account.passwordHash=nextHash; account.passwordChangedAt=new Date().toISOString();
+      audit(db,{action:'account.password.changed',entityType:'account',entityId:account.reference||account.email,actor:account.email});
+      await save(db);
+      return json(res,200,{ok:true});
+    }
+
     // restricted to the Platform Owner, but until now nobody — including the owner — could rotate
     // their own credentials once set, so a shared or exposed password could not be replaced.
     // Authority comes from proving the current password, not from a header a client can assert.
@@ -288,7 +337,7 @@ const server=http.createServer(async (req,res)=>{
         return res.end(data);
       } catch { return json(res,404,{error:'Evidence file is missing.'}); }
     }
-    if (url.pathname==='/api/state' && req.method==='GET') { const db=await load(); reconcile(db); await save(db); return json(res,200,db); }
+    if (url.pathname==='/api/state' && req.method==='GET') { const db=await load(); reconcile(db); await save(db); return json(res,200,publicState(db)); }
     if (url.pathname.startsWith('/api/collection/') && req.method==='PUT') {
       const key=decodeURIComponent(url.pathname.split('/').pop());
       // Only the collections the application actually owns may be written, so a typo or a

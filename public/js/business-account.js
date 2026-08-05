@@ -118,12 +118,18 @@
     const accounts = fresh.masjidPointActivatedAccounts || [];
     const account = accounts.find(a => a.reference === application.reference);
     if (!account) return fail('This account has not completed activation yet, so there is no password to change.');
-    if (account.passwordHash !== await hash(current)) return fail('That is not your current password.');
-
-    account.passwordHash = await hash(next);
-    account.passwordChangedAt = new Date().toISOString();
+    // Checked and written by the server. This used to read the stored hash out of the state
+    // it had just fetched, which only worked because every hash on the platform was public.
+    const change = await fetch('/api/account/password', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: account.email, currentHash: await hash(current), nextHash: await hash(next) })
+    }).catch(() => null);
+    if (!change || !change.ok) {
+      const said = change ? await change.json().catch(() => ({})) : {};
+      return fail(said.error || 'That password could not be changed. Try again.');
+    }
     try {
-      await MasjidDB.save('masjidPointActivatedAccounts', accounts);
+      await MasjidDB.refresh();
       passwordForm.reset();
       saved.hidden = false;
       setTimeout(() => saved.hidden = true, 3200);
