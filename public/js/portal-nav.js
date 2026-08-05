@@ -4,16 +4,21 @@
 // dashboard and have not been split out yet — they keep their anchor until they have a page.
 // Pages keep their own .masjid-identity markup so portal-context.js still finds it.
 (function () {
+  // Every entry is now a page of its own. Three of them used to point at "masjid-portal" with no
+  // anchor at all, so clicking Active listings, Job requests or Earnings simply reloaded the
+  // dashboard — which is what made the sidebar feel broken.
+  //
+  // Active listings and Earnings are not here: nothing in the codebase renders either of them, so
+  // they were links to features that do not exist. They come back when they have something behind
+  // them, rather than sitting in the sidebar doing nothing.
   const LINKS = [
-    { href: 'masjid-portal', icon: '▦', label: 'Dashboard', page: true },
-    { href: 'masjid-portal#requests', icon: '◇', label: 'Business requests', badge: 'sidebar-pending' },
-    { href: 'masjid-portal', icon: '▤', label: 'Active listings' },
-    { href: 'masjid-portal', icon: '▣', label: 'Job requests' },
-    { href: 'masjid-products', icon: '⌗', label: 'Shop products', page: true },
-    { href: 'masjid-portal#shop-orders', icon: '▥', label: 'Shop orders' },
-    { href: 'masjid-portal#qr-poster', icon: '▦', label: 'Advertising QR' },
-    { href: 'masjid-portal', icon: '£', label: 'Earnings' },
-    { href: 'masjid-settings', icon: '⚙', label: 'Masjid settings', page: true }
+    { href: 'masjid-portal',   icon: '▦', label: 'Dashboard',        page: true },
+    { href: 'masjid-requests', icon: '◇', label: 'Business requests', page: true, badge: 'sidebar-pending' },
+    { href: 'masjid-jobs',     icon: '▣', label: 'Job requests',      page: true },
+    { href: 'masjid-products', icon: '⌗', label: 'Shop products',     page: true },
+    { href: 'masjid-orders',   icon: '▥', label: 'Shop orders',       page: true },
+    { href: 'masjid-qr',       icon: '▦', label: 'Advertising QR',    page: true },
+    { href: 'masjid-settings', icon: '⚙', label: 'Masjid settings',   page: true }
   ];
 
   const current = (location.pathname.split('/').pop() || 'masjid-portal').replace(/\.html$/, '') || 'masjid-portal';

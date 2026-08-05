@@ -454,7 +454,13 @@ const server=http.createServer(async (req,res)=>{
     // themselves are filed by kind. Each request is resolved against these roots in order, so
     // moving a file between them never changes the address anything links to.
     const staticRoots=[path.join(root,'public'),path.join(root,'public','css'),path.join(root,'public','js'),path.join(root,'lib'),root];
-    const requested=decodeURIComponent(url.pathname==='/'?'/index':url.pathname);
+    // Each masjid portal section has its own address, served by the one portal document.
+    // portal-section.js then shows the section that address names. They are not separate files
+    // because masjid-portal.js reads its elements without checking they exist, so a page missing
+    // the parts it does not show would throw on every one of them.
+    const PORTAL_SECTIONS={'/masjid-requests':1,'/masjid-jobs':1,'/masjid-orders':1,'/masjid-qr':1};
+    const requested=decodeURIComponent(
+      url.pathname==='/'?'/index':(PORTAL_SECTIONS[url.pathname]?'/masjid-portal':url.pathname));
     const usable=candidate=>fs.existsSync(candidate)&&!fs.statSync(candidate).isDirectory();
     let file=null;
     for(const base of staticRoots){
