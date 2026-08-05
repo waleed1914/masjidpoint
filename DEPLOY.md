@@ -52,6 +52,28 @@ sudo journalctl -u masjidpoint -f     # what it is doing
 
 It starts on boot and restarts if it crashes, so the site stays up without you.
 
+## The admin password
+
+A deployment with no administrators stored yet falls back to a bootstrap account. Its password is
+random, generated at startup and printed once to the log — there is no default to look up, because
+a default committed to a public repository is a working key to every deployment that uses it.
+
+To see it:
+
+```bash
+sudo journalctl -u masjidpoint | grep -A3 "bootstrap account"
+```
+
+Or choose your own by adding a line to `/etc/masjidpoint.env` and restarting:
+
+```
+ADMIN_PASSWORD=something-long-and-yours
+```
+
+Either way, **sign in and change it in the panel under Administrators**. That writes the password to
+the database, after which the bootstrap account is no longer used and restarts stop changing
+anything.
+
 ## Updating after a change
 
 Push to `main` on your PC, then on the server:

@@ -16,6 +16,13 @@ const dataDir = path.join(root, 'data');
 const dataFile = path.join(dataDir, 'masjidpoint.json');
 const port = Number(process.env.PORT || 4173);
 
+// The bootstrap administrator, used only when a deployment starts with no administrators at all.
+// Its password used to be a fixed hash committed here, which in a public repository is a working
+// key to every fresh deployment's admin panel. Set ADMIN_PASSWORD to choose one; otherwise a
+// random password is generated and printed once at startup, and is the only time it is shown.
+const bootstrapAdminPassword = process.env.ADMIN_PASSWORD || `Admin!${crypto.randomBytes(9).toString('base64url')}`;
+const bootstrapAdminGenerated = !process.env.ADMIN_PASSWORD;
+
 const seed = {
   masjidPointJobs: [{id:'JOB-2041',title:'Junior Accounts Assistant',business:'Amanah Accounting',businessCode:'BUS-00184',employmentType:'Full time',arrangement:'On-site',city:'Birmingham',postcode:'B12 0XS',salaryFrom:'22000',salaryTo:'26000',payPeriod:'year',description:'Support our friendly accounts team with bookkeeping, client records and general office administration.',shortDescription:'Join a friendly local accountancy team.',industry:'Accounting & finance',experienceLevel:'Entry level',educationLevel:'GCSE or equivalent',closingDate:'2026-09-30',responsibilities:'Maintain records and support bookkeeping tasks.',requirements:'Good organisation and basic spreadsheet skills.',benefits:'Training and pension.',tags:['bookkeeping','accounts'],masjids:[{name:'Central Masjid',fee:5,status:'approved',paymentStatus:'paid'},{name:'Hina Masjid',fee:10,status:'pending',paymentStatus:'not_due'}],masjid:'Central Masjid',fee:15,status:'live',enabled:true,submittedAt:'2026-07-28T09:00:00Z'}],
   masjidPointFinance: { accounts: [{code:'BUS-00184',name:'Amanah Accounting',email:'hello@amanahaccounts.co.uk',invoices:[{number:'INV-2026-00692',date:'2026-07-01',due:'2026-07-14',amount:40,paid:40,shares:{'Central Masjid':17.5},lines:[]}],payments:[{amount:40,date:'2026-07-08',bankReference:'FT-249188'}]}], unmatched: [], settled: {}, settlementHistory: [] },
@@ -31,7 +38,7 @@ const seed = {
   masjidPointPlatformSettings:{bankDetails:{active:false,accountName:'',bankName:'',sortCode:'',accountNumber:'',iban:'',instructions:'',updatedAt:null}},
   masjidPointNotifications: [],
   masjidPointCustomers: [],
-  masjidPointAdminUsers:[{id:'ADM-0001',name:'Platform Owner',email:'admin@masjidpoint.co.uk',role:'super_admin',status:'active',passwordHash:'dfc9a7599c0a1703ce528b31a36bac83932125accc88c4d6525755ac78242c6e',createdAt:'2026-08-02T00:00:00.000Z'}]
+  masjidPointAdminUsers:[{id:'ADM-0001',name:'Platform Owner',email:process.env.ADMIN_EMAIL||'admin@masjidpoint.co.uk',role:'super_admin',status:'active',passwordHash:crypto.createHash('sha256').update(bootstrapAdminPassword).digest('hex'),createdAt:'2026-08-02T00:00:00.000Z'}]
 };
 
 // The collections a client may replace wholesale through /api/collection/:key.
@@ -404,4 +411,31 @@ const server=http.createServer(async (req,res)=>{
     const type={'.html':'text/html','.js':'application/javascript','.css':'text/css','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.svg':'image/svg+xml','.json':'application/json'}[path.extname(file).toLowerCase()]||'application/octet-stream'; res.writeHead(200,{'Content-Type':type,'Cache-Control':['.html','.js','.css'].includes(path.extname(file).toLowerCase())?'no-store':'public, max-age=3600'}); fs.createReadStream(file).pipe(res);
   } catch(e) { json(res,500,{error:e.message}); }
 });
-Promise.all([repository.init(),emailService.init()]).then(()=>server.listen(port,'127.0.0.1',()=>console.log(`MasjidPoint server: http://127.0.0.1:${port} (${process.env.DATABASE_URL?'PostgreSQL':'development JSON fallback'})`))).catch(error=>{console.error(`Startup failed: ${error.message}`);process.exit(1)});
+// If this deployment has no administrators yet, the bootstrap account above is the only way in, so
+// say what its password is. Printed once, to the log, and only when it was generated rather than
+// supplied — there is otherwise no way for anyone to know it.
+async function announceBootstrapAdmin(){
+  if(!bootstrapAdminGenerated) return;
+  try{
+    const db=await load();
+    // Not "are there no administrators" — a fresh deployment loads the seed, so there is always
+    // one. The question is whether the generated password still opens it, which is exactly the
+    // case where nobody could otherwise know it.
+    const hash=crypto.createHash('sha256').update(bootstrapAdminPassword).digest('hex');
+    const bootstrap=(db.masjidPointAdminUsers||[]).find(x=>x.passwordHash===hash&&x.status==='active');
+    if(!bootstrap) return;
+    const email=bootstrap.email;
+    console.log('');
+    console.log('  No administrators exist yet, so a bootstrap account has been created:');
+    console.log(`    ${email}`);
+    console.log(`    ${bootstrapAdminPassword}`);
+    console.log('  Change it once you are in. This is the only time it is shown, and it changes');
+    console.log('  on every restart until an administrator is saved.');
+    console.log('');
+  }catch{}
+}
+
+Promise.all([repository.init(),emailService.init()])
+  .then(announceBootstrapAdmin)
+  .then(()=>server.listen(port,'127.0.0.1',()=>console.log(`MasjidPoint server: http://127.0.0.1:${port} (${process.env.DATABASE_URL?'PostgreSQL':'development JSON fallback'})`)))
+  .catch(error=>{console.error(`Startup failed: ${error.message}`);process.exit(1)});
