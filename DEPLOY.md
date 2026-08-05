@@ -11,20 +11,28 @@ change before real money moves through it.
 - The `.pem` key file downloaded when you created the instance
 - Security group allowing SSH (22) from your IP, and HTTP (80) and HTTPS (443) from anywhere
 
-## 1. Connect
+## 1. Lock down the key file
 
-From PowerShell on your PC, in the folder holding the `.pem`:
+SSH refuses a key anyone can read. Once, from PowerShell in the folder holding the `.pem`:
 
 ```powershell
-icacls masjidpoint.pem /inheritance:r /grant:r "$($env:USERNAME):(R)"   # once: SSH refuses a world-readable key
-ssh -i masjidpoint.pem ubuntu@YOUR-ELASTIC-IP        # Ubuntu
-ssh -i masjidpoint.pem ec2-user@YOUR-ELASTIC-IP      # Amazon Linux
+icacls masjidpoint.pem /inheritance:r /grant:r "$($env:USERNAME):(R)"
 ```
 
-## 2. Run the setup
+## 2. Copy the setup script up and run it
+
+The repository is private, so the server cannot download the script itself — send it from your PC.
+Use `ubuntu@` for Ubuntu, `ec2-user@` for Amazon Linux:
+
+```powershell
+cd c:\Users\pc\Desktop\chiraz_mosque_project
+scp -i masjidpoint.pem scripts\ec2-setup.sh ubuntu@YOUR-ELASTIC-IP:~/
+ssh -i masjidpoint.pem ubuntu@YOUR-ELASTIC-IP
+```
+
+Then on the server:
 
 ```bash
-curl -fsSLO https://raw.githubusercontent.com/waleed1914/masjidpoint/main/scripts/ec2-setup.sh
 sudo bash ec2-setup.sh
 ```
 
