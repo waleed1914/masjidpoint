@@ -14,8 +14,13 @@ const target = path.join(root, 'data', 'masjidpoint.json');
 const backups = path.join(root, 'backups');
 const hash = value => crypto.createHash('sha256').update(value).digest('hex');
 
-const ADMIN_EMAIL = 'admin@masjidpoint.co.uk';
-const ADMIN_PASSWORD = 'Admin!2026Secure';
+// The admin password is not written down here. A fixed default in a source file is a working
+// credential for every copy of this repository, and the reset it performs is exactly the moment it
+// would be relied on. Set ADMIN_PASSWORD to choose one; otherwise a random one is generated and
+// printed once, at the end of the run.
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@masjidpoint.co.uk';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD
+  || `Admin!${crypto.randomBytes(9).toString('base64url')}`;
 const keepBank = process.argv.includes('--keep-bank');
 
 // Preserve whatever is there now before replacing it.

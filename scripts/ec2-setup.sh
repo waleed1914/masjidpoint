@@ -20,7 +20,7 @@ set -euo pipefail
 APP_USER=masjidpoint
 APP_DIR=/opt/masjidpoint
 APP_PORT=4174
-REPO=${REPO:-git@github.com:waleed1914/masjidpoint.git}
+REPO=${REPO:-https://github.com/waleed1914/masjidpoint.git}
 
 if [[ $EUID -ne 0 ]]; then
   echo "Run this with sudo: sudo bash ec2-setup.sh" >&2
@@ -62,36 +62,15 @@ if ! id "$APP_USER" &>/dev/null; then
     || useradd --system --create-home --home-dir "/home/$APP_USER" --shell /sbin/nologin "$APP_USER"
 fi
 
-# ---- Deploy key -------------------------------------------------------------
-# The repository is private, so the server needs its own read-only key. A deploy key is safer than
-# a personal access token: it grants one repository, read only, and revoking it affects nothing else.
-KEY="/home/$APP_USER/.ssh/id_ed25519"
-if [[ ! -f $KEY ]]; then
-  echo "==> Generating a deploy key for this server"
-  mkdir -p "/home/$APP_USER/.ssh"
-  ssh-keygen -t ed25519 -N '' -f "$KEY" -C "masjidpoint-ec2" >/dev/null
-  ssh-keyscan -t ed25519 github.com >> "/home/$APP_USER/.ssh/known_hosts" 2>/dev/null
-  chown -R "$APP_USER:$APP_USER" "/home/$APP_USER/.ssh"
-  chmod 700 "/home/$APP_USER/.ssh"; chmod 600 "$KEY"
-fi
-
-if ! sudo -u "$APP_USER" ssh -o StrictHostKeyChecking=no -T git@github.com 2>&1 | grep -q "successfully authenticated"; then
-  echo
-  echo "================================================================"
-  echo " This server cannot read your private repository yet."
-  echo
-  echo " Add this as a deploy key on GitHub:"
-  echo "   https://github.com/waleed1914/masjidpoint/settings/keys/new"
-  echo "   Title: EC2 server     Allow write access: NO"
-  echo
-  cat "$KEY.pub"
-  echo
-  echo " Then run this script again."
-  echo "================================================================"
+# ---- Code -------------------------------------------------------------------
+# Cloned over HTTPS with no credentials. If the repository is made private again this fails with
+# "Authentication failed" — set REPO to the git@github.com: form and add a read-only deploy key.
+if ! git ls-remote --exit-code "$REPO" >/dev/null 2>&1; then
+  echo "Cannot read $REPO without credentials — is the repository private?" >&2
+  echo "If so, either make it public or set REPO to the SSH URL and add a deploy key." >&2
   exit 1
 fi
 
-# ---- Code -------------------------------------------------------------------
 if [[ -d $APP_DIR/.git ]]; then
   echo "==> Updating the existing checkout"
   sudo -u "$APP_USER" git -C "$APP_DIR" fetch --quiet origin

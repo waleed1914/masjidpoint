@@ -17,7 +17,11 @@ const NOW = new Date('2026-08-03T09:00:00.000Z');
 const day = n => new Date(NOW.getTime() - n * 86400000).toISOString();
 const dayOnly = n => day(n).slice(0, 10);
 
-const ADMIN_PASSWORD = 'Admin!2026Secure';
+// Deliberately a throwaway, and deliberately not the password any real deployment uses: this
+// dataset is fictional and the tests need the value to be the same in the seeding process and in
+// the process that later signs in, so it cannot be random. Set ADMIN_PASSWORD to override it.
+// Seeding replaces the whole store and is for development only — see DEPLOY.md.
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Demo!Seed2026Aa';
 
 /* ------------------------------------------------------------------ mosques */
 const MOSQUES = [

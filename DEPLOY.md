@@ -19,31 +19,27 @@ SSH refuses a key anyone can read. Once, from PowerShell in the folder holding t
 icacls masjidpoint.pem /inheritance:r /grant:r "$($env:USERNAME):(R)"
 ```
 
-## 2. Copy the setup script up and run it
+## 2. Connect
 
-The repository is private, so the server cannot download the script itself — send it from your PC.
-Use `ubuntu@` for Ubuntu, `ec2-user@` for Amazon Linux:
+`ubuntu@` for Ubuntu, `ec2-user@` for Amazon Linux:
 
 ```powershell
-cd c:\Users\pc\Desktop\chiraz_mosque_project
-scp -i masjidpoint.pem scripts\ec2-setup.sh ubuntu@YOUR-ELASTIC-IP:~/
 ssh -i masjidpoint.pem ubuntu@YOUR-ELASTIC-IP
 ```
 
-Then on the server:
+## 3. Run the setup
+
+The repository is public, so the server pulls everything itself:
 
 ```bash
+curl -fsSLO https://raw.githubusercontent.com/waleed1914/masjidpoint/main/scripts/ec2-setup.sh
 sudo bash ec2-setup.sh
 ```
 
-The repository is private, so the first run stops and prints a deploy key. Add it at
-**github.com/waleed1914/masjidpoint → Settings → Deploy keys → Add deploy key**, leave *Allow write
-access* unticked, then run `sudo bash ec2-setup.sh` again.
+It prints the address, username and password when it finishes.
 
-A deploy key rather than a personal access token: it grants one repository, read only, and revoking
-it affects nothing else.
-
-When it finishes it prints the address, username and password.
+If the repository is made private again, this stops with a clear message: set `REPO` to the
+`git@github.com:` URL and add a read-only deploy key on GitHub.
 
 ## 3. Check it
 
