@@ -10,8 +10,7 @@
 
   const error = document.querySelector('#own-password-error');
   const saved = document.querySelector('#own-password-saved');
-  const hash = async value => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value))))
-    .map(b => b.toString(16).padStart(2, '0')).join('');
+  const hash = async value => masjidSha256(value);
 
   form.addEventListener('submit', async event => {
     event.preventDefault();

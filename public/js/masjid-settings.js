@@ -161,8 +161,7 @@
   // ---- password ----
   // A masjid could set a password at activation and never change it again, short of the
   // forgotten-password email. Verified against the stored hash before anything is written.
-  const hash = async value => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value))))
-    .map(b => b.toString(16).padStart(2, '0')).join('');
+  const hash = async value => masjidSha256(value);
   const passwordForm = document.querySelector('#password-form');
   if (passwordForm) passwordForm.addEventListener('submit', async event => {
     event.preventDefault();

@@ -17,8 +17,7 @@
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const money = n => `£${Number(n || 0).toFixed(2)}`;
   const date = v => v ? new Date(v).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
-  const hash = async value => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value))))
-    .map(b => b.toString(16).padStart(2, '0')).join('');
+  const hash = async value => masjidSha256(value);
 
   const email = String(customer.email).toLowerCase();
   document.querySelector('#account-name').textContent = `Welcome back, ${customer.name.split(' ')[0]}`;

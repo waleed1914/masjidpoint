@@ -7,8 +7,7 @@
   const form = document.querySelector('#customer-signup-form');
   const error = document.querySelector('#signup-error');
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const hash = async value => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value))))
-    .map(b => b.toString(16).padStart(2, '0')).join('');
+  const hash = async value => masjidSha256(value);
 
   // Find whatever the visitor has already done, either by explicit reference or by email.
   const application = (state.masjidPointJobApplications || []).find(a =>

@@ -1,3 +1,4 @@
+const ADMIN_PASSWORD = require('../scripts/seed-demo-data.js').ADMIN_PASSWORD;
 const {spawn}=require('child_process'),path=require('path'),edge='C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',port=9944,base='http://127.0.0.1:4174';
 const sleep=ms=>new Promise(r=>setTimeout(r,ms)),assert=(v,m)=>{if(!v)throw Error(m)};
 let ws,browser,id=0,pending=new Map(),exceptions=[];
@@ -40,7 +41,7 @@ const Register=require('../lib/settlement-register');
  browser=spawn(edge,['--headless=new',`--remote-debugging-port=${port}`,`--user-data-dir=${path.join(__dirname,'.settle-edge-'+Date.now())}`,'--no-first-run','--disable-gpu','about:blank'],{stdio:'ignore'});
  await connect();await cdp('Page.enable');await cdp('Runtime.enable');
  await go(`${base}/admin-login.html`,1700);
- if(await ev(`!!document.querySelector('#admin-email')`)){await ev(`document.querySelector('#admin-email').value='admin@masjidpoint.co.uk';document.querySelector('#admin-password').value='Admin!2026Secure';document.querySelector('#admin-login-form').requestSubmit()`);await sleep(2000)}
+ if(await ev(`!!document.querySelector('#admin-email')`)){await ev(`document.querySelector('#admin-email').value='admin@masjidpoint.co.uk';document.querySelector('#admin-password').value=${JSON.stringify(ADMIN_PASSWORD)};document.querySelector('#admin-login-form').requestSubmit()`);await sleep(2000)}
 
  // 1. Net mode shows one figure and the correct direction.
  await go(`${base}/admin-payments.html#settlements`,3600);

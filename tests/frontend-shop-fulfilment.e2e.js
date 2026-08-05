@@ -1,3 +1,4 @@
+const ADMIN_PASSWORD = require('../scripts/seed-demo-data.js').ADMIN_PASSWORD;
 const {spawn}=require('child_process'),path=require('path'),edge='C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',port=9955,base='http://127.0.0.1:4174';
 const sleep=ms=>new Promise(r=>setTimeout(r,ms)),assert=(v,m)=>{if(!v)throw Error(m)};
 let ws,browser,id=0,pending=new Map(),exceptions=[];
@@ -9,7 +10,7 @@ const set=(name,value)=>ev(`(()=>{const e=document.querySelector('form [name=${J
 const accounts=require('./seed-accounts.js');
 const state=()=>fetch(`${base}/api/state`).then(r=>r.json());
 // An existing admin session sends admin-login.html straight to the dashboard, so only fill the form when it is there.
-const adminLogin=async()=>{await go(`${base}/admin-login.html`,1500);if(await ev(`!!document.querySelector('#admin-email')`)){await ev(`document.querySelector('#admin-email').value='admin@masjidpoint.co.uk';document.querySelector('#admin-password').value='Admin!2026Secure';document.querySelector('#admin-login-form').requestSubmit()`);await sleep(1800)}assert(/\/admin(?:\.html)?$/.test(await ev('location.pathname')),'Admin login failed')};
+const adminLogin=async()=>{await go(`${base}/admin-login.html`,1500);if(await ev(`!!document.querySelector('#admin-email')`)){await ev(`document.querySelector('#admin-email').value='admin@masjidpoint.co.uk';document.querySelector('#admin-password').value=${JSON.stringify(ADMIN_PASSWORD)};document.querySelector('#admin-login-form').requestSubmit()`);await sleep(1800)}assert(/\/admin(?:\.html)?$/.test(await ev('location.pathname')),'Admin login failed')};
 
 (async()=>{
  let db=await state();

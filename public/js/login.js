@@ -1,4 +1,4 @@
-const hash=async value=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value)))).map(b=>b.toString(16).padStart(2,'0')).join('');
+const hash=async value => masjidSha256(value);
 const getAccounts=()=>{const accounts=JSON.parse(localStorage.getItem('masjidPointActivatedAccounts')||'[]'),legacy=JSON.parse(localStorage.getItem('masjidPointActivatedAccount')||'null');if(legacy?.verified&&!accounts.some(a=>String(a.email).toLowerCase()===String(legacy.email).toLowerCase()))accounts.push(legacy);return accounts};
 const saveAccounts=items=>localStorage.setItem('masjidPointActivatedAccounts',JSON.stringify(items));
 const forgot=document.createElement('a');forgot.href='forgot-password';forgot.className='forgot-password-link';forgot.textContent='Forgot your password?';document.querySelector('#login-form .button').before(forgot);const forgotStyle=document.createElement('link');forgotStyle.rel='stylesheet';forgotStyle.href='password-email.css';document.head.appendChild(forgotStyle);
