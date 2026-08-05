@@ -16,12 +16,15 @@ const dataDir = path.join(root, 'data');
 const dataFile = path.join(dataDir, 'masjidpoint.json');
 const port = Number(process.env.PORT || 4173);
 
-// The bootstrap administrator, used only when a deployment starts with no administrators at all.
-// Its password used to be a fixed hash committed here, which in a public repository is a working
-// key to every fresh deployment's admin panel. Set ADMIN_PASSWORD to choose one; otherwise a
-// random password is generated and printed once at startup, and is the only time it is shown.
-const bootstrapAdminPassword = process.env.ADMIN_PASSWORD || `Admin!${crypto.randomBytes(9).toString('base64url')}`;
-const bootstrapAdminGenerated = !process.env.ADMIN_PASSWORD;
+// The bootstrap administrator, used only when a deployment starts with no administrators of its
+// own. The default is deliberately fixed and known, so that wiping the data never locks anyone out
+// of the panel — change it from Admin profiles once you are in, and the stored password takes over.
+//
+// It is a known default in a public repository, so it is only ever a way in, never a way to stay:
+// set ADMIN_PASSWORD on any deployment that matters, and change it in the panel on the rest.
+const DEFAULT_ADMIN_PASSWORD = 'Admin!2026Secure';
+const bootstrapAdminPassword = process.env.ADMIN_PASSWORD || DEFAULT_ADMIN_PASSWORD;
+const bootstrapAdminUsesDefault = !process.env.ADMIN_PASSWORD;
 
 // What a deployment starts as: an empty platform. It used to start with a job, a business, a
 // listing and an invoice — demo content, which meant a brand-new installation opened with a
@@ -422,22 +425,19 @@ const server=http.createServer(async (req,res)=>{
 // say what its password is. Printed once, to the log, and only when it was generated rather than
 // supplied — there is otherwise no way for anyone to know it.
 async function announceBootstrapAdmin(){
-  if(!bootstrapAdminGenerated) return;
+  if(!bootstrapAdminUsesDefault) return;
   try{
     const db=await load();
     // Not "are there no administrators" — a fresh deployment loads the seed, so there is always
-    // one. The question is whether the generated password still opens it, which is exactly the
-    // case where nobody could otherwise know it.
+    // one. The question is whether the bootstrap password still opens an account, which is exactly
+    // when it is worth saying that a published default is what stands in front of the panel.
     const hash=crypto.createHash('sha256').update(bootstrapAdminPassword).digest('hex');
     const bootstrap=(db.masjidPointAdminUsers||[]).find(x=>x.passwordHash===hash&&x.status==='active');
     if(!bootstrap) return;
-    const email=bootstrap.email;
     console.log('');
-    console.log('  No administrators exist yet, so a bootstrap account has been created:');
-    console.log(`    ${email}`);
-    console.log(`    ${bootstrapAdminPassword}`);
-    console.log('  Change it once you are in. This is the only time it is shown, and it changes');
-    console.log('  on every restart until an administrator is saved.');
+    console.log(`  Signing in as ${bootstrap.email} still uses the default password.`);
+    console.log('  It is published in this repository, so anyone can read it. Change it under');
+    console.log('  Admin profiles, or set ADMIN_PASSWORD, and this notice stops.');
     console.log('');
   }catch{}
 }

@@ -1,0 +1,89 @@
+/* The loading screen.
+ *
+ * The portals paint their markup first and fill in real figures a moment later. That gap is where
+ * "£3,480 outstanding" came from — the placeholders are gone now, but the gap remains, and an
+ * empty page settling into a full one still reads as a glitch. This covers it: the mark turns
+ * until the page has its data.
+ *
+ * It is deliberately hard to get stuck behind. The overlay is removed on a timeout even if the
+ * data never arrives, and it is never shown at all to anyone who has asked for reduced motion or
+ * has JavaScript disabled — in both cases the page underneath is perfectly usable.
+ */
+
+#masjidpoint-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  gap: 18px;
+  grid-auto-flow: row;
+  align-content: center;
+  background: var(--paper, #fffdf8);
+  transition: opacity .35s ease, visibility .35s ease;
+}
+
+#masjidpoint-loader[hidden] {
+  /* [hidden] loses to display:grid, and the fade needs the element to stay in flow while it
+     runs — so hiding is done with opacity and visibility, not display. */
+  display: grid;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.masjidpoint-loader-mark {
+  width: 64px;
+  height: 64px;
+  display: block;
+  animation: masjidpoint-spin 1.15s cubic-bezier(.45, .05, .35, 1) infinite;
+  transform-origin: 50% 50%;
+  filter: drop-shadow(0 6px 18px rgba(18, 63, 53, .18));
+}
+
+@keyframes masjidpoint-spin {
+  from { transform: rotate(0deg) }
+  to   { transform: rotate(360deg) }
+}
+
+.masjidpoint-loader-word {
+  font-family: var(--font-ui, "Inter", system-ui, sans-serif);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2.4px;
+  text-transform: uppercase;
+  color: var(--muted, #6d7c77);
+}
+.masjidpoint-loader-word span { color: var(--gold, #c6a15b) }
+
+/* A quiet bar underneath, so a slow connection still looks like progress rather than a stall. */
+.masjidpoint-loader-bar {
+  width: 132px;
+  height: 2px;
+  border-radius: 2px;
+  background: rgba(18, 63, 53, .1);
+  overflow: hidden;
+}
+.masjidpoint-loader-bar i {
+  display: block;
+  width: 40%;
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--green, #123f35), var(--gold, #c6a15b));
+  animation: masjidpoint-sweep 1.4s ease-in-out infinite;
+}
+
+@keyframes masjidpoint-sweep {
+  0%   { transform: translateX(-100%) }
+  100% { transform: translateX(330%) }
+}
+
+/* The portals sit on a warmer background than the public pages; match it so the hand-off is
+   invisible rather than a flash of a different colour. */
+.admin-page #masjidpoint-loader,
+.business-page #masjidpoint-loader,
+.portal-page #masjidpoint-loader { background: #f3f1eb }
+
+@media (prefers-reduced-motion: reduce) {
+  #masjidpoint-loader { display: none !important }
+}

@@ -54,25 +54,30 @@ It starts on boot and restarts if it crashes, so the site stays up without you.
 
 ## The admin password
 
-A deployment with no administrators stored yet falls back to a bootstrap account. Its password is
-random, generated at startup and printed once to the log — there is no default to look up, because
-a default committed to a public repository is a working key to every deployment that uses it.
+A deployment with no administrators of its own signs in with:
 
-To see it:
+```
+admin@masjidpoint.co.uk / Admin!2026Secure
+```
+
+Fixed and known on purpose, so that wiping the data never locks anyone out of the panel.
+
+**It is published in this repository, so treat it as a way in, not a way to stay.** Anyone who
+reads the code can use it until it is changed. Two ways to close it:
+
+- Sign in and change it under **Admin profiles**. That writes your password to the database, after
+  which the default opens nothing and restarts change nothing.
+- Or set your own before first start, in `/etc/masjidpoint.env`:
+
+  ```
+  ADMIN_PASSWORD=something-long-and-yours
+  ```
+
+While the default is still in use, the server says so at startup:
 
 ```bash
-sudo journalctl -u masjidpoint | grep -A3 "bootstrap account"
+sudo journalctl -u masjidpoint | grep -A3 "default password"
 ```
-
-Or choose your own by adding a line to `/etc/masjidpoint.env` and restarting:
-
-```
-ADMIN_PASSWORD=something-long-and-yours
-```
-
-Either way, **sign in and change it in the panel under Administrators**. That writes the password to
-the database, after which the bootstrap account is no longer used and restarts stop changing
-anything.
 
 ## Updating after a change
 
