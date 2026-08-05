@@ -23,12 +23,19 @@ const port = Number(process.env.PORT || 4173);
 const bootstrapAdminPassword = process.env.ADMIN_PASSWORD || `Admin!${crypto.randomBytes(9).toString('base64url')}`;
 const bootstrapAdminGenerated = !process.env.ADMIN_PASSWORD;
 
+// What a deployment starts as: an empty platform. It used to start with a job, a business, a
+// listing and an invoice — demo content, which meant a brand-new installation opened with a
+// business it had never approved and a balance it had never billed. The demo dataset lives in
+// scripts/seed-demo-data.js and is loaded deliberately with `npm run seed`, never by starting up.
+//
+// The keys must all stay: WRITABLE_COLLECTIONS is derived from them, and a missing key means the
+// frontend cannot save that collection at all.
 const seed = {
-  masjidPointJobs: [{id:'JOB-2041',title:'Junior Accounts Assistant',business:'Amanah Accounting',businessCode:'BUS-00184',employmentType:'Full time',arrangement:'On-site',city:'Birmingham',postcode:'B12 0XS',salaryFrom:'22000',salaryTo:'26000',payPeriod:'year',description:'Support our friendly accounts team with bookkeeping, client records and general office administration.',shortDescription:'Join a friendly local accountancy team.',industry:'Accounting & finance',experienceLevel:'Entry level',educationLevel:'GCSE or equivalent',closingDate:'2026-09-30',responsibilities:'Maintain records and support bookkeeping tasks.',requirements:'Good organisation and basic spreadsheet skills.',benefits:'Training and pension.',tags:['bookkeeping','accounts'],masjids:[{name:'Central Masjid',fee:5,status:'approved',paymentStatus:'paid'},{name:'Hina Masjid',fee:10,status:'pending',paymentStatus:'not_due'}],masjid:'Central Masjid',fee:15,status:'live',enabled:true,submittedAt:'2026-07-28T09:00:00Z'}],
-  masjidPointFinance: { accounts: [{code:'BUS-00184',name:'Amanah Accounting',email:'hello@amanahaccounts.co.uk',invoices:[{number:'INV-2026-00692',date:'2026-07-01',due:'2026-07-14',amount:40,paid:40,shares:{'Central Masjid':17.5},lines:[]}],payments:[{amount:40,date:'2026-07-08',bankReference:'FT-249188'}]}], unmatched: [], settled: {}, settlementHistory: [] },
+  masjidPointJobs: [],
+  masjidPointFinance: { accounts: [], unmatched: [], settled: {}, settlementHistory: [] },
   masjidPointPaymentProofs: [],
-  masjidPointBusinessRequests: [{id:'BR-1041',name:'Amanah Accounting',category:'Professional services',contact:'Hassan Ali',email:'hello@amanahaccounts.co.uk',phone:'0121 555 0123',description:'Tax, bookkeeping and payroll services.',submittedAt:'2026-08-01T12:20:00Z',status:'approved',listing:'enabled'}],
-  masjidPointBusinessListings: [{id:'AD-101',masjid:'Central Masjid',location:'Birmingham · B12 0XS',status:'approved',enabled:true,price:20}],
+  masjidPointBusinessRequests: [],
+  masjidPointBusinessListings: [],
   masjidPointAdminApplications: [],
   masjidPointActivatedAccounts: [],
   masjidPointJobApplications: [],

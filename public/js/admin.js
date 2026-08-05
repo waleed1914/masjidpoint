@@ -29,8 +29,27 @@
     const outstanding = invoices.reduce(
       (total, invoice) => total + Math.max(0, Number(invoice.amount || 0) - Number(invoice.paid || 0)), 0
     );
-    document.querySelector('#active-masjids').textContent = applications.filter(item => item.type === 'masjid' && activeAccount(item)).length;
-    document.querySelector('#active-businesses').textContent = applications.filter(item => item.type === 'business' && activeAccount(item)).length;
+    const activeMasjids = applications.filter(item => item.type === 'masjid' && activeAccount(item));
+    const activeBusinesses = applications.filter(item => item.type === 'business' && activeAccount(item));
+    document.querySelector('#active-masjids').textContent = activeMasjids.length;
+    document.querySelector('#active-businesses').textContent = activeBusinesses.length;
+
+    // "+2 this month" and "+14 this month" were written into the markup and never updated, so an
+    // empty platform still claimed a fortnight of growth. Count them, and say nothing when there
+    // is nothing to say rather than showing "+0".
+    const monthStart = new Date();
+    monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0);
+    const joinedThisMonth = list => list.filter(item => {
+      const when = Date.parse(item.submittedAt || item.createdAt || '');
+      return Number.isFinite(when) && when >= monthStart.getTime();
+    }).length;
+    for (const [id, list] of [['active-masjids', activeMasjids], ['active-businesses', activeBusinesses]]) {
+      const note = document.querySelector(`#${id}`)?.parentElement?.querySelector('em');
+      if (!note) continue;
+      const n = joinedThisMonth(list);
+      note.textContent = n ? `+${n} this month` : '';
+      note.hidden = !n;
+    }
     document.querySelector('#pending-total').textContent = applications.filter(item => item.status === 'pending').length;
     document.querySelector('#nav-pending-count').textContent = applications.filter(item => item.status === 'pending').length;
     const outstandingCard = document.querySelector('.stat-grid .stat-card:nth-child(4)');
