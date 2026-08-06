@@ -21,41 +21,48 @@
     'masjid-jobs':     { title: 'Job requests',      keep: ['.job-approval-panel'] },
     'masjid-orders':   { title: 'Shop orders',       keep: ['#shop-orders'] },
     'masjid-qr':       { title: 'Advertising QR',    keep: ['#qr-poster'] },
+    // The business portal had the same fault: three of its six entries were anchors that scrolled
+    // the dashboard rather than going anywhere.
+    'business-advertising': { title: 'My advertising',   keep: ['#advertising'] },
+    'business-profile':     { title: 'Business profile', keep: ['#profile'] },
+    'business-invoices':    { title: 'Invoices',         keep: ['#invoices'] },
   };
 
   const page = (location.pathname.split('/').pop() || '').replace(/\.html$/, '');
   const section = SECTIONS[page];
   if (!section) return;
 
+  // The two portals name their wrapper differently; everything else about this is the same.
+  const contentEl = () => document.querySelector('.portal-content, .business-content');
+
   function apply() {
-    const main = document.querySelector('.portal-main, main');
-    if (!main) return;
+    const content = contentEl();
+    if (!content) return;
 
     const wanted = new Set();
     for (const selector of section.keep) {
       document.querySelectorAll(selector).forEach(el => {
         // Keep the section itself, wherever it sits in the tree.
-        const top = el.closest('.portal-content > *') || el;
+        const top = [...content.children].find(child => child === el || child.contains(el)) || el;
         wanted.add(top);
       });
     }
     // Nothing matched — better to leave the whole dashboard visible than an empty page.
     if (!wanted.size) return;
 
-    const content = document.querySelector('.portal-content') || main;
     [...content.children].forEach(child => {
-      if (wanted.has(child)) return;
       // The greeting and the stat row belong to the dashboard, not to a single section.
-      child.style.display = 'none';
+      child.style.display = wanted.has(child) ? '' : 'none';
     });
 
-    const heading = document.querySelector('.portal-welcome h2, .portal-content h2');
+    const heading = document.querySelector('.portal-welcome h2, .business-welcome h2');
     if (heading && !heading.dataset.sectionTitled) {
       heading.textContent = section.title;
       heading.dataset.sectionTitled = '1';
-      heading.parentElement && (heading.parentElement.style.display = '');
+      const owner = heading.closest('.portal-welcome, .business-welcome');
+      if (owner) owner.style.display = '';
     }
-    const topbar = document.querySelector('.portal-topbar h1');
+    const topbar = document.querySelector('.portal-topbar h1, .business-topbar h1');
     if (topbar) topbar.textContent = section.title;
     document.title = `${section.title} — MasjidPoint`;
   }
@@ -68,7 +75,7 @@
 
   const start = () => {
     apply();
-    const content = document.querySelector('.portal-content');
+    const content = contentEl();
     if (content) new MutationObserver(apply).observe(content, { childList: true, subtree: true });
 
     let waited = 0;

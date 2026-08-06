@@ -1,8 +1,11 @@
 // The masjid portal sections are served from the one portal document at addresses of their own.
 // Every route check below matched "/masjid-portal" exactly, so on /masjid-orders the script that
 // builds that very section was never injected and the page showed the whole dashboard instead.
-const PORTAL_SECTIONS = /\/masjid-(requests|jobs|orders|qr)(?:\.html)?$/;
-const routePath = () => PORTAL_SECTIONS.test(location.pathname) ? '/masjid-portal' : location.pathname;
+const PORTAL_SECTIONS = /\/masjid-(requests|listings|jobs|orders|qr)(?:\.html)?$/;
+const BUSINESS_SECTIONS = /\/business-(advertising|profile|invoices)(?:\.html)?$/;
+const routePath = () => PORTAL_SECTIONS.test(location.pathname) ? '/masjid-portal'
+  : BUSINESS_SECTIONS.test(location.pathname) ? '/business-portal'
+  : location.pathname;
 (function(){
   if(document.querySelector('.admin-page')){
     let adminSession=null;try{adminSession=JSON.parse(sessionStorage.getItem('masjidPointAdminSession')||'null')}catch(_){}
