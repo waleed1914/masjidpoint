@@ -157,7 +157,21 @@ function normaliseShopOrders(db){
 function reconcile(db, previousJobs=[]) {
   const jobs = db.masjidPointJobs || [];
   let nextCode=Math.max(100,...(db.masjidPointAdminApplications||[]).map(a=>Number(String(a.businessCode||'').replace(/\D/g,''))||0),...(db.masjidPointFinance?.accounts||[]).map(a=>Number(String(a.code||'').replace(/\D/g,''))||0))+1;
-  for(const app of db.masjidPointAdminApplications||[]){if(app.type==='business'&&['approved','activated'].includes(app.status)&&!/^BUS-\d{5}$/.test(app.businessCode||''))app.businessCode=`BUS-${String(nextCode++).padStart(5,'0')}`}
+  // A business keeps one payment code for life: it is what it quotes when it pays, and what every
+  // invoice is filed under. If the code is missing, look for the account this business already has
+  // before minting a new one — otherwise a business whose code was lost gets a second account, and
+  // the same advertising request is billed under both. That is how one business came to owe £45
+  // for £25 of charges.
+  for(const app of db.masjidPointAdminApplications||[]){
+    if(app.type!=='business'||!['approved','activated'].includes(app.status))continue;
+    if(/^BUS-\d{5}$/.test(app.businessCode||''))continue;
+    const email=String(app.email||'').trim().toLowerCase();
+    const existing=(db.masjidPointFinance?.accounts||[]).find(a=>
+      /^BUS-\d{5}$/.test(String(a.code||'')) &&
+      ((email&&String(a.email||'').trim().toLowerCase()===email)||
+       (a.name&&app.name&&String(a.name).trim()===String(app.name).trim())));
+    app.businessCode=existing?existing.code:`BUS-${String(nextCode++).padStart(5,'0')}`;
+  }
   db.masjidPointMasjidPricing||=[];
   for(const app of db.masjidPointAdminApplications||[]){if(app.type!=='masjid'||!['approved','activated'].includes(app.status))continue;const rate=db.masjidPointMasjidPricing.find(x=>x.masjidReference===app.reference||x.masjidName===app.name);if(rate){rate.masjidReference||=app.reference;rate.masjidName=app.name;continue}db.masjidPointMasjidPricing.push({masjidReference:app.reference,masjidName:app.name,advertisingPrice:20,jobPrice:5,adminPercent:30,mosquePercent:70,acceptingListings:true,updatedAt:new Date().toISOString()})}
   for(const rate of db.masjidPointMasjidPricing){rate.shopFulfilment=fulfilment.settingsOf(rate);rate.shopDeliveryFee=fulfilment.deliveryFeeOf(rate)}
@@ -204,9 +218,19 @@ function reconcile(db, previousJobs=[]) {
     else if(Number.isFinite(held)&&held>0){request.price=held}
     else{const current=(db.masjidPointMasjidPricing||[]).find(price=>price.masjidName===request.masjid||price.masjidReference===request.masjidReference);if(current){request.pricingSnapshot={advertisingPrice:Number(current.advertisingPrice),adminPercent:Number(current.adminPercent),mosquePercent:Number(current.mosquePercent),adminAmount:Number(current.advertisingPrice)*Number(current.adminPercent)/100,mosqueAmount:Number(current.advertisingPrice)*Number(current.mosquePercent)/100,updatedAt:current.updatedAt};request.price=Number(current.advertisingPrice)}}}}
   const groups=new Map(),addLine=(code,line)=>{if(!groups.has(code))groups.set(code,[]);groups.get(code).push(line)};
-  for(const job of jobs){const code=job.businessCode||'BUS-00184';job.masjids.filter(m=>m.status==='approved'&&m.paymentStatus!=='paid').forEach(m=>addLine(code,{jobId:job.id,kind:'job',description:`${job.title} — ${m.name}`,masjid:m.name,amount:m.fee,adminPercent:Number(m.adminPercent??30),mosquePercent:Number(m.mosquePercent??70)}))}
+  for(const job of jobs){const code=job.businessCode;if(!code)continue;job.masjids.filter(m=>m.status==='approved'&&m.paymentStatus!=='paid').forEach(m=>addLine(code,{jobId:job.id,kind:'job',description:`${job.title} — ${m.name}`,masjid:m.name,amount:m.fee,adminPercent:Number(m.adminPercent??30),mosquePercent:Number(m.mosquePercent??70)}))}
   for(const request of requests.filter(r=>r.status==='approved'&&r.paymentStatus!=='paid'&&r.businessCode)){const snap=request.pricingSnapshot||{},amount=Number(snap.advertisingPrice??request.price??0);if(amount>0)addLine(request.businessCode,{requestId:request.id,kind:'advertising',description:`Business advertising — ${request.masjid}`,masjid:request.masjid,amount,adminPercent:Number(snap.adminPercent??30),mosquePercent:Number(snap.mosquePercent??70)})}
-  for(const acct of db.masjidPointFinance.accounts){acct.invoices=acct.invoices.filter(inv=>{if(!inv.workflow||inv.paid>0)return true;const active=(inv.lines||[]).filter(line=>{if(line.requestId){const request=requests.find(r=>r.id===line.requestId);return request?.status==='approved'&&request.paymentStatus!=='paid'}const job=jobs.find(j=>j.id===line.jobId),choice=job?.masjids.find(m=>m.name===line.masjid);return choice?.status==='approved'&&choice.paymentStatus!=='paid'});inv.lines=active;inv.amount=active.reduce((s,l)=>s+Number(l.amount),0);inv.shares={};active.forEach(l=>inv.shares[l.masjid]=(inv.shares[l.masjid]||0)+Number(l.amount)*Number(l.mosquePercent??70)/100);return active.length>0})}
+  // Which account a charge belongs to today. A business that has been issued a new business code
+  // leaves its old account behind, and an unpaid workflow invoice there would go on billing the
+  // same advertising request the new account is already billing — the charge appears twice, the
+  // mosque is shown a share of both, and the totals are simply wrong. A line is kept only on the
+  // account the thing it charges for currently bills to.
+  const codeForLine=line=>{
+    if(line.requestId)return (requests.find(r=>r.id===line.requestId)||{}).businessCode;
+    const job=jobs.find(j=>j.id===line.jobId);
+    return job&&job.businessCode;
+  };
+  for(const acct of db.masjidPointFinance.accounts){acct.invoices=acct.invoices.filter(inv=>{if(!inv.workflow||inv.paid>0)return true;const active=(inv.lines||[]).filter(line=>{const owner=codeForLine(line);if(owner&&owner!==acct.code)return false;if(line.requestId){const request=requests.find(r=>r.id===line.requestId);return request?.status==='approved'&&request.paymentStatus!=='paid'}const job=jobs.find(j=>j.id===line.jobId),choice=job?.masjids.find(m=>m.name===line.masjid);return choice?.status==='approved'&&choice.paymentStatus!=='paid'});inv.lines=active;inv.amount=active.reduce((s,l)=>s+Number(l.amount),0);inv.shares={};active.forEach(l=>inv.shares[l.masjid]=(inv.shares[l.masjid]||0)+Number(l.amount)*Number(l.mosquePercent??70)/100);return active.length>0})}
   for(const [code,dueLines] of groups){const owner=(db.masjidPointAdminApplications||[]).find(a=>a.businessCode===code),acct=account(db,code,owner?.name||'Business',owner?.email||'');let invoice=acct.invoices.find(i=>i.workflow===true&&i.paid<i.amount&&!['cancelled','refunded'].includes(i.status));if(dueLines.length){if(!invoice){invoice={number:nextInvoiceNumber(db),date:new Date().toISOString().slice(0,10),due:new Date(Date.now()+14*864e5).toISOString().slice(0,10),amount:0,paid:0,shares:{},lines:[],workflow:true};acct.invoices.unshift(invoice)}invoice.lines=dueLines;invoice.amount=dueLines.reduce((s,l)=>s+Number(l.amount),0);invoice.shares={};dueLines.forEach(l=>invoice.shares[l.masjid]=(invoice.shares[l.masjid]||0)+Number(l.amount)*Number(l.mosquePercent??70)/100)}}
   for (const acct of db.masjidPointFinance.accounts) for (const inv of acct.invoices.filter(i=>i.workflow && i.paid>=i.amount && i.amount>0&&!['cancelled','refunded'].includes(i.status))) {
     for (const line of inv.lines||[]) {
