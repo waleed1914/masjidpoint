@@ -12,11 +12,12 @@
 (function () {
   'use strict';
 
-  // Only sections that actually exist. "Active listings" and "Earnings" were in the sidebar with
-  // nothing behind them anywhere in the codebase — they are not listed here, and portal-nav.js no
-  // longer offers them, because a link that goes nowhere is worse than one that is absent.
+  // Only sections that actually exist. Earnings is still absent: nothing renders it, and a link
+  // that goes nowhere is worse than one that is not there. Active listings is here now because
+  // masjid-listings.js builds it.
   const SECTIONS = {
     'masjid-requests': { title: 'Business requests', keep: ['#requests'] },
+    'masjid-listings': { title: 'Active listings',   keep: ['#listings'] },
     'masjid-jobs':     { title: 'Job requests',      keep: ['.job-approval-panel'] },
     'masjid-orders':   { title: 'Shop orders',       keep: ['#shop-orders'] },
     'masjid-qr':       { title: 'Advertising QR',    keep: ['#qr-poster'] },

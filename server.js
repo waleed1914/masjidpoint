@@ -234,7 +234,7 @@ function reconcile(db, previousJobs=[]) {
   for(const [code,dueLines] of groups){const owner=(db.masjidPointAdminApplications||[]).find(a=>a.businessCode===code),acct=account(db,code,owner?.name||'Business',owner?.email||'');let invoice=acct.invoices.find(i=>i.workflow===true&&i.paid<i.amount&&!['cancelled','refunded'].includes(i.status));if(dueLines.length){if(!invoice){invoice={number:nextInvoiceNumber(db),date:new Date().toISOString().slice(0,10),due:new Date(Date.now()+14*864e5).toISOString().slice(0,10),amount:0,paid:0,shares:{},lines:[],workflow:true};acct.invoices.unshift(invoice)}invoice.lines=dueLines;invoice.amount=dueLines.reduce((s,l)=>s+Number(l.amount),0);invoice.shares={};dueLines.forEach(l=>invoice.shares[l.masjid]=(invoice.shares[l.masjid]||0)+Number(l.amount)*Number(l.mosquePercent??70)/100)}}
   for (const acct of db.masjidPointFinance.accounts) for (const inv of acct.invoices.filter(i=>i.workflow && i.paid>=i.amount && i.amount>0&&!['cancelled','refunded'].includes(i.status))) {
     for (const line of inv.lines||[]) {
-      if(line.requestId){const request=requests.find(r=>r.id===line.requestId);if(request&&request.paymentStatus!=='paid'){request.paymentStatus='paid';request.listing='ready';const share=Number(line.amount)*Number(line.mosquePercent??70)/100;notify(db,`business:${request.email}`,'Advertising payment approved',`Your £${Number(line.amount).toFixed(2)} payment for ${request.masjid} was verified.`,'business-portal#listings',`advert-paid-business-${request.id}`);notify(db,`masjid:${request.masjid}`,'Advertising payment received',`${request.name} paid £${Number(line.amount).toFixed(2)}. You can now enable the listing. Your £${share.toFixed(2)} share is due.`,'masjid-portal#requests',`advert-paid-masjid-${request.id}`);notify(db,'admin','Mosque settlement due',`£${share.toFixed(2)} is due to ${request.masjid}.`,'admin-payments#settlements',`advert-settlement-${request.id}`)}continue}
+      if(line.requestId){const request=requests.find(r=>r.id===line.requestId);if(request&&request.paymentStatus!=='paid'){request.paymentStatus='paid';request.listing='enabled';const share=Number(line.amount)*Number(line.mosquePercent??70)/100;notify(db,`business:${request.email}`,'Advertising payment approved',`Your £${Number(line.amount).toFixed(2)} payment for ${request.masjid} was verified and your listing is live.`,'business-portal#listings',`advert-paid-business-${request.id}`);notify(db,`masjid:${request.masjid}`,'Advertising payment received',`${request.name} paid £${Number(line.amount).toFixed(2)} and the listing is now live. Your £${share.toFixed(2)} share is due.`,'masjid-portal#requests',`advert-paid-masjid-${request.id}`);notify(db,'admin','Mosque settlement due',`£${share.toFixed(2)} is due to ${request.masjid}.`,'admin-payments#settlements',`advert-settlement-${request.id}`)}continue}
       const job=jobs.find(j=>j.id===line.jobId), choice=job?.masjids.find(m=>m.name===line.masjid);
       if (choice && choice.paymentStatus!=='paid') {
         choice.paymentStatus='paid'; job.status='live'; job.enabled=true; job.masjid=job.masjids.filter(m=>m.paymentStatus==='paid').map(m=>m.name).join(', ');
@@ -364,6 +364,53 @@ const server=http.createServer(async (req,res)=>{
       order.paymentStatus='submitted';
       order.paymentProofId=id;
       notify(db,'admin','Payment proof awaiting verification',`${order.customer?.name||'A customer'} submitted £${amount.toFixed(2)} for ${order.id}.`,`admin-payments.html?proof=${id}#proofs`,`shop-proof-${id}`);
+      await save(db);
+      return json(res,200,{ok:true,proof:id});
+    }
+    // The same thing for a business paying an invoice — advertising and job listings.
+    //
+    // This evidence used to be written to IndexedDB in the business's own browser, which meant it
+    // never left that machine: the administrator, reviewing from somewhere else entirely, saw a
+    // broken image and had nothing to verify a payment against. It is stored on the server now,
+    // beside the shop evidence, and read back through the same endpoint below.
+    if (url.pathname==='/api/invoice/proof' && req.method==='POST') {
+      const input=await body(req), db=await load();
+      const invoice=String(input.invoice||'').trim();
+      const businessCode=String(input.businessCode||'').trim();
+      const amount=Number(input.amount), reference=String(input.bankReference||'').trim();
+      if(!invoice||!businessCode) return json(res,400,{error:'The invoice and business could not be identified.'});
+      if(!(amount>0)||!reference) return json(res,400,{error:'A payment amount and bank transaction reference are required.'});
+
+      const account=(db.masjidPointFinance?.accounts||[]).find(a=>a.code===businessCode);
+      const target=(account?.invoices||[]).find(i=>i.number===invoice);
+      if(!target) return json(res,404,{error:'That invoice does not belong to this business.'});
+
+      const id=`PAY-${Date.now()}`;
+      let evidence=null;
+      const match=/^data:(image\/png|image\/jpeg|image\/webp|application\/pdf);base64,(.+)$/.exec(String(input.file||''));
+      if(input.file&&!match) return json(res,400,{error:'Evidence must be a PNG, JPG, WebP or PDF.'});
+      if(match){
+        const uploads=path.join(dataDir,'uploads');
+        await fs.promises.mkdir(uploads,{recursive:true});
+        const extension={'image/png':'png','image/jpeg':'jpg','image/webp':'webp','application/pdf':'pdf'}[match[1]];
+        const key=`${id}.${extension}`;
+        await fs.promises.writeFile(path.join(uploads,key),Buffer.from(match[2],'base64'));
+        evidence={key,type:match[1],name:String(input.fileName||key).slice(0,120)};
+      }
+
+      db.masjidPointPaymentProofs=db.masjidPointPaymentProofs||[];
+      // One open submission per invoice. Sending evidence twice replaces the earlier attempt
+      // rather than queueing a second copy of the same payment for review.
+      db.masjidPointPaymentProofs=db.masjidPointPaymentProofs.filter(p=>
+        !(p.invoice===invoice&&p.businessCode===businessCode&&p.status==='submitted'));
+      db.masjidPointPaymentProofs.unshift({id,invoice,businessCode,
+        businessName:String(input.businessName||account?.name||''),amount,
+        date:String(input.date||'').slice(0,10)||new Date().toISOString().slice(0,10),
+        bankReference:reference,fileName:evidence?.name||'',fileType:evidence?.type||'',evidence,
+        status:'submitted',submittedAt:new Date().toISOString(),adminNote:''});
+      notify(db,'admin','Payment proof awaiting verification',
+        `${input.businessName||account?.name||'A business'} submitted £${amount.toFixed(2)} for ${invoice}.`,
+        `admin-payments.html?proof=${id}#proofs`,`invoice-proof-${id}`);
       await save(db);
       return json(res,200,{ok:true,proof:id});
     }
@@ -498,7 +545,7 @@ const server=http.createServer(async (req,res)=>{
     // portal-section.js then shows the section that address names. They are not separate files
     // because masjid-portal.js reads its elements without checking they exist, so a page missing
     // the parts it does not show would throw on every one of them.
-    const PORTAL_SECTIONS={'/masjid-requests':1,'/masjid-jobs':1,'/masjid-orders':1,'/masjid-qr':1};
+    const PORTAL_SECTIONS={'/masjid-requests':1,'/masjid-jobs':1,'/masjid-orders':1,'/masjid-qr':1,'/masjid-listings':1};
     const requested=decodeURIComponent(
       url.pathname==='/'?'/index':(PORTAL_SECTIONS[url.pathname]?'/masjid-portal':url.pathname));
     const usable=candidate=>fs.existsSync(candidate)&&!fs.statSync(candidate).isDirectory();
