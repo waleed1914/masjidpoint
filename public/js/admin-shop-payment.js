@@ -15,9 +15,18 @@
       const method = ShopFulfilment.methodOf(order), paid = order.paymentStatus === 'paid';
       const box = document.createElement('div');
       box.className = `shop-payment-state ${order.paymentStatus}`;
-      const evidence = order.paymentEvidence?.fileData
-        ? `<a class="shop-proof-link" href="${order.paymentEvidence.fileData}" target="_blank" rel="noopener">View payment proof →</a>`
-        : method.paysUpfront ? '<span class="shop-proof-missing"><small>Evidence</small><strong>Not submitted</strong></span>' : '';
+      // Shop evidence is uploaded to the server and recorded as a proof, with the order pointing at
+      // it. This looked for order.paymentEvidence.fileData — a shape nothing writes any more — so
+      // every order read "Not submitted" however much evidence had been sent, and payments were
+      // being verified having seen nothing. fileData is still honoured for anything submitted
+      // before the upload existed.
+      const proof = (state.masjidPointPaymentProofs || []).find(pr =>
+        pr.orderId === order.id || (order.paymentProofId && pr.id === order.paymentProofId));
+      const evidence = proof?.evidence?.key
+        ? `<a class="shop-proof-link" href="/api/shop/proof/file?id=${encodeURIComponent(proof.id)}" target="_blank" rel="noopener">View payment proof →</a>`
+        : proof?.fileData
+          ? `<a class="shop-proof-link" href="${proof.fileData}" target="_blank" rel="noopener">View payment proof →</a>`
+          : method.paysUpfront ? '<span class="shop-proof-missing"><small>Evidence</small><strong>Not submitted</strong></span>' : '';
       const action = paid
         ? '<b>✓ Payment verified</b>'
         : method.paysUpfront
@@ -44,7 +53,35 @@
       order.paymentVerifiedBy = JSON.parse(sessionStorage.getItem('masjidPointAdminSession') || 'null')?.name || 'Admin';
       order.history ||= [];
       order.history.push({ status: 'payment_verified', at: order.paidAt, by: order.paymentVerifiedBy });
-      await MasjidDB.save('masjidPointShopOrders', items);
+
+      // Verifying a payment changed the order and told nobody. The customer had paid, sent
+      // evidence, and was left refreshing the page to find out whether it had been accepted.
+      const proofs = current.masjidPointPaymentProofs || [];
+      const linked = proofs.find(pr => pr.orderId === order.id || (order.paymentProofId && pr.id === order.paymentProofId));
+      if (linked && linked.status === 'submitted') { linked.status = 'approved'; linked.decidedAt = order.paidAt; }
+
+      const notes = current.masjidPointNotifications || [];
+      const mosque = order.mosqueName || order.masjid || order.mosque || 'the masjid';
+      const collecting = !ShopFulfilment.methodOf(order).delivers;
+      notes.unshift({
+        id: `NTF-${Date.now()}`,
+        audience: `customer:${String(order.customer?.email || '').toLowerCase()}`,
+        title: 'Payment verified',
+        message: `Your £${Number(order.total).toFixed(2)} payment for ${order.id} has been verified. `
+          + (collecting
+            ? `Download your receipt and collect your order from ${mosque}.`
+            : 'Download your receipt — your order will be delivered to you.'),
+        href: 'my-account',
+        key: `order-paid-${order.id}`,
+        read: false,
+        createdAt: new Date().toISOString()
+      });
+
+      await Promise.all([
+        MasjidDB.save('masjidPointShopOrders', items),
+        MasjidDB.save('masjidPointPaymentProofs', proofs),
+        MasjidDB.save('masjidPointNotifications', notes)
+      ]);
       location.reload();
     });
   }
