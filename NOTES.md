@@ -20,6 +20,19 @@ The whole site is open: there is no password in front of it, and these are the h
 5. **The admin default password is published** in this repository. Change it under Business profile
    → Administrators, or set `ADMIN_PASSWORD` in `/etc/masjidpoint.env`.
 
+## The big session, in the order I would take it
+
+1. **Close the three open endpoints and get a certificate on it.** Everything else is cosmetic
+   next to this. `PUT /api/collection/:key`, `GET /api/job/cv/file`, `GET /api/shop/proof/file`.
+   Needs a real server session, which touches how every page saves — a day's work, not an hour's.
+2. **The two pages asked for a design pass**: the masjid shop collection page, and the admin shop
+   page. Design work, best done in one sitting rather than between bug fixes.
+3. **Masjid earnings.** The last sidebar entry with nothing behind it. The data exists.
+4. **Give each test suite its own database** so the totals mean something. Five suites fail today
+   and two of those describe a checkout flow that no longer exists.
+5. **The remaining hardcoded demo data.** It has surfaced in nearly every file touched so far.
+   Worth one deliberate sweep rather than finding it a screen at a time.
+
 ## Design work, asked for and not started
 
 - **Masjid shop collection page** — asked for "a very good UI". Not begun; it is design work rather
@@ -64,11 +77,19 @@ The whole site is open: there is no password in front of it, and these are the h
 
 ## Deployment
 
-- `sudo sed -i '/^PREVIEW_/d' /etc/masjidpoint.env` then
-  `sudo bash /opt/masjidpoint/scripts/ec2-setup.sh` — the first line only matters once, to remove
-  the password prompt an earlier deployment left in the environment file.
+- `sudo bash /opt/masjidpoint/scripts/ec2-setup.sh` pulls and restarts.
 - **Close any open MasjidPoint tabs before testing a cleared database.** A tab still holding the old
-  data in `localStorage` will sync it back onto the empty server.
+  data in `localStorage` will sync it back onto the empty server — this has happened twice.
+- To clear a browser that is doing it: `F12` → Console → `localStorage.clear(); sessionStorage.clear()`
+  then reload.
+- Emptying the collections leaves the uploaded files behind — evidence and CVs in
+  `/opt/masjidpoint/data/uploads`. To remove those as well:
+
+  ```bash
+  sudo systemctl stop masjidpoint
+  sudo rm -rf /opt/masjidpoint/data/uploads/*
+  sudo systemctl start masjidpoint
+  ```
 - `PRODUCTION.md` still applies: `NODE_ENV=production` refuses to start without PostgreSQL and
   SMTP, so the deployment runs in JSON mode.
 
