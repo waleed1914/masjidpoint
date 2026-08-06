@@ -58,6 +58,22 @@ const repository=new StateRepository({seed,root});
 const emailService=new EmailService(root);
 function load(){return repository.load()}
 
+// Invoice numbers must identify exactly one invoice: they are what a business quotes when it pays
+// and what the money is matched against. Take the highest number already issued and add one,
+// rather than reading the clock — several accounts are invoiced inside the same loop, and the
+// clock does not move between them.
+function nextInvoiceNumber(db){
+  const year=new Date().getFullYear();
+  let highest=0;
+  for(const acct of (db.masjidPointFinance&&db.masjidPointFinance.accounts)||[])
+    for(const inv of acct.invoices||[]){
+      const m=String(inv.number||'').match(/^INV-\d{4}-(\d+)$/);
+      if(m)highest=Math.max(highest,Number(m[1]));
+    }
+  return `INV-${year}-${String(highest+1).padStart(5,'0')}`;
+}
+
+
 // Everything the frontend reads comes from GET /api/state, which for a long time meant the whole
 // database — including every password hash. That was survivable while the platform only ran on a
 // trusted machine, and is not once it is on the open internet: a hash is not a password, but it is
@@ -191,7 +207,7 @@ function reconcile(db, previousJobs=[]) {
   for(const job of jobs){const code=job.businessCode||'BUS-00184';job.masjids.filter(m=>m.status==='approved'&&m.paymentStatus!=='paid').forEach(m=>addLine(code,{jobId:job.id,kind:'job',description:`${job.title} — ${m.name}`,masjid:m.name,amount:m.fee,adminPercent:Number(m.adminPercent??30),mosquePercent:Number(m.mosquePercent??70)}))}
   for(const request of requests.filter(r=>r.status==='approved'&&r.paymentStatus!=='paid'&&r.businessCode)){const snap=request.pricingSnapshot||{},amount=Number(snap.advertisingPrice??request.price??0);if(amount>0)addLine(request.businessCode,{requestId:request.id,kind:'advertising',description:`Business advertising — ${request.masjid}`,masjid:request.masjid,amount,adminPercent:Number(snap.adminPercent??30),mosquePercent:Number(snap.mosquePercent??70)})}
   for(const acct of db.masjidPointFinance.accounts){acct.invoices=acct.invoices.filter(inv=>{if(!inv.workflow||inv.paid>0)return true;const active=(inv.lines||[]).filter(line=>{if(line.requestId){const request=requests.find(r=>r.id===line.requestId);return request?.status==='approved'&&request.paymentStatus!=='paid'}const job=jobs.find(j=>j.id===line.jobId),choice=job?.masjids.find(m=>m.name===line.masjid);return choice?.status==='approved'&&choice.paymentStatus!=='paid'});inv.lines=active;inv.amount=active.reduce((s,l)=>s+Number(l.amount),0);inv.shares={};active.forEach(l=>inv.shares[l.masjid]=(inv.shares[l.masjid]||0)+Number(l.amount)*Number(l.mosquePercent??70)/100);return active.length>0})}
-  for(const [code,dueLines] of groups){const owner=(db.masjidPointAdminApplications||[]).find(a=>a.businessCode===code),acct=account(db,code,owner?.name||'Business',owner?.email||'');let invoice=acct.invoices.find(i=>i.workflow===true&&i.paid<i.amount&&!['cancelled','refunded'].includes(i.status));if(dueLines.length){if(!invoice){invoice={number:`INV-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`,date:new Date().toISOString().slice(0,10),due:new Date(Date.now()+14*864e5).toISOString().slice(0,10),amount:0,paid:0,shares:{},lines:[],workflow:true};acct.invoices.unshift(invoice)}invoice.lines=dueLines;invoice.amount=dueLines.reduce((s,l)=>s+Number(l.amount),0);invoice.shares={};dueLines.forEach(l=>invoice.shares[l.masjid]=(invoice.shares[l.masjid]||0)+Number(l.amount)*Number(l.mosquePercent??70)/100)}}
+  for(const [code,dueLines] of groups){const owner=(db.masjidPointAdminApplications||[]).find(a=>a.businessCode===code),acct=account(db,code,owner?.name||'Business',owner?.email||'');let invoice=acct.invoices.find(i=>i.workflow===true&&i.paid<i.amount&&!['cancelled','refunded'].includes(i.status));if(dueLines.length){if(!invoice){invoice={number:nextInvoiceNumber(db),date:new Date().toISOString().slice(0,10),due:new Date(Date.now()+14*864e5).toISOString().slice(0,10),amount:0,paid:0,shares:{},lines:[],workflow:true};acct.invoices.unshift(invoice)}invoice.lines=dueLines;invoice.amount=dueLines.reduce((s,l)=>s+Number(l.amount),0);invoice.shares={};dueLines.forEach(l=>invoice.shares[l.masjid]=(invoice.shares[l.masjid]||0)+Number(l.amount)*Number(l.mosquePercent??70)/100)}}
   for (const acct of db.masjidPointFinance.accounts) for (const inv of acct.invoices.filter(i=>i.workflow && i.paid>=i.amount && i.amount>0&&!['cancelled','refunded'].includes(i.status))) {
     for (const line of inv.lines||[]) {
       if(line.requestId){const request=requests.find(r=>r.id===line.requestId);if(request&&request.paymentStatus!=='paid'){request.paymentStatus='paid';request.listing='ready';const share=Number(line.amount)*Number(line.mosquePercent??70)/100;notify(db,`business:${request.email}`,'Advertising payment approved',`Your £${Number(line.amount).toFixed(2)} payment for ${request.masjid} was verified.`,'business-portal#listings',`advert-paid-business-${request.id}`);notify(db,`masjid:${request.masjid}`,'Advertising payment received',`${request.name} paid £${Number(line.amount).toFixed(2)}. You can now enable the listing. Your £${share.toFixed(2)} share is due.`,'masjid-portal#requests',`advert-paid-masjid-${request.id}`);notify(db,'admin','Mosque settlement due',`£${share.toFixed(2)} is due to ${request.masjid}.`,'admin-payments#settlements',`advert-settlement-${request.id}`)}continue}
