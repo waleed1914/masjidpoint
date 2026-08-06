@@ -58,6 +58,55 @@ const repository=new StateRepository({seed,root});
 const emailService=new EmailService(root);
 function load(){return repository.load()}
 
+// ---- sessions ---------------------------------------------------------------
+//
+// Signing in used to leave no trace on the server: the browser kept a note of who it was and the
+// server took every request at face value. That was survivable when the platform only ran on a
+// machine its operator controlled, and is not now it is on the open internet — PUT
+// /api/collection/:key would let anyone replace the entire database.
+//
+// A token is a signed statement of who signed in. The secret never leaves the server, so a client
+// can hold a token but cannot write one, and cannot promote itself to administrator by editing
+// what it holds.
+//
+// SESSION_SECRET should be set in production. Without it a random one is generated per start,
+// which is safe but signs everyone out when the process restarts.
+const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
+const SESSION_HOURS = 8;
+
+function issueSession(payload){
+  const body = { ...payload, exp: Date.now() + SESSION_HOURS * 3600000 };
+  const data = Buffer.from(JSON.stringify(body)).toString('base64url');
+  const mac = crypto.createHmac('sha256', SESSION_SECRET).update(data).digest('base64url');
+  return `${data}.${mac}`;
+}
+
+// The token is also set as a cookie, because evidence and CVs are opened as ordinary links in a
+// new tab — a plain navigation, which carries no custom header. HttpOnly so page scripts cannot
+// read it, SameSite=Lax so another site cannot make the browser use it.
+function sessionCookie(token){
+  return { 'Set-Cookie': `mp_session=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${SESSION_HOURS*3600}` };
+}
+
+function readSession(req){
+  let raw = String(req.headers['x-masjidpoint-session'] || '').trim();
+  if(!raw){
+    const cookie = String(req.headers.cookie || '').split(';').map(s=>s.trim()).find(s=>s.startsWith('mp_session='));
+    if(cookie) raw = decodeURIComponent(cookie.slice('mp_session='.length));
+  }
+  if(!raw || !raw.includes('.')) return null;
+  const [data, mac] = raw.split('.');
+  const expected = crypto.createHmac('sha256', SESSION_SECRET).update(data).digest('base64url');
+  // Compared in constant time, and only after checking the lengths match — timingSafeEqual throws
+  // on a length mismatch, which would itself leak.
+  const a = Buffer.from(mac || ''), b = Buffer.from(expected);
+  if(a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null;
+  try {
+    const session = JSON.parse(Buffer.from(data, 'base64url').toString());
+    return Number(session.exp) > Date.now() ? session : null;
+  } catch { return null; }
+}
+
 // Invoice numbers must identify exactly one invoice: they are what a business quotes when it pays
 // and what the money is matched against. Take the highest number already issued and add one,
 // rather than reading the clock — several accounts are invoiced inside the same loop, and the
@@ -119,7 +168,7 @@ async function emailTransitions(before,after,actor='Super Admin'){
     }
   }
 }
-function json(res, status, body) { res.writeHead(status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(body)); }
+function json(res, status, body, extraHeaders) { res.writeHead(status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', ...(extraHeaders||{}) }); res.end(JSON.stringify(body)); }
 function body(req) { return new Promise((resolve, reject) => { let raw=''; req.on('data', c => { raw += c; if (raw.length > 8e6) req.destroy(); }); req.on('end', () => { try { resolve(raw ? JSON.parse(raw) : {}); } catch(e) { reject(e); } }); }); }
 function notify(db, audience, title, message, href, key) {
   db.masjidPointNotifications ||= [];
@@ -278,7 +327,7 @@ const server=http.createServer(async (req,res)=>{
     }
   }
   try {
-    if(url.pathname==='/api/admin/login'&&req.method==='POST'){const {email,passwordHash}=await body(req),db=await load(),user=(db.masjidPointAdminUsers||seed.masjidPointAdminUsers).find(x=>String(x.email).toLowerCase()===String(email||'').trim().toLowerCase()&&x.passwordHash===passwordHash&&x.status==='active');if(!user)return json(res,401,{error:'The email address or password is incorrect.'});return json(res,200,{user:{id:user.id,name:user.name,email:user.email,role:user.role}})}
+    if(url.pathname==='/api/admin/login'&&req.method==='POST'){const {email,passwordHash}=await body(req),db=await load(),user=(db.masjidPointAdminUsers||seed.masjidPointAdminUsers).find(x=>String(x.email).toLowerCase()===String(email||'').trim().toLowerCase()&&x.passwordHash===passwordHash&&x.status==='active');if(!user)return json(res,401,{error:'The email address or password is incorrect.'});const adminToken=issueSession({role:'admin',email:user.email,name:user.name});return json(res,200,{user:{id:user.id,name:user.name,email:user.email,role:user.role},session:adminToken},sessionCookie(adminToken))}
     // An administrator changing their own password. Creating and suspending administrators is
     // Masjid and business sign-in. This used to happen entirely in the browser: the page fetched
     // every account from /api/state and compared password hashes locally, which meant every hash
@@ -293,7 +342,8 @@ const server=http.createServer(async (req,res)=>{
       if(!account||!account.passwordHash||account.passwordHash!==passwordHash)
         return json(res,401,{error:'No activated account matches that email and password.'});
       const {passwordHash:_ignored,...safe}=account;
-      return json(res,200,{account:safe});
+      const accountToken=issueSession({role:'account',reference:account.reference,email:account.email});
+      return json(res,200,{account:safe,session:accountToken},sessionCookie(accountToken));
     }
 
     // Changing a masjid or business password, for the same reason: the portal used to read the
@@ -460,6 +510,9 @@ const server=http.createServer(async (req,res)=>{
     // same as every other read on this platform today. It needs an employer session in front of it
     // before the platform handles anyone's real CV; see DEPLOY.md.
     if (url.pathname==='/api/job/cv/file' && req.method==='GET') {
+      // A CV is somebody's employment history, address and phone number. Holding the reference
+      // used to be enough to read one; it now takes a session as well.
+      if(!readSession(req)) return json(res,401,{error:'Sign in to read a CV.'});
       const db=await load();
       const application=(db.masjidPointJobApplications||[]).find(a=>a.reference===url.searchParams.get('reference'));
       if(!application?.cv?.key) return json(res,404,{error:'No CV stored for this application.'});
@@ -474,6 +527,8 @@ const server=http.createServer(async (req,res)=>{
 
     // Serves stored evidence back to the admin queue. basename() keeps the key from escaping the directory.
     if (url.pathname==='/api/shop/proof/file' && req.method==='GET') {
+      // Payment evidence is often a screenshot of a bank statement. It takes a session to see one.
+      if(!readSession(req)) return json(res,401,{error:'Sign in to view payment evidence.'});
       const db=await load(), proof=(db.masjidPointPaymentProofs||[]).find(x=>x.id===url.searchParams.get('id'));
       if(!proof?.evidence?.key) return json(res,404,{error:'No evidence stored for this proof.'});
       try {
@@ -489,6 +544,34 @@ const server=http.createServer(async (req,res)=>{
       // crafted request cannot graft arbitrary keys onto the stored state.
       if(!WRITABLE_COLLECTIONS.has(key))return json(res,400,{error:`Unknown collection "${key}".`});
       const value=await body(req), db=await load(), previousJobs=JSON.parse(JSON.stringify(db.masjidPointJobs||[]));
+
+      // Who may change what.
+      //
+      // The whole collection is sent on every save, so a write cannot be read as "add one row" —
+      // it has to be compared against what is stored. Registering a masjid, applying to advertise,
+      // applying for a job and buying from a shop all happen before anyone signs in, so those
+      // additions must stay open. Removing or rewriting what is already there must not be.
+      const session=readSession(req);
+      const isAdmin=session?.role==='admin';
+
+      // Money, prices, bank details and the administrators themselves are only ever written from
+      // the admin pages. Nothing else has any business touching them.
+      const ADMIN_ONLY=new Set(['masjidPointAdminUsers','masjidPointFinance','masjidPointPlatformSettings','masjidPointMasjidPricing']);
+      if(ADMIN_ONLY.has(key)&&!isAdmin)
+        return json(res,403,{error:'Only an administrator can change this.'});
+
+      if(!isAdmin&&Array.isArray(seed[key])&&Array.isArray(value)){
+        const before=Array.isArray(db[key])?db[key]:[];
+        const idOf=row=>String(row&&(row.id??row.reference??row.number??row.code??row.email??JSON.stringify(row)));
+        const kept=new Set(value.map(idOf));
+        const missing=before.filter(row=>!kept.has(idOf(row)));
+        // Anyone signed in may retire a record they can see; nobody anonymous may, which is what
+        // stops a stranger emptying the platform.
+        if(missing.length&&!session)
+          return json(res,403,{error:'Sign in to remove records.'});
+        if(missing.length>Math.max(5,before.length*0.5))
+          return json(res,403,{error:'That would remove most of this collection. Refusing it.'});
+      }
       if(Array.isArray(seed[key])&&!Array.isArray(value))return json(res,400,{error:`Collection "${key}" must be an array.`});
       const before=JSON.parse(JSON.stringify(db)),actor=String(req.headers['x-admin-name']||'System').slice(0,100);if(key==='masjidPointFinance')value.audit=db.masjidPointFinance?.audit||[];db[key]=value; reconcile(db, previousJobs); await emailTransitions(before,db,actor);await save(db); return json(res,200,{ok:true,state:db});
     }
@@ -525,7 +608,8 @@ const server=http.createServer(async (req,res)=>{
       const customer=(db.masjidPointCustomers||[]).find(c=>String(c.email).toLowerCase()===clean);
       if(!customer||customer.passwordHash!==passwordHash)return json(res,401,{error:'Email or password is incorrect.'});
       const {passwordHash:_omit,...safe}=customer;
-      return json(res,200,{ok:true,customer:safe});
+      const customerToken=issueSession({role:'customer',email:customer.email,id:customer.id});
+      return json(res,200,{ok:true,customer:safe,session:customerToken},sessionCookie(customerToken));
     }
     // Individuals give very little up front, so the portal lets them fill in the rest later.
     if (url.pathname==='/api/customer/profile' && req.method==='POST') {

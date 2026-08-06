@@ -3,28 +3,36 @@
 A running list, kept so a long session can pick up without rediscovering everything. Newest
 findings at the top of each section. When something here is done, delete it rather than ticking it.
 
-## Security — do these before the platform holds anything real
+## Security
 
-The whole site is open: there is no password in front of it, and these are the holes behind that.
+**Done.** Signing in now issues a token signed by the server, held as both a header and an HttpOnly
+cookie. On that:
 
-1. **`PUT /api/collection/:key` is unauthenticated.** Anyone who knows the address can replace any
-   collection — wipe every job, forge orders, rewrite invoices. This is how the live database was
-   cleared for testing, which shows exactly what it allows. Needs a session check on writes, which
-   touches how every page saves.
-2. **`GET /api/job/cv/file` checks only the reference.** Anyone holding an application reference can
-   read that CV — somebody's employment history, address and phone number. Worse than the listing
-   data around it. Needs an employer session.
-3. **`GET /api/shop/proof/file` is the same** for payment evidence, which may show bank details.
-4. **No HTTPS.** Passwords are hashed in the browser, so the hash crosses the network in the clear
-   and can be replayed. Needs a domain name, then `certbot --nginx`. See DEPLOY.md.
-5. **The admin default password is published** in this repository. Change it under Business profile
-   → Administrators, or set `ADMIN_PASSWORD` in `/etc/masjidpoint.env`.
+- `PUT /api/collection/:key` no longer lets a stranger empty or rewrite anything. Money, prices,
+  bank details and administrators are admin-only; removing records takes a session; a write that
+  would delete most of a collection is refused outright. Registering, applying and ordering still
+  work signed out, because those are additions.
+- `GET /api/job/cv/file` and `GET /api/shop/proof/file` need a session.
+- A forged token is rejected — the secret never leaves the server.
+
+**Still to do:**
+
+1. **No HTTPS.** Passwords are hashed in the browser, so the hash crosses the network in the clear
+   and can be replayed, and the session cookie travels unprotected. Needs a domain name, then
+   `certbot --nginx`. See DEPLOY.md. **This is now the biggest one.**
+2. **Set `SESSION_SECRET`** in `/etc/masjidpoint.env`. Without it a random secret is generated at
+   start, which is safe but signs everyone out whenever the service restarts.
+3. **Ownership is not checked, only identity.** Any signed-in account may edit any record it can
+   reach. Closing that means knowing which rows belong to whom, collection by collection.
+4. **The admin default password is published** in this repository. Change it under Business profile
+   → Administrators, or set `ADMIN_PASSWORD`.
+5. **No backups.** `npm run backup` needs `BACKUP_ENCRYPTION_KEY` and nothing runs on a schedule.
+   If that instance dies, the data and the uploaded files go with it.
 
 ## The big session, in the order I would take it
 
-1. **Close the three open endpoints and get a certificate on it.** Everything else is cosmetic
-   next to this. `PUT /api/collection/:key`, `GET /api/job/cv/file`, `GET /api/shop/proof/file`.
-   Needs a real server session, which touches how every page saves — a day's work, not an hour's.
+1. **A certificate, and SESSION_SECRET set.** The endpoints are closed; the wire is not. Needs a
+   domain name pointed at the Elastic IP, then `certbot --nginx`.
 2. **The two pages asked for a design pass**: the masjid shop collection page, and the admin shop
    page. Design work, best done in one sitting rather than between bug fixes.
 3. **Masjid earnings.** The last sidebar entry with nothing behind it. The data exists.
