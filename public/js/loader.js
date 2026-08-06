@@ -1,7 +1,10 @@
 // Puts the turning MasjidPoint mark over the page until it has real data to show.
 //
-// It runs from <head>, before the body exists, so the overlay is in place for the first paint —
-// otherwise you would see the very flash it is meant to cover.
+// It runs from <head>, before the body exists. The overlay itself cannot be built that early —
+// there is nothing to append it to — so building it on DOMContentLoaded meant the page painted
+// first and the loader dropped on top of a page the visitor had already seen, which is worse than
+// no loader at all. A stylesheet rule can apply from the first paint, so one goes in immediately
+// to cover the page, and the mark is added to it as soon as there is a body.
 //
 // The important property is that it cannot strand anyone. It comes down when the data has arrived,
 // or when the page has finished loading, or after a hard time limit, whichever happens first. If
@@ -15,6 +18,20 @@
 
   const HARD_LIMIT = 6000;   // never cover the page for longer than this
   const SETTLE = 260;        // let the first render finish before uncovering
+
+  // Applied while this script is still parsing, so the very first paint is already covered.
+  const early = document.createElement('style');
+  early.textContent =
+    'html.masjidpoint-loading{overflow:hidden}' +
+    'html.masjidpoint-loading body>*:not(#masjidpoint-loader){visibility:hidden}' +
+    'html.masjidpoint-loading::before{content:"";position:fixed;inset:0;z-index:9998;' +
+      'background:#fffdf8}' +
+    'html.masjidpoint-loading.portal-shell::before{background:#f3f1eb}';
+  (document.head || document.documentElement).appendChild(early);
+  document.documentElement.classList.add('masjidpoint-loading');
+  // The portals sit on a warmer background; matching it stops the cover flashing a different
+  // colour as it lifts. The body class is not readable yet, so the page name stands in for it.
+  if (/^\/(admin|masjid|business)/.test(location.pathname)) document.documentElement.classList.add('portal-shell');
 
   const MARK = `
     <svg class="masjidpoint-loader-mark" viewBox="0 0 48 48" role="img" aria-label="MasjidPoint">
@@ -52,6 +69,9 @@
   function clear() {
     if (done) return;
     done = true;
+    // Uncover the page first, then fade the mark out over it. Doing it the other way round shows
+    // the bare cover for a frame.
+    document.documentElement.classList.remove('masjidpoint-loading');
     if (!overlay) return;
     overlay.hidden = true;
     // Remove it entirely once the fade is over, so nothing is left covering the page or catching
@@ -59,9 +79,20 @@
     setTimeout(() => { overlay && overlay.remove(); overlay = null; }, 420);
   }
 
-  // Put it up as soon as there is a body to put it in.
+  // Put the mark up as soon as there is a body to put it in. The cover is already in place, so
+  // this only adds the spinner to it — the page was never visible in between.
+  //
+  // readystatechange as well as DOMContentLoaded: a script in <head> can be parsed after the
+  // document is already interactive when the page comes from cache, and DOMContentLoaded would
+  // then never fire again.
   if (document.body) build();
-  else document.addEventListener('DOMContentLoaded', build, { once: true });
+  else {
+    document.addEventListener('DOMContentLoaded', build, { once: true });
+    document.addEventListener('readystatechange', build);
+    // Belt and braces for a body that appears between those two.
+    const waitForBody = setInterval(() => { if (document.body) { build(); clearInterval(waitForBody); } }, 16);
+    setTimeout(() => clearInterval(waitForBody), 4000);
+  }
 
   // Whichever of these comes first wins.
   setTimeout(clear, HARD_LIMIT);
