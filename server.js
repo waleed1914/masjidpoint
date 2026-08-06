@@ -423,6 +423,55 @@ const server=http.createServer(async (req,res)=>{
       await save(db);
       return json(res,200,{ok:true,proof:id});
     }
+    // A candidate's CV, sent to the business that advertised the job.
+    //
+    // The file used to be written to IndexedDB in the applicant's own browser, so the employer
+    // received their name and the file name and nothing else — the document they were being asked
+    // to hire on never left the applicant's machine. privacy.html said as much, and said it was
+    // being changed. This is that change.
+    if (url.pathname==='/api/job/cv' && req.method==='POST') {
+      const input=await body(req), db=await load();
+      const reference=String(input.reference||'').trim();
+      if(!reference) return json(res,400,{error:'The application could not be identified.'});
+      const application=(db.masjidPointJobApplications||[]).find(a=>a.reference===reference);
+      if(!application) return json(res,404,{error:'That application does not exist.'});
+
+      const match=/^data:(application\/pdf|application\/vnd\.openxmlformats-officedocument\.wordprocessingml\.document|application\/msword);base64,(.+)$/
+        .exec(String(input.file||''));
+      if(!match) return json(res,400,{error:'A CV must be a PDF or a Word document.'});
+      const bytes=Buffer.from(match[2],'base64');
+      // The same ceiling the storage layer documents for CVs.
+      if(bytes.length>5*1024*1024) return json(res,400,{error:'That CV is larger than 5 MB.'});
+
+      const uploads=path.join(dataDir,'uploads');
+      await fs.promises.mkdir(uploads,{recursive:true});
+      const extension={'application/pdf':'pdf',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document':'docx',
+        'application/msword':'doc'}[match[1]];
+      const key=`CV-${reference}.${extension}`;
+      await fs.promises.writeFile(path.join(uploads,key),bytes);
+      application.cv={key,type:match[1],name:String(input.fileName||key).slice(0,120)};
+      application.cvName=application.cv.name;
+      await save(db);
+      return json(res,200,{ok:true});
+    }
+
+    // Serves it back. Personal data, and this endpoint checks nothing beyond the reference — the
+    // same as every other read on this platform today. It needs an employer session in front of it
+    // before the platform handles anyone's real CV; see DEPLOY.md.
+    if (url.pathname==='/api/job/cv/file' && req.method==='GET') {
+      const db=await load();
+      const application=(db.masjidPointJobApplications||[]).find(a=>a.reference===url.searchParams.get('reference'));
+      if(!application?.cv?.key) return json(res,404,{error:'No CV stored for this application.'});
+      try {
+        const data=await fs.promises.readFile(path.join(dataDir,'uploads',path.basename(application.cv.key)));
+        res.writeHead(200,{'Content-Type':application.cv.type||'application/octet-stream',
+          'Content-Disposition':`inline; filename="${String(application.cv.name||'cv').replace(/[^\w.\- ]/g,'_')}"`,
+          'Cache-Control':'no-store'});
+        return res.end(data);
+      } catch { return json(res,404,{error:'The CV file is missing.'}); }
+    }
+
     // Serves stored evidence back to the admin queue. basename() keeps the key from escaping the directory.
     if (url.pathname==='/api/shop/proof/file' && req.method==='GET') {
       const db=await load(), proof=(db.masjidPointPaymentProofs||[]).find(x=>x.id===url.searchParams.get('id'));
