@@ -604,7 +604,7 @@ const server=http.createServer(async (req,res)=>{
     // because masjid-portal.js reads its elements without checking they exist, so a page missing
     // the parts it does not show would throw on every one of them.
     const PORTAL_SECTIONS={'/masjid-requests':1,'/masjid-jobs':1,'/masjid-orders':1,'/masjid-qr':1,'/masjid-listings':1};
-    const BUSINESS_SECTIONS={'/business-advertising':1,'/business-profile':1,'/business-invoices':1};
+    const BUSINESS_SECTIONS={'/business-advertising':1,'/business-profile':1,'/business-invoices':1,'/business-applicants':1};
     const requested=decodeURIComponent(
       url.pathname==='/'?'/index':(PORTAL_SECTIONS[url.pathname]?'/masjid-portal':(BUSINESS_SECTIONS[url.pathname]?'/business-portal':url.pathname)));
     const usable=candidate=>fs.existsSync(candidate)&&!fs.statSync(candidate).isDirectory();

@@ -26,6 +26,7 @@
     'business-advertising': { title: 'My advertising',   keep: ['#advertising'] },
     'business-profile':     { title: 'Business profile', keep: ['#profile'] },
     'business-invoices':    { title: 'Invoices',         keep: ['#invoices'] },
+    'business-applicants':  { title: 'Job applicants',   keep: ['#applicants'] },
   };
 
   const page = (location.pathname.split('/').pop() || '').replace(/\.html$/, '');
@@ -37,23 +38,28 @@
 
   function apply() {
     const content = contentEl();
-    if (!content) return;
+    if (!content) return false;
 
-    const wanted = new Set();
-    for (const selector of section.keep) {
-      document.querySelectorAll(selector).forEach(el => {
-        // Keep the section itself, wherever it sits in the tree.
-        const top = [...content.children].find(child => child === el || child.contains(el)) || el;
-        wanted.add(top);
-      });
-    }
+    const targets = [];
+    for (const selector of section.keep) content.querySelectorAll(selector).forEach(el => targets.push(el));
     // Nothing matched — better to leave the whole dashboard visible than an empty page.
-    if (!wanted.size) return;
+    if (!targets.length) return false;
 
-    [...content.children].forEach(child => {
-      // The greeting and the stat row belong to the dashboard, not to a single section.
-      child.style.display = wanted.has(child) ? '' : 'none';
-    });
+    // Hide the siblings at every level between the section and the content wrapper, not only at
+    // the top. My advertising and Business profile both sit inside .business-layout, so keeping
+    // whichever top-level child contained them kept the pair of them — and the two addresses
+    // showed the same page.
+    const keep = new Set();
+    for (const target of targets) {
+      for (let node = target; node && node !== content; node = node.parentElement) keep.add(node);
+    }
+    const hideSiblings = parent => {
+      for (const child of parent.children) {
+        if (keep.has(child)) { child.style.display = ''; hideSiblings(child); }
+        else child.style.display = 'none';
+      }
+    };
+    hideSiblings(content);
 
     const heading = document.querySelector('.portal-welcome h2, .business-welcome h2');
     if (heading && !heading.dataset.sectionTitled) {
@@ -65,7 +71,25 @@
     const topbar = document.querySelector('.portal-topbar h1, .business-topbar h1');
     if (topbar) topbar.textContent = section.title;
     document.title = `${section.title} — MasjidPoint`;
+    reveal();
+    return true;
   }
+
+  // The dashboard was visible for a moment before the section replaced it, because this can only
+  // hide things after they have been rendered. Keep the content hidden until the right section has
+  // been isolated — and reveal it regardless after a moment, so a section that never arrives
+  // leaves the page usable rather than blank.
+  const style = document.createElement('style');
+  style.textContent = '.portal-section-pending .portal-content,.portal-section-pending .business-content{visibility:hidden}';
+  (document.head || document.documentElement).appendChild(style);
+  document.documentElement.classList.add('portal-section-pending');
+  let revealed = false;
+  function reveal() {
+    if (revealed) return;
+    revealed = true;
+    document.documentElement.classList.remove('portal-section-pending');
+  }
+  setTimeout(reveal, 3000);
 
   // The portal renders asynchronously and some sections arrive late — shop orders is built by its
   // own script after the state has loaded, so a single pass would leave that page showing the

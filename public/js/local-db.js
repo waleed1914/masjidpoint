@@ -2,7 +2,7 @@
 // Every route check below matched "/masjid-portal" exactly, so on /masjid-orders the script that
 // builds that very section was never injected and the page showed the whole dashboard instead.
 const PORTAL_SECTIONS = /\/masjid-(requests|listings|jobs|orders|qr)(?:\.html)?$/;
-const BUSINESS_SECTIONS = /\/business-(advertising|profile|invoices)(?:\.html)?$/;
+const BUSINESS_SECTIONS = /\/business-(advertising|profile|invoices|applicants)(?:\.html)?$/;
 const routePath = () => PORTAL_SECTIONS.test(location.pathname) ? '/masjid-portal'
   : BUSINESS_SECTIONS.test(location.pathname) ? '/business-portal'
   : location.pathname;
