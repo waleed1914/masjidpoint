@@ -131,6 +131,50 @@ function buildReview() {
 
 function submitRegistration() {
   if (!validateStep(3)) return;
+  if (submitRegistration.busy) return;
+  submitRegistration.busy = true;
+  // Read the server rather than this browser: the same masjid may have been registered from
+  // somewhere else, and localStorage would know nothing about it.
+  (async () => {
+    try {
+      const state = await MasjidDB.state();
+      const form = document.querySelector('#masjid-registration-form');
+      const data = new FormData(form);
+      const email = String(data.get('email') || '').trim().toLowerCase();
+      const name = String(data.get('masjidName') || '').trim().toLowerCase();
+      const clash = (state.masjidPointAdminApplications || []).find(a =>
+        a.type === 'masjid' && a.status !== 'rejected' &&
+        (String(a.email || '').trim().toLowerCase() === email ||
+         String(a.name || '').trim().toLowerCase() === name));
+      if (clash) {
+        const notice = document.querySelector('#duplicate-notice') || (() => {
+          const el = document.createElement('p');
+          el.id = 'duplicate-notice';
+          el.className = 'input-error';
+          el.style.cssText = 'margin:14px 0 0;display:block';
+          document.querySelector('#next-button').before(el);
+          return el;
+        })();
+        notice.innerHTML = 'This masjid is already registered as <strong>' + String(clash.reference) +
+          '</strong> (' + String(clash.status) + '). ' +
+          '<a href="status?reference=' + encodeURIComponent(clash.reference) +
+          '&email=' + encodeURIComponent(clash.email || '') + '">Check its progress</a> ' +
+          'rather than registering it again.';
+        notice.hidden = false;
+        notice.scrollIntoView({ block: 'center' });
+        submitRegistration.busy = false;
+        return;
+      }
+    } catch (_) {
+      // If the check cannot run, let the registration through — refusing on a failed lookup would
+      // be worse than an occasional duplicate.
+    }
+    submitRegistration.busy = false;
+    reallySubmitRegistration();
+  })();
+}
+function reallySubmitRegistration() {
+  if (!validateStep(3)) return;
   const data = new FormData(form);
   const reference = `MSJ-${new Date().getFullYear()}-${Math.random().toString(36).slice(2,8).toUpperCase()}`;
   const submittedAt=new Date().toISOString(),registration={reference,name:data.get('masjidName'),email:data.get('email'),postcode:data.get('postcode'),status:'Pending admin approval',submittedAt};
