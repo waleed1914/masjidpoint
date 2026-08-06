@@ -1,3 +1,19 @@
+
+// Everything a reviewer needs beside the image: what the customer quoted, what they say they paid,
+// and whatever was written on the decision.
+function proofSummaryHtml(proof, esc) {
+  if (!proof) return '';
+  const bits = [];
+  if (proof.bankReference) bits.push(`<span><small>Their bank reference</small><strong>${esc(proof.bankReference)}</strong></span>`);
+  if (proof.amount) bits.push(`<span><small>Amount claimed</small><strong>£${Number(proof.amount).toFixed(2)}</strong></span>`);
+  if (proof.date) bits.push(`<span><small>Paid on</small><strong>${esc(proof.date)}</strong></span>`);
+  if (proof.status) bits.push(`<span><small>Evidence</small><strong>${esc(proof.status)}</strong></span>`);
+  if (proof.adminNote) bits.push(`<span><small>Note</small><strong>${esc(proof.adminNote)}</strong></span>`);
+  const link = proof.evidence && proof.evidence.key
+    ? `<a class="review-link" href="/api/shop/proof/file?id=${encodeURIComponent(proof.id)}" target="_blank" rel="noopener">Open the file ${proof.evidence.name ? '(' + esc(proof.evidence.name) + ')' : ''} →</a>`
+    : proof.fileData ? `<a class="review-link" href="${esc(proof.fileData)}" target="_blank" rel="noopener">Open the file →</a>` : '';
+  return `<div class="proof-summary">${bits.join('')}${link}</div>`;
+}
 // Payment strip on each admin shop order card. What it offers depends on how the customer
 // chose to pay: bank transfers are verified here, while pay-at-mosque orders are settled by
 // the mosque at handover and are only reported here.
@@ -22,11 +38,9 @@
       // before the upload existed.
       const proof = (state.masjidPointPaymentProofs || []).find(pr =>
         pr.orderId === order.id || (order.paymentProofId && pr.id === order.paymentProofId));
-      const evidence = proof?.evidence?.key
-        ? `<a class="shop-proof-link" href="/api/shop/proof/file?id=${encodeURIComponent(proof.id)}" target="_blank" rel="noopener">View payment proof →</a>`
-        : proof?.fileData
-          ? `<a class="shop-proof-link" href="${proof.fileData}" target="_blank" rel="noopener">View payment proof →</a>`
-          : method.paysUpfront ? '<span class="shop-proof-missing"><small>Evidence</small><strong>Not submitted</strong></span>' : '';
+      const evidence = proof
+        ? proofSummaryHtml(proof, (v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))))
+        : method.paysUpfront ? '<span class="shop-proof-missing"><small>Evidence</small><strong>Not submitted</strong></span>' : '';
       const action = paid
         ? '<b>✓ Payment verified</b>'
         : method.paysUpfront

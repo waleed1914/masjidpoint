@@ -1,3 +1,19 @@
+
+// Everything a reviewer needs beside the image: what the customer quoted, what they say they paid,
+// and whatever was written on the decision.
+function proofSummaryHtml(proof, esc) {
+  if (!proof) return '';
+  const bits = [];
+  if (proof.bankReference) bits.push(`<span><small>Their bank reference</small><strong>${esc(proof.bankReference)}</strong></span>`);
+  if (proof.amount) bits.push(`<span><small>Amount claimed</small><strong>£${Number(proof.amount).toFixed(2)}</strong></span>`);
+  if (proof.date) bits.push(`<span><small>Paid on</small><strong>${esc(proof.date)}</strong></span>`);
+  if (proof.status) bits.push(`<span><small>Evidence</small><strong>${esc(proof.status)}</strong></span>`);
+  if (proof.adminNote) bits.push(`<span><small>Note</small><strong>${esc(proof.adminNote)}</strong></span>`);
+  const link = proof.evidence && proof.evidence.key
+    ? `<a class="review-link" href="/api/shop/proof/file?id=${encodeURIComponent(proof.id)}" target="_blank" rel="noopener">Open the file ${proof.evidence.name ? '(' + esc(proof.evidence.name) + ')' : ''} →</a>`
+    : proof.fileData ? `<a class="review-link" href="${esc(proof.fileData)}" target="_blank" rel="noopener">Open the file →</a>` : '';
+  return `<div class="proof-summary">${bits.join('')}${link}</div>`;
+}
 (async function () {
   const reference = new URLSearchParams(location.search).get('reference')
     || sessionStorage.getItem('masjidPointSelectedMasjid');
@@ -71,7 +87,7 @@
     <div class="mosque-profile-order-list" hidden>
       ${orders.length ? orders.map(order => {
         const method = ShopFulfilment.methodOf(order), address = ShopFulfilment.addressLines(order);
-        return `<article class="mosque-profile-order"><div><small>${escapeHtml(order.id)}</small><strong>${escapeHtml(order.customer?.name || 'Customer')}</strong><span>${escapeHtml(order.customer?.email || '')}${order.customer?.phone ? ` · ${escapeHtml(order.customer.phone)}` : ''}</span></div><div><small>Products</small><strong>${(order.items || []).reduce((sum, item) => sum + Number(item.quantity || 0), 0)} item(s)</strong><span>${(order.items || []).map(item => `${escapeHtml(item.name)} × ${Number(item.quantity || 0)}`).join(', ')}</span></div><div class="shop-order-payment"><small>${method.paysUpfront ? 'Bank payment' : 'Payment'}</small><strong>${escapeHtml(method.paysUpfront ? (order.paymentReference || 'Reference not provided') : `${money(order.total)} at the mosque`)}</strong><span class="shop-payment-state ${escapeHtml(order.paymentStatus || 'missing')}">${escapeHtml(ShopFulfilment.paymentLabel(order))}</span>${order.paymentEvidence?.fileData ? `<a class="review-link" href="${escapeHtml(order.paymentEvidence.fileData)}" target="_blank" rel="noopener">View payment proof →</a>` : ''}</div><div><small>How received</small><strong><span class="shop-method-badge ${method.key}">${escapeHtml(method.short)}</span></strong>${address.length ? `<span>${escapeHtml(address.join(', '))}</span>` : ''}<a class="review-link" href="/api/shop/invoice.pdf?order=${encodeURIComponent(order.id)}" target="_blank" rel="noopener">Invoice ${escapeHtml(order.invoiceNumber || order.id)} ↓</a></div><div><small>Total</small><strong>${money(order.total)}</strong><span class="status-badge ${order.status === 'delivered' ? 'approved' : 'pending'}">${escapeHtml(String(order.status || 'ordered').replaceAll('_', ' '))}</span></div></article>`;
+        return `<article class="mosque-profile-order"><div><small>${escapeHtml(order.id)}</small><strong>${escapeHtml(order.customer?.name || 'Customer')}</strong><span>${escapeHtml(order.customer?.email || '')}${order.customer?.phone ? ` · ${escapeHtml(order.customer.phone)}` : ''}</span></div><div><small>Products</small><strong>${(order.items || []).reduce((sum, item) => sum + Number(item.quantity || 0), 0)} item(s)</strong><span>${(order.items || []).map(item => `${escapeHtml(item.name)} × ${Number(item.quantity || 0)}`).join(', ')}</span></div><div class="shop-order-payment"><small>${method.paysUpfront ? 'Bank payment' : 'Payment'}</small><strong>${escapeHtml(method.paysUpfront ? (order.paymentReference || 'Reference not provided') : `${money(order.total)} at the mosque`)}</strong><span class="shop-payment-state ${escapeHtml(order.paymentStatus || 'missing')}">${escapeHtml(ShopFulfilment.paymentLabel(order))}</span>${order.paymentEvidence?.fileData ? `${proofSummaryHtml((state.masjidPointPaymentProofs||[]).find(pr=>pr.orderId===order.id||(order.paymentProofId&&pr.id===order.paymentProofId)), escapeHtml)}` : ''}</div><div><small>How received</small><strong><span class="shop-method-badge ${method.key}">${escapeHtml(method.short)}</span></strong>${address.length ? `<span>${escapeHtml(address.join(', '))}</span>` : ''}<a class="review-link" href="/api/shop/invoice.pdf?order=${encodeURIComponent(order.id)}" target="_blank" rel="noopener">Invoice ${escapeHtml(order.invoiceNumber || order.id)} ↓</a></div><div><small>Total</small><strong>${money(order.total)}</strong><span class="status-badge ${order.status === 'delivered' ? 'approved' : 'pending'}">${escapeHtml(String(order.status || 'ordered').replaceAll('_', ' '))}</span></div></article>`;
       }).join('') : '<p class="mosque-products-empty">No shop orders for this mosque.</p>'}
     </div>`;
   page.appendChild(section);

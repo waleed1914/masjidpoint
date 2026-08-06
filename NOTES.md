@@ -32,6 +32,16 @@ The whole site is open: there is no password in front of it, and these are the h
 - **Masjid earnings.** Removed from the sidebar rather than left as a dead link. The data exists —
   settlements, mosque share per invoice — so it is buildable.
 
+## Written but not verified
+
+- **The masjid notification as an order moves toward it** (`ready_for_mosque`, `mosque_received`,
+  `dispatched`) is written and parses, but I could not stage that transition in a test: the
+  fulfilment button stays disabled because the reconciler re-derives the payment state from the
+  finance records, so setting `paymentStatus` on the order directly does not stick. Check it by
+  hand — verify a bank payment, then press "Ready for mosque collection" and look at the masjid's
+  notifications. If nothing arrives, the map of statuses is in `admin-masjid-products.js` beside
+  the `[data-order-next]` handler.
+
 ## Known bugs, not yet fixed
 
 - **Masjid detail page: shop payment evidence.** The admin path is fixed and verified. The masjid's
