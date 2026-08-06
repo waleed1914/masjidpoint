@@ -190,12 +190,21 @@ function reconcile(db, previousJobs=[]) {
   for(const proof of db.masjidPointPaymentProofs||[]){const owner=(db.masjidPointAdminApplications||[]).find(a=>a.type==='business'&&a.reference===proof.businessCode);if(owner?.businessCode)proof.businessCode=owner.businessCode}
   for(const application of db.masjidPointJobApplications||[]){const job=jobs.find(j=>j.id===application.jobId);if(job){application.business=job.business;application.businessReference=job.businessReference;application.businessCode=job.businessCode}}
   for (const job of jobs) {
-    job.business ||= 'Amanah Accounting'; job.businessCode ||= 'BUS-00184';
-    job.masjids ||= [{name:job.masjid || 'Central Masjid', fee:Number(job.fee)||5, status:job.status==='pending'?'pending':'approved'}];
+    // A job with no business or no masjid is left as it is. Filling those in with a name picked
+    // out of the air does not repair the record — it files a real job against a company and a
+    // masjid that never agreed to it.
+    job.masjids ||= job.masjid
+      ? [{name:job.masjid, fee:Number(job.fee)||0, status:job.status==='pending'?'pending':'approved'}]
+      : [];
     if(!Number.isFinite(Number(job.fee)))job.fee=job.masjids.reduce((sum,choice)=>sum+(Number(choice.fee)||0),0);
     for (const choice of job.masjids) {
       choice.fee=Number(choice.fee)||0; choice.paymentStatus ||= choice.status === 'approved' ? 'due' : 'not_due';
       const old = previousJobs.find(j=>j.id===job.id)?.masjids?.find(m=>m.name===choice.name);
+      if (choice.status==='pending' && !old) {
+        notify(db,`masjid:${choice.name}`,'New job listing request',
+          `${job.business||'A business'} would like to advertise "${job.title}" through your masjid for £${Number(choice.fee||0).toFixed(2)} a month.`,
+          'masjid-jobs',`job-request-${job.id}-${choice.name}`);
+      }
       if (choice.status==='approved' && old?.status!=='approved') {
         choice.paymentStatus='due';
         notify(db,`business:${job.businessCode}`,`${choice.name} approved ${job.title}`,`Pay £${choice.fee.toFixed(2)} to publish this job through ${choice.name}.`,'business-portal#workflow',`approval-business-${job.id}-${choice.name}`);
