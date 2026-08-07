@@ -9,7 +9,11 @@ const path = require('path');
 const crypto = require('crypto');
 
 const root = path.join(__dirname, '..');
-const target = path.join(root, 'data', 'masjidpoint.json');
+// Seeds wherever the server is reading from, so a test suite with a store of its own can be
+// seeded the same way as the development one.
+const target = process.env.MASJIDPOINT_DATA_DIR
+  ? path.join(path.resolve(process.env.MASJIDPOINT_DATA_DIR), 'masjidpoint.json')
+  : path.join(root, 'data', 'masjidpoint.json');
 const hash = value => crypto.createHash('sha256').update(value).digest('hex');
 
 // Fixed clock so repeated seeds produce comparable data.

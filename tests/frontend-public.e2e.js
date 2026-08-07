@@ -1,7 +1,7 @@
 // Public-facing surface: home page, masjid directory, shop and jobs board. Everything here is
 // what a community member sees without signing in, so the checks assert that nothing invented
 // appears and every link resolves to real data.
-const {spawn}=require('child_process'),path=require('path'),edge='C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',port=9810,base='http://127.0.0.1:4174';
+const {spawn}=require('child_process'),path=require('path'),edge='C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',port=9810,base=process.env.MASJIDPOINT_URL||'http://127.0.0.1:4174';
 const accounts=require('./seed-accounts.js');
 const sleep=ms=>new Promise(r=>setTimeout(r,ms)),assert=(v,m)=>{if(!v)throw Error(m)};
 let ws,browser,id=0,pending=new Map(),exceptions=[];

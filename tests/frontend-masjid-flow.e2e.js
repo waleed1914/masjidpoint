@@ -1,6 +1,6 @@
 const ADMIN_PASSWORD = require('../scripts/seed-demo-data.js').ADMIN_PASSWORD;
 const {spawn}=require('child_process');const path=require('path');
-const edge='C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',port=9333,base='http://127.0.0.1:4174';
+const edge='C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',port=9333,base=process.env.MASJIDPOINT_URL||'http://127.0.0.1:4174';
 const sleep=ms=>new Promise(r=>setTimeout(r,ms)),assert=(v,m)=>{if(!v)throw new Error(m)};let seq=0,pending=new Map(),ws,browser;
 async function connect(){for(let i=0;i<30;i++){try{const tabs=await fetch(`http://127.0.0.1:${port}/json/list`).then(r=>r.json()),tab=tabs.find(t=>t.type==='page');if(tab){ws=new WebSocket(tab.webSocketDebuggerUrl);await new Promise((r,j)=>{ws.onopen=r;ws.onerror=j});ws.onmessage=e=>{const m=JSON.parse(e.data);if(m.id&&pending.has(m.id)){const {resolve,reject}=pending.get(m.id);pending.delete(m.id);m.error?reject(new Error(m.error.message)):resolve(m.result)}};return}}catch{}await sleep(200)}throw new Error('Could not connect to Edge')}
 function cdp(method,params={}){return new Promise((resolve,reject)=>{const id=++seq;pending.set(id,{resolve,reject});ws.send(JSON.stringify({id,method,params}))})}

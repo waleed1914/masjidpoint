@@ -1,7 +1,7 @@
 // The individual (customer) journey: apply for a job without an account, claim one from the
 // confirmation with details already filled in, then see that application — and any shop order
 // placed with the same email — in one portal, and edit the details held about you.
-const {spawn}=require('child_process'),path=require('path'),edge='C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',port=9890,base='http://127.0.0.1:4174';
+const {spawn}=require('child_process'),path=require('path'),edge='C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',port=9890,base=process.env.MASJIDPOINT_URL||'http://127.0.0.1:4174';
 const accounts=require('./seed-accounts.js');
 const sleep=ms=>new Promise(r=>setTimeout(r,ms)),assert=(v,m)=>{if(!v)throw Error(m)};
 let ws,browser,id=0,pending=new Map(),exceptions=[];

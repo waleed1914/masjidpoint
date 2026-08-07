@@ -36,8 +36,8 @@ cookie. On that:
 2. **The two pages asked for a design pass**: the masjid shop collection page, and the admin shop
    page. Design work, best done in one sitting rather than between bug fixes.
 3. **Masjid earnings.** The last sidebar entry with nothing behind it. The data exists.
-4. **Give each test suite its own database** so the totals mean something. Five suites fail today
-   and two of those describe a checkout flow that no longer exists.
+4. **The four remaining test failures**, now that they are trustworthy: two checkout journeys, one
+   payment proof, one advertising invoice.
 5. **The remaining hardcoded demo data.** It has surfaced in nearly every file touched so far.
    Worth one deliberate sweep rather than finding it a screen at a time.
 
@@ -67,21 +67,24 @@ cookie. On that:
 
 - **Masjid detail page: shop payment evidence.** The admin path is fixed and verified. The masjid's
   own view of shop evidence was reported broken as well and has not been checked.
-- **The advertise form requires a website.** A business without one cannot apply at all.
 - **`masjidPointBusinessProfile` is one key for every business.** A second business signing in on
   the same browser reads the first one's saved profile. It is only a fallback now — the
   application's own details win — but the key should be per business.
 
 ## Tests
 
-- **Five suites fail, and have since before this stretch of work**: `frontend-business-flow`
-  (blocked by the required website above), `frontend-business-isolation`, `frontend-customer` and
-  `frontend-shop-fulfilment` (both describe the checkout flow from before the payment step was
-  added), `frontend-payment-proof`, `frontend-advertising-pricing`.
-- **The suites share one database and mutate each other's data**, so the total moves between runs
-  for reasons that have nothing to do with the code. Anything measured from a combined run is
-  unreliable; re-seed and run a suite alone before believing it. Worth giving each suite its own
-  database.
+- **Each suite now gets its own server, port and freshly seeded database**, so the total is stable
+  and a failure means the code rather than the order things ran in. `MASJIDPOINT_DATA_DIR` picks
+  the store; the runner sets it. Setting `MASJIDPOINT_URL` still runs everything against one server
+  you started yourself, with the old interference.
+- **16/20, and the four failures are real.** Each one reproduces on its own:
+  - `frontend-customer` — "Order was not confirmed"
+  - `frontend-shop-fulfilment` — "Checkout did not confirm the order to the customer".
+    Both walk the checkout. My earlier reading was that they describe the flow from before the
+    payment step existed and are simply out of date — now worth confirming rather than assuming,
+    since the database can no longer be blamed.
+  - `frontend-payment-proof` — "Business proof not submitted"
+  - `frontend-advertising-pricing` — missing `[data-own-proof="INV-2026-00703"]`
 
 ## Deployment
 

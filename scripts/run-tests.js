@@ -1,86 +1,118 @@
-// Runs the whole suite against the development server and prints one summary.
-// Backend checks run first (fast, no browser), then the browser journeys.
+// Runs the whole suite and prints one summary.
+//
+// Every suite gets a server of its own, on its own port, with its own freshly seeded database.
+// They used to share one, and mutate it: a suite that signed in as a mosque could change the
+// account another suite needed, so the total moved between runs for reasons that had nothing to do
+// with the code, and a real regression was indistinguishable from a suite that had been stepped on.
+// A failure here now means the code, not the order things ran in.
 //
 //   npm test              everything
 //   npm test -- backend   only files matching "backend"
-const { execFileSync } = require('child_process');
+//
+// Set MASJIDPOINT_URL to run every suite against one server you started yourself instead — useful
+// for watching a single journey against the development data, but the suites will interfere with
+// each other again.
+const { execFileSync, spawn } = require('child_process');
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 
 const root = path.join(__dirname, '..');
 const testDir = path.join(root, 'tests');
-const base = process.env.MASJIDPOINT_URL || 'http://127.0.0.1:4174';
 const filter = process.argv[2];
+const shared = process.env.MASJIDPOINT_URL || '';
 
-// Fixture resets some one-shot journeys depend on. Failures here are not fatal: the suites
-// that need them will say so themselves.
+// Fixtures some one-shot journeys depend on. Failures are not fatal: the suites that need them
+// say so themselves.
 const FIXTURES = ['seed-payment-proof-fixture.js', 'seed-advert-payment-fixture.js'];
 
-const run = (file, cwd = root) => {
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+const run = (file, env = {}) => {
   try {
-    const out = execFileSync(process.execPath, [file], { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 600000 });
+    const out = execFileSync(process.execPath, [file], {
+      cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 600000,
+      env: { ...process.env, ...env }
+    });
     return { ok: /"passed":\s*true|^PASS/m.test(out), out };
   } catch (error) {
     return { ok: false, out: `${error.stdout || ''}${error.stderr || ''}` };
   }
 };
 
-(async () => {
-  try {
-    const res = await fetch(`${base}/api/state`);
-    if (!res.ok) throw Error(String(res.status));
-  } catch {
-    console.error(`No server on ${base}. Start it with:  PORT=4174 node server.js`);
-    process.exit(1);
+async function reachable(base, tries = 60) {
+  for (let i = 0; i < tries; i++) {
+    try { if ((await fetch(`${base}/api/state`)).ok) return true; } catch {}
+    await sleep(250);
+  }
+  return false;
+}
+
+// A seeded database and a server to itself. Returns the base URL and how to put it away again.
+async function privateServer(name, port) {
+  const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), `masjidpoint-${name}-`));
+  const env = { MASJIDPOINT_DATA_DIR: dataDir, PORT: String(port), SESSION_SECRET: 'test-secret' };
+  const base = `http://127.0.0.1:${port}`;
+
+  const seeded = run(path.join('scripts', 'seed-demo-data.js'), env);
+  if (!seeded.ok && !fs.existsSync(path.join(dataDir, 'masjidpoint.json'))) {
+    fs.rmSync(dataDir, { recursive: true, force: true });
+    throw Error(`could not seed a database: ${seeded.out.split('\n')[0]}`);
   }
 
-  for (const fixture of FIXTURES) run(path.join('scripts', fixture));
+  const server = spawn(process.execPath, ['server.js'], { cwd: root, env: { ...process.env, ...env }, stdio: 'ignore' });
+  const stop = () => {
+    try { server.kill(); } catch {}
+    try { fs.rmSync(dataDir, { recursive: true, force: true }); } catch {}
+  };
+  if (!await reachable(base)) { stop(); throw Error(`server on ${port} never answered`); }
+  return { base, stop };
+}
+
+(async () => {
+  if (shared) {
+    if (!await reachable(shared, 4)) {
+      console.error(`No server on ${shared}. Start it with:  PORT=4174 node server.js`);
+      process.exit(1);
+    }
+    console.log(`Running against ${shared} — the suites share one database and can disturb each other.\n`);
+  }
 
   const files = fs.readdirSync(testDir)
     .filter(f => /\.(e2e|test)\.js$/.test(f))
     .filter(f => !filter || f.includes(filter))
     .sort((a, b) => (a.includes('backend') ? -1 : 0) - (b.includes('backend') ? -1 : 0) || a.localeCompare(b));
 
-  // Several suites sign in as accounts defined by scripts/seed-demo-data.js. Those accounts only
-  // exist after `npm run seed`, and a database holding real work instead will make them fail on a
-  // missing record — which looks like a regression but is not one. Detect that up front and skip
-  // them with a reason, so a genuine failure is never buried among fixture noise.
-  const seededAccounts = (() => {
-    try {
-      const seed = require(path.join(root, 'scripts', 'seed-demo-data.js'));
-      return [...(seed.MOSQUES || []), ...(seed.BUSINESSES || [])].filter(x => x.password && x.status === 'activated');
-    } catch { return []; }
-  })();
-  let seedLoaded = true;
-  if (seededAccounts.length) {
-    const db = await fetch(`${base}/api/state`).then(r => r.json()).catch(() => ({}));
-    const applications = db.masjidPointAdminApplications || [];
-    seedLoaded = seededAccounts.some(account => applications.some(a => a.reference === account.ref));
-  }
-  // Only the suites that sign in as a seeded account, not everything that merely imports the
-  // seed script to read its definitions.
-  const needsSeed = file => /require\(['"]\.\/seed-accounts/.test(fs.readFileSync(path.join(testDir, file), 'utf8'));
-
   const failures = [];
-  const skipped = [];
+  let port = 4300;
+
   for (const file of files) {
     process.stdout.write(`${file.padEnd(42)}`);
-    const { ok, out } = run(path.join('tests', file));
-    // Every suite still runs: some import the seed definitions but never sign in with them, and
-    // those must keep counting. Only a suite that actually failed, and that depends on accounts
-    // this database does not hold, is reported as skipped rather than broken.
-    if (!ok && !seedLoaded && needsSeed(file)) {
-      console.log('SKIP');
-      skipped.push(file);
-      continue;
+    let server = null;
+    let base = shared;
+
+    if (!shared) {
+      try {
+        server = await privateServer(file.replace(/\W+/g, '-'), port++);
+        base = server.base;
+      } catch (error) {
+        console.log('FAIL');
+        failures.push({ file, line: error.message });
+        continue;
+      }
     }
-    console.log(ok ? 'PASS' : 'FAIL');
-    if (!ok) failures.push({ file, line: (out.split('\n').find(l => /error|fail/i.test(l)) || '').trim().slice(0, 140) });
+
+    try {
+      for (const fixture of FIXTURES) run(path.join('scripts', fixture), { MASJIDPOINT_URL: base });
+      const { ok, out } = run(path.join('tests', file), { MASJIDPOINT_URL: base });
+      console.log(ok ? 'PASS' : 'FAIL');
+      if (!ok) failures.push({ file, line: (out.split('\n').find(l => /error|fail/i.test(l)) || '').trim().slice(0, 140) });
+    } finally {
+      if (server) server.stop();
+    }
   }
 
-  const ran = files.length - skipped.length;
-  console.log(`\n${ran - failures.length}/${ran} suites passed${skipped.length ? `, ${skipped.length} skipped` : ''}`);
-  if (skipped.length) console.log(`  skipped: the demo accounts are not in this database — run "npm run seed" to load them (this replaces the current data)`);
+  console.log(`\n${files.length - failures.length}/${files.length} suites passed`);
   if (failures.length) {
     failures.forEach(f => console.log(`  ${f.file}: ${f.line}`));
     process.exit(1);

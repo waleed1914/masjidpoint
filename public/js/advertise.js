@@ -118,9 +118,10 @@ clearMasjidSearch.addEventListener('click', () => {
   masjidSearch.focus();
 });
 
-// The website is required now, and `type="url"` rejects the form most people type it in —
-// "www.yourbusiness.co.uk" without a scheme. Rather than block them on a technicality, the
-// missing https:// is added for them before the field is validated.
+// The website is optional — plenty of small businesses do not have one, and requiring it stopped
+// them applying at all. When it is given, `type="url"` rejects the form most people type it in —
+// "www.yourbusiness.co.uk" without a scheme — so the missing https:// is added for them before
+// the field is validated. An empty field is left empty and passes.
 (function normaliseWebsite() {
   const field = document.querySelector('[name="website"]');
   if (!field) return;

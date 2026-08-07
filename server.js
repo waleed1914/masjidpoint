@@ -12,7 +12,11 @@ const invoiceRegister=require('./lib/invoice-register');
 const settlementRegister=require('./lib/settlement-register');
 
 const root = __dirname;
-const dataDir = path.join(root, 'data');
+// One store per server. The test runner gives each suite a directory of its own so the suites stop
+// overwriting each other's accounts; everything else leaves this unset and uses ./data.
+const dataDir = process.env.MASJIDPOINT_DATA_DIR
+  ? path.resolve(process.env.MASJIDPOINT_DATA_DIR)
+  : path.join(root, 'data');
 const dataFile = path.join(dataDir, 'masjidpoint.json');
 const port = Number(process.env.PORT || 4173);
 
@@ -54,7 +58,7 @@ const seed = {
 // The collections a client may replace wholesale through /api/collection/:key.
 const WRITABLE_COLLECTIONS=new Set([...Object.keys(seed),'masjidPointEmailTokens']);
 
-const repository=new StateRepository({seed,root});
+const repository=new StateRepository({seed,root,file:dataFile});
 const emailService=new EmailService(root);
 function load(){return repository.load()}
 
