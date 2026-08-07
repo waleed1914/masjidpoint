@@ -52,9 +52,15 @@
 
   let overlay = null;
   let done = false;
+  let waitForBody = null;
 
+  // Once the loader has come down it must stay down. Everything that can put it up asks here
+  // first, because the events that build it — readystatechange in particular — keep firing after
+  // the page is ready, and on a slow connection they fire *after* it has been cleared. Without
+  // this, a second cover was built over a page that had already finished and nothing ever took it
+  // away: the visitor sat looking at the spinner over a page that was working underneath.
   function build() {
-    if (overlay || !document.body) return;
+    if (done || overlay || !document.body) return;
     overlay = document.createElement('div');
     overlay.id = 'masjidpoint-loader';
     overlay.setAttribute('role', 'status');
@@ -69,6 +75,10 @@
   function clear() {
     if (done) return;
     done = true;
+    // Nothing may build it again after this point.
+    document.removeEventListener('DOMContentLoaded', build);
+    document.removeEventListener('readystatechange', build);
+    if (waitForBody) { clearInterval(waitForBody); waitForBody = null; }
     // Uncover the page first, then fade the mark out over it. Doing it the other way round shows
     // the bare cover for a frame.
     document.documentElement.classList.remove('masjidpoint-loading');
@@ -90,8 +100,8 @@
     document.addEventListener('DOMContentLoaded', build, { once: true });
     document.addEventListener('readystatechange', build);
     // Belt and braces for a body that appears between those two.
-    const waitForBody = setInterval(() => { if (document.body) { build(); clearInterval(waitForBody); } }, 16);
-    setTimeout(() => clearInterval(waitForBody), 4000);
+    waitForBody = setInterval(() => { if (document.body || done) { build(); clearInterval(waitForBody); waitForBody = null; } }, 16);
+    setTimeout(() => { if (waitForBody) { clearInterval(waitForBody); waitForBody = null; } }, 4000);
   }
 
   // Whichever of these comes first wins.
