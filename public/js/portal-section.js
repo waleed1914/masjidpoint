@@ -53,10 +53,16 @@
     for (const target of targets) {
       for (let node = target; node && node !== content; node = node.parentElement) keep.add(node);
     }
+    // Stop at the section itself. keep holds the section and the ancestors it hangs from, and
+    // nothing below it — so descending into the section found none of its own children in keep and
+    // hid every one of them. The page then showed an empty panel where the content should be,
+    // which is what "the page is blank" meant.
+    const inside = new Set(targets);
     const hideSiblings = parent => {
       for (const child of parent.children) {
-        if (keep.has(child)) { child.style.display = ''; hideSiblings(child); }
-        else child.style.display = 'none';
+        if (!keep.has(child)) { child.style.display = 'none'; continue; }
+        child.style.display = '';
+        if (!inside.has(child)) hideSiblings(child);
       }
     };
     hideSiblings(content);
@@ -71,6 +77,15 @@
     const topbar = document.querySelector('.portal-topbar h1, .business-topbar h1');
     if (topbar) topbar.textContent = section.title;
     document.title = `${section.title} — MasjidPoint`;
+
+    // The business sidebar is written by hand with "active" fixed on Dashboard, so every section
+    // showed Dashboard as the page you were on. The masjid sidebar builds itself and already had
+    // this right; doing it here covers both.
+    const nav = document.querySelector('.business-sidebar nav, .portal-sidebar nav');
+    if (nav) for (const link of nav.querySelectorAll('a')) {
+      const target = (link.getAttribute('href') || '').split(/[?#]/)[0].replace(/\.html$/, '');
+      link.classList.toggle('active', target === page);
+    }
     reveal();
     return true;
   }

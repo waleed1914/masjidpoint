@@ -7,11 +7,16 @@ if(greeting)greeting.textContent=contact?`Assalamu Alaikum, ${contact.split(/\s+
 // contact number there means none is on file, which is left empty rather than guessed at.document.querySelector('#listing-cards').innerHTML='<div class="business-empty">No active mosque advertising yet.</div>';document.querySelector('#masjid-total').textContent='0';document.querySelector('#listing-total').textContent='0';
 // "View all invoices" was a button with nothing behind it. The panel shows the most recent few,
 // so it now expands to the rest and collapses again — and stays hidden when there is no more.
+// Only this panel's rows. Job applicants and payment history are drawn as .invoice-panel with an
+// .invoice-table inside them, so a document-wide selector counted their rows as invoices four,
+// five and six — and hid them. With three invoices on the account that emptied both tables
+// completely, which is why Job applicants said "1 total" above an empty list.
 const toggle=document.querySelector('#toggle-invoices');
-if(toggle){const VISIBLE=3;const rows=()=>[...document.querySelectorAll('.invoice-panel .invoice-table tbody tr')];
+const invoicePanel=toggle&&toggle.closest('.invoice-panel');
+if(toggle&&invoicePanel){const VISIBLE=3;const rows=()=>[...invoicePanel.querySelectorAll('.invoice-table tbody tr')];
  let expanded=false;
  const apply=()=>{const all=rows();toggle.hidden=all.length<=VISIBLE;all.forEach((row,index)=>{row.hidden=!expanded&&index>=VISIBLE});toggle.textContent=expanded?'Show fewer invoices':`View all invoices (${all.length}) →`};
  toggle.onclick=()=>{expanded=!expanded;apply()};
  apply();
- const panel=document.querySelector('.invoice-panel .invoice-table tbody');
+ const panel=invoicePanel.querySelector('.invoice-table tbody');
  if(panel)new MutationObserver(()=>{if(!expanded)apply()}).observe(panel,{childList:true});}})();
