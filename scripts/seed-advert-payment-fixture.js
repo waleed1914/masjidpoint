@@ -1,5 +1,17 @@
 const base=process.env.MASJIDPOINT_URL||'http://127.0.0.1:4174',reference=process.argv[2]||require('./seed-demo-data.js').BUSINESSES.find(b=>b.advert&&b.advert.paid).ref;
-async function put(key,value){const response=await fetch(`${base}/api/collection/${key}`,{method:'PUT',headers:{'Content-Type':'application/json','X-Admin-Name':'Test data setup'},body:JSON.stringify(value)});if(!response.ok)throw Error(await response.text())}
+// Finances, prices and bank details are administrator-only now, and clearing records needs a
+// session at all. A fixture that rewrites the ledger has to sign in like anyone else.
+const {ADMIN_PASSWORD}=require('./seed-demo-data.js');
+let token='';
+async function signIn(){
+ if(token)return token;
+ const passwordHash=require('crypto').createHash('sha256').update(ADMIN_PASSWORD).digest('hex');
+ const response=await fetch(`${base}/api/admin/login`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:'admin@masjidpoint.co.uk',passwordHash})});
+ if(!response.ok)throw Error(`Fixture could not sign in as the administrator: ${await response.text()}`);
+ token=(await response.json()).session||'';
+ return token;
+}
+async function put(key,value){const session=await signIn();const response=await fetch(`${base}/api/collection/${key}`,{method:'PUT',headers:{'Content-Type':'application/json','X-Admin-Name':'Test data setup','X-MasjidPoint-Session':session},body:JSON.stringify(value)});if(!response.ok)throw Error(await response.text())}
 const state=()=>fetch(`${base}/api/state`).then(response=>response.json());
 async function main(){
  let db=await state();

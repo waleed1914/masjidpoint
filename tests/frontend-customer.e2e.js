@@ -71,7 +71,13 @@ async function upload(selector,file){const doc=await cdp('DOM.getDocument'),node
  await go(`${base}/masjid-shop.html?reference=${encodeURIComponent(shop.ref)}`,3000);
  await ev(`document.querySelector('[data-add]').click();document.querySelector('#open-cart').click()`);await sleep(600);
  await set('name',person.name);await set('email',person.email);await set('phone',person.phone);
+ // An order paid up front now stops at a payment step — bank details, the reference, somewhere to
+ // send the receipt — before the confirmation. The order is saved either way, so this takes the
+ // "send proof later" route and stays about what the account portal shows.
  await ev(`document.querySelector('#place-order').click()`);await sleep(2600);
+ const paymentStep=await ev(`!!document.querySelector('#proof-later')`);
+ assert(paymentStep,'Checkout did not reach the payment step');
+ await ev(`document.querySelector('#proof-later').click()`);await sleep(1000);
  assert(await ev(`!document.querySelector('#order-success').hidden`),'Order was not confirmed');
  const orderOffer=await ev(`document.querySelector('#order-success .order-next a.button')?.getAttribute('href')||document.querySelector('#order-success .order-account a')?.getAttribute('href')`);
  assert(orderOffer,'Order confirmation offers no route to an account');
@@ -97,7 +103,7 @@ async function upload(selector,file){const doc=await cdp('DOM.getDocument'),node
  assert(board.flagged===1&&board.flags===1,`Jobs board flagged ${board.flagged} roles, expected 1`);
  // Opening that role shows the application instead of an apply button.
  await go(`${base}/public-jobs.html?job=${encodeURIComponent(job.id)}`,3600);
- const drawer=await ev(`({applied:!!document.querySelector('.drawer-applied'),applyHidden:document.querySelector('#apply-job')?.hidden,note:document.querySelector('.drawer-applied')?.innerText||''})`);
+ const drawer=await ev(`({applied:!!document.querySelector('.drawer-applied'),applyHidden:document.querySelector('#apply-job')?.hidden,note:document.querySelector('.drawer-applied')?.textContent||''})`);
  assert(drawer.applied&&drawer.applyHidden,'An already-applied role still offers the apply button');
  assert(drawer.note.includes(reference),'The applied note does not show the application reference');
  // Opening a role they have NOT applied for must still offer the apply button — the drawer is

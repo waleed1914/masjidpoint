@@ -40,6 +40,21 @@ const run = (file, env = {}) => {
   }
 };
 
+// Ask the operating system for a port rather than counting upwards from a fixed one: anything else
+// already listening — another run, a development server, a debugging session — would otherwise
+// take a suite down with a failure that looks like the code.
+function freePort() {
+  return new Promise((resolve, reject) => {
+    const probe = require('net').createServer();
+    probe.unref();
+    probe.on('error', reject);
+    probe.listen(0, '127.0.0.1', () => {
+      const { port } = probe.address();
+      probe.close(() => resolve(port));
+    });
+  });
+}
+
 async function reachable(base, tries = 60) {
   for (let i = 0; i < tries; i++) {
     try { if ((await fetch(`${base}/api/state`)).ok) return true; } catch {}
@@ -84,7 +99,6 @@ async function privateServer(name, port) {
     .sort((a, b) => (a.includes('backend') ? -1 : 0) - (b.includes('backend') ? -1 : 0) || a.localeCompare(b));
 
   const failures = [];
-  let port = 4300;
 
   for (const file of files) {
     process.stdout.write(`${file.padEnd(42)}`);
@@ -93,7 +107,7 @@ async function privateServer(name, port) {
 
     if (!shared) {
       try {
-        server = await privateServer(file.replace(/\W+/g, '-'), port++);
+        server = await privateServer(file.replace(/\W+/g, '-'), await freePort());
         base = server.base;
       } catch (error) {
         console.log('FAIL');

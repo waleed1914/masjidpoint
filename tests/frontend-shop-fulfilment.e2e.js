@@ -55,7 +55,14 @@ const adminLogin=async()=>{await go(`${base}/admin-login.html`,1500);if(await ev
  assert(delivery.total!==beforeFee&&delivery.totals.includes('4.50'),`Delivery fee missing from the total: ${delivery.total} / ${delivery.totals}`);
  await set('name','Delivery Test Customer');await set('email',deliveryEmail);await set('phone','07123 456789');
  await set('line1','12 Test Street');await set('city','Birmingham');await set('postcode','B12 0XS');
- await ev(`document.querySelector('#place-order').click()`);await sleep(2400);assert(await ev(`!document.querySelector('#order-success').hidden`),'Checkout did not confirm the order to the customer');
+ // Delivery is paid up front, so checkout stops at the payment step before confirming. The order
+ // is already saved by then; "send proof later" is the route that does not need a file upload.
+ await ev(`document.querySelector('#place-order').click()`);await sleep(2400);
+ assert(await ev(`!!document.querySelector('#proof-later')`),'A paid-up-front order did not reach the payment step');
+ const quoted=await ev(`(document.querySelector('.payment-step-reference')||{}).textContent||''`);
+ assert(/[A-Z]{3}-/.test(quoted),`The payment step does not show a reference to quote: "${quoted}"`);
+ await ev(`document.querySelector('#proof-later').click()`);await sleep(1000);
+ assert(await ev(`!document.querySelector('#order-success').hidden`),'Checkout did not confirm the order to the customer');
  db=await state();
  const deliveryOrder=[...(db.masjidPointShopOrders||[])].reverse().find(o=>o.customer?.email===deliveryEmail);
  assert(deliveryOrder,'Delivery order was not saved');

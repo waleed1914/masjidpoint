@@ -36,9 +36,7 @@ cookie. On that:
 2. **The two pages asked for a design pass**: the masjid shop collection page, and the admin shop
    page. Design work, best done in one sitting rather than between bug fixes.
 3. **Masjid earnings.** The last sidebar entry with nothing behind it. The data exists.
-4. **The four remaining test failures**, now that they are trustworthy: two checkout journeys, one
-   payment proof, one advertising invoice.
-5. **The remaining hardcoded demo data.** It has surfaced in nearly every file touched so far.
+4. **The remaining hardcoded demo data.** It has surfaced in nearly every file touched so far.
    Worth one deliberate sweep rather than finding it a screen at a time.
 
 ## Design work, asked for and not started
@@ -77,14 +75,13 @@ cookie. On that:
   and a failure means the code rather than the order things ran in. `MASJIDPOINT_DATA_DIR` picks
   the store; the runner sets it. Setting `MASJIDPOINT_URL` still runs everything against one server
   you started yourself, with the old interference.
-- **16/20, and the four failures are real.** Each one reproduces on its own:
-  - `frontend-customer` — "Order was not confirmed"
-  - `frontend-shop-fulfilment` — "Checkout did not confirm the order to the customer".
-    Both walk the checkout. My earlier reading was that they describe the flow from before the
-    payment step existed and are simply out of date — now worth confirming rather than assuming,
-    since the database can no longer be blamed.
-  - `frontend-payment-proof` — "Business proof not submitted"
-  - `frontend-advertising-pricing` — missing `[data-own-proof="INV-2026-00703"]`
+- **All twenty pass.** The four that were left were each stale rather than broken code:
+  the two checkout suites predated the payment step; the two proof suites uploaded
+  `assets/masjid-business-hero.png`, a file that does not exist, so every upload failed; the
+  fixtures had to sign in once finances became administrator-only; and two assertions named an
+  old notification key and the old `listing: 'ready'` state.
+- **Each suite gets a port from the operating system**, so a development server or a second run
+  cannot take one down with a failure that looks like the code.
 
 ## Deployment
 
