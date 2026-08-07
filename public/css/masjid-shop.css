@@ -119,3 +119,55 @@
 .shop-result-count{flex:1 1 100%;margin:2px 0 0;font-size:10px;color:#6f7f79}
 .shop-result-count strong{color:var(--ink)}
 @media(max-width:620px){.shop-tools select,#shop-clear{flex:1 1 calc(50% - 5px)}}
+
+/* ---------------------------------------------------------------------------
+   Design pass on the mosque collection shop.
+
+   The page had accumulated five layers of overrides and the type scale had
+   collapsed with them: descriptions at 10px, the category label and the stock
+   line at 8px, the Add to cart button at 10px. Nothing was broken, but nothing
+   could be read either, and a shop where the price is smaller than the mosque
+   name reads as an afterthought. This restores the hierarchy — name, price,
+   action — and says up front how an order can actually be received.
+   --------------------------------------------------------------------------- */
+
+/* How this shop hands orders over. Built from the same options the cart offers,
+   so it can never promise a way of receiving an order that checkout won't. */
+.shop-ways{list-style:none;display:flex;flex-wrap:wrap;gap:10px;margin:26px 0 0;padding:0}
+.shop-ways[hidden]{display:none}
+/* Share the row evenly. Sized to content, they came out ragged — two wide boxes
+   above one narrow one, which reads as three unrelated notes rather than a
+   choice between three ways of doing the same thing. */
+.shop-ways li{display:flex;flex-direction:column;gap:3px;padding:13px 17px;flex:1 1 240px;max-width:420px;
+  background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.18);border-radius:8px}
+.shop-ways strong{font-size:13px;font-weight:700;color:#fff;letter-spacing:.01em}
+.shop-ways small{font-size:12px;line-height:1.5;color:rgba(255,255,255,.72)}
+.shop-ways b{margin-top:4px;font-size:12px;font-weight:700;color:var(--gold,#c99c4b)}
+
+/* The card, at a size that can be read. */
+.public-product h2{font-size:19px;line-height:1.25}
+.public-product p{font-size:13px;line-height:1.6;color:#63736d;-webkit-line-clamp:3}
+.product-category{font-size:10px;letter-spacing:.11em}
+.product-price strong{font-size:24px}
+.product-price small{font-size:11px;color:#7c8a84;margin-top:4px}
+.public-product .add-to-cart,.add-to-cart{font-size:13px;padding:11px 18px}
+.product-body{gap:8px;padding:17px 18px 18px}
+.product-flag{font-size:10px;letter-spacing:.05em;padding:5px 10px}
+
+/* An image that fails to load used to leave a bare beige rectangle with nothing
+   in it. The panel now carries the mosque mark, so a missing photograph looks
+   deliberate rather than broken. */
+.product-media{background:#efeade}
+.product-media::before{content:"⌂";position:absolute;inset:0;display:grid;place-items:center;
+  font-size:34px;color:rgba(18,63,53,.16)}
+.product-media img{position:relative}
+
+.public-product footer{padding-top:14px;border-top:1px solid rgba(18,63,53,.07);align-items:center}
+
+/* The counts and the filter bar carry the same weight as the rest now. */
+#shop-result-count{font-size:13px;color:#63736d}
+#shop-result-count strong{color:var(--green,#123f35)}
+
+@media(max-width:700px){
+  .shop-ways li{min-width:0;flex:1 1 100%}
+}

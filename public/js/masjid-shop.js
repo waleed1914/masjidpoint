@@ -50,6 +50,19 @@
         : available.some(o => o.needsAddress)
           ? 'Order online for delivery straight to your address.'
           : `Order online and collect from ${mosque.name}.`;
+    // The hero said "collection or delivery" and left it there. Saying which ways this particular
+    // shop will hand the order over — and what delivery costs — belongs above the products, not
+    // three clicks into the cart where it used to be the first mention.
+    const ways = document.querySelector('#shop-ways');
+    if (ways) {
+      ways.innerHTML = available.map(option => `<li>
+        <strong>${esc(option.label)}</strong>
+        <small>${esc(option.customerNote)}</small>
+        ${option.needsAddress ? `<b>${deliveryFee > 0 ? `${money(deliveryFee)} delivery` : 'Free delivery'}</b>` : ''}
+      </li>`).join('');
+      ways.hidden = !available.length;
+    }
+
     if (!available.length) {
       document.querySelector('#fulfilment-choice').hidden = true;
       document.querySelector('#fulfilment-note').textContent = 'This mosque shop is not currently accepting orders. Please check back later.';

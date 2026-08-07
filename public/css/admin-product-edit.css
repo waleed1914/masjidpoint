@@ -1,1 +1,12 @@
-.product-row-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.product-row-actions button{padding:8px 10px;border:1px solid #174d40;background:#fffdf8;color:#174d40;font-size:9px;font-weight:700;cursor:pointer}.product-row-actions .product-edit-button{background:#e6efe9}.product-row-actions .product-delete-button{border-color:#b64b43;color:#9e352e;background:#fff7f5}.product-row-actions .product-delete-button:hover{background:#9e352e;color:#fff}.edit-product-preview{display:flex;gap:14px;align-items:center;background:#f4f0e7;padding:12px}.edit-product-preview img{width:82px;height:82px;object-fit:cover}.edit-product-preview span{display:grid;gap:4px}.edit-product-preview small{color:#687a75}.product-modal header h2{margin-top:3px}.product-modal header>button{border:0;background:transparent;font-size:24px;cursor:pointer}
+/* Four scripts each add a button to this cell — Edit, Adjust stock, Hide, Delete — and it is
+   styled here because this is the file that already owned the look of them. They used to wrap
+   into a two-by-two block, at 9px, with Delete shouting in red beside Edit. One row now, and the
+   action that cannot be undone stays quiet until it is reached for. */
+.product-row-actions{display:flex;gap:6px;align-items:center;flex-wrap:nowrap;justify-content:flex-end}
+.product-row-actions button{margin:0;padding:7px 12px;border:1px solid #c2cdc6;background:#fffdf8;color:#174d40;font-size:12px;font-weight:700;line-height:1;white-space:nowrap;border-radius:4px;cursor:pointer;transition:background .15s,border-color .15s,color .15s}
+.product-row-actions button:hover{background:#eef3ef;border-color:#9fb3a8}
+.product-row-actions .product-edit-button{background:#e6efe9;border-color:#a9c3b6}
+.product-row-actions .product-delete-button{border-color:transparent;background:none;color:#8a978f}
+.product-row-actions .product-delete-button:hover{background:#fff0ee;border-color:#e0b4ae;color:#a43b35}
+@media(max-width:1100px){.product-row-actions{flex-wrap:wrap;justify-content:flex-start}}
+.edit-product-preview{display:flex;gap:14px;align-items:center;background:#f4f0e7;padding:12px}.edit-product-preview img{width:82px;height:82px;object-fit:cover}.edit-product-preview span{display:grid;gap:4px}.edit-product-preview small{color:#687a75}.product-modal header h2{margin-top:3px}.product-modal header>button{border:0;background:transparent;font-size:24px;cursor:pointer}

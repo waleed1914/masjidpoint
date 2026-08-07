@@ -33,18 +33,9 @@ cookie. On that:
 
 1. **A certificate, and SESSION_SECRET set.** The endpoints are closed; the wire is not. Needs a
    domain name pointed at the Elastic IP, then `certbot --nginx`.
-2. **The two pages asked for a design pass**: the masjid shop collection page, and the admin shop
-   page. Design work, best done in one sitting rather than between bug fixes.
-3. **Masjid earnings.** The last sidebar entry with nothing behind it. The data exists.
-4. **The remaining hardcoded demo data.** It has surfaced in nearly every file touched so far.
+2. **Masjid earnings.** The last sidebar entry with nothing behind it. The data exists.
+3. **The remaining hardcoded demo data.** It has surfaced in nearly every file touched so far.
    Worth one deliberate sweep rather than finding it a screen at a time.
-
-## Design work, asked for and not started
-
-- **Masjid shop collection page** — asked for "a very good UI". Not begun; it is design work rather
-  than a bug fix and deserves its own pass.
-- **Admin shop page** (`/admin-masjid-products`) — same request. The evidence link and the broken
-  thumbnails on it are fixed; the layout is not.
 
 ## Features the sidebar used to promise and nothing renders
 

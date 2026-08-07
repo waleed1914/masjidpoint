@@ -1,1 +1,46 @@
 .shop-admin-heading{display:flex;justify-content:space-between;align-items:end;margin-bottom:22px}.shop-admin-heading h2{font:700 38px var(--font-display);margin:7px 0}.shop-tabs{display:flex;background:#fffdf8;border:1px solid #c2cdc6}.shop-tabs button{padding:15px 22px;border:0;border-bottom:3px solid transparent;background:none;font-weight:700;color:#687a75}.shop-tabs button.active{border-bottom-color:#c79d50;color:#174d40}.shop-product-cell{display:flex;gap:12px;align-items:center}.shop-product-cell img,.shop-order-item img{width:58px;height:58px;object-fit:cover;background:#eef2ef}.shop-product-cell span{display:grid;max-width:360px}.shop-product-cell small{color:#687a75;line-height:1.4}.low-stock{color:#a43b35}.product-modal{position:fixed;inset:0;background:rgba(12,35,29,.58);z-index:1000;display:grid;place-items:center}.product-modal[hidden]{display:none}.product-modal form{width:min(760px,calc(100% - 30px));max-height:92vh;overflow:auto;background:#fffdf8}.product-modal header,.product-modal footer{padding:20px 25px;display:flex;justify-content:space-between;border-bottom:1px solid #c2cdc6}.product-modal section{padding:24px;display:grid;gap:16px}.product-modal label{display:grid;gap:6px;font-size:11px;font-weight:700}.product-modal input,.product-modal textarea{padding:11px;border:1px solid #b4c2ba}.product-field-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.product-mosques{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.product-mosques label{display:flex}.product-error{background:#fff0ee;color:#a43b35;padding:12px}.shop-order-card{margin:20px;border:1px solid #c2cdc6}.shop-order-card header,.shop-order-card footer{padding:15px 18px;background:#f5f1e8;display:flex;justify-content:space-between;align-items:center}.shop-order-card header div{display:grid}.shop-order-card header span{text-transform:capitalize}.shop-order-customer{padding:14px 18px;display:grid;border-bottom:1px solid #ccd4cf}.shop-order-item{padding:13px 18px;display:grid;grid-template-columns:58px 1fr auto;gap:13px;align-items:center}.shop-order-item span{display:grid}.shop-revenue-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;padding:22px}.shop-revenue-grid article{background:#e6efe9;padding:20px;display:grid;gap:6px}.shop-revenue-grid strong{font:700 28px var(--font-display)}.shop-revenue-grid em{font-style:normal;color:#687a75}@media(max-width:800px){.product-field-row,.shop-revenue-grid{grid-template-columns:1fr 1fr}.shop-admin-heading{align-items:start;flex-direction:column;gap:15px}}
+
+/* ---------------------------------------------------------------------------
+   Design pass on the admin shop page.
+
+   Four scripts each add their own button to the last cell of a product row —
+   Edit, Adjust stock, Hide, Delete — and none of them agreed on how a button
+   should look, so the cell wrapped into a two-by-two block and every row grew
+   to fit it. Delete sat in red at the same weight as Edit, which is the wrong
+   way round for the one action that cannot be undone.
+
+   The buttons are styled here, in one place, rather than in each of the four
+   scripts that create them.
+   --------------------------------------------------------------------------- */
+
+/* Every mosque a product is sold through, as a chip each, rather than one long
+   comma-separated line that wrapped to three rows on the wider products. */
+.shop-chip{display:inline-block;margin:2px 4px 2px 0;padding:4px 9px;border-radius:999px;
+  background:#e9efea;color:#2c4f45;font-size:11px;font-weight:600;white-space:nowrap}
+.shop-unassigned{color:#8a978f;font-style:italic}
+
+.shop-price-cell strong{display:block;font-size:15px;color:#174d40}
+.shop-price-cell small{display:block;margin-top:3px;color:#7c8a84;font-size:11px}
+
+/* Row rhythm: the thumbnail sets the height, so give it room and let the text
+   breathe against it instead of crowding the cell. */
+.shop-product-cell img{width:56px;height:56px;border:1px solid #dde4df;background:#f3f1eb;flex:0 0 auto}
+.shop-product-cell strong{font-size:14px;color:#123f35}
+.shop-product-cell small{font-size:12px;color:#6f7f79;display:-webkit-box;-webkit-line-clamp:2;
+  -webkit-box-orient:vertical;overflow:hidden}
+#product-rows tr{transition:background .15s}
+#product-rows tr:hover{background:#faf8f3}
+#product-rows td{vertical-align:middle}
+
+/* Column floors. Given none, the table hands the leftover width to the actions and
+   the product name wraps to three lines; given too much, the same happens in
+   reverse. These four are what the row needs to stay on one line each. */
+#product-rows td:first-child{min-width:250px}
+#product-rows td:nth-child(3),#product-rows td:nth-child(4),#product-rows td:nth-child(5){white-space:nowrap}
+
+/* Those floors exist to keep a wide screen from crushing one column; on a phone
+   the table already scrolls inside its own panel, and holding the columns open
+   there only makes it scroll further. */
+@media(max-width:1100px){
+  #product-rows td:first-child{min-width:0}
+}
