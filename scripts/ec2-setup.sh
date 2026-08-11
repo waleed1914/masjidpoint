@@ -138,6 +138,17 @@ systemctl restart masjidpoint
 # ---- nginx ------------------------------------------------------------------
 echo "==> Configuring nginx"
 NGINX_CONF=$([[ $FAMILY == debian ]] && echo /etc/nginx/sites-available/masjidpoint || echo /etc/nginx/conf.d/masjidpoint.conf)
+
+# Never overwrite a configuration that is serving TLS. This block used to be written from scratch
+# on every run, which deleted the port 443 server certbot had added and took the site off HTTPS —
+# a deploy silently undid the certificate. If there is already a certificate in here, the only
+# thing that needs updating is the port the app listens on, which has not changed since the file
+# was written; leave the rest alone.
+if [[ -f $NGINX_CONF ]] && grep -q 'ssl_certificate' "$NGINX_CONF"; then
+  echo "    Existing HTTPS configuration found — leaving it as it is."
+  nginx -t
+  systemctl reload nginx
+else
 cat > "$NGINX_CONF" <<EOF
 server {
     listen 80 default_server;
@@ -166,6 +177,8 @@ if [[ $FAMILY == debian ]]; then
 else
   # Amazon Linux ships a default server block in nginx.conf that would win on port 80.
   sed -i 's/listen       80 default_server;/listen       8080;/; s/listen       \[::\]:80 default_server;/listen       [::]:8080;/' /etc/nginx/nginx.conf || true
+fi
+
 fi
 
 nginx -t
