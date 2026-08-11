@@ -30,6 +30,7 @@
 .advert-card{background:#fff;border:1px solid var(--line);padding:22px;display:flex;flex-direction:column;gap:14px}
 .advert-card header{display:flex;gap:13px;align-items:center}
 .advert-mark{width:46px;height:46px;flex:none;display:grid;place-items:center;background:var(--green-3);color:var(--green);font-weight:700;font-size:14px}
+.advert-image-trigger{width:46px;height:46px;flex:none;border:0;padding:0;background:transparent;cursor:zoom-in;overflow:hidden}.advert-image-trigger .advert-mark{width:100%;height:100%;display:block;object-fit:cover}.advert-image-trigger .advert-logo-image{object-fit:contain;background:#fff;padding:5px}
 .advert-card h3{font-family:var(--font-display);font-size:21px;margin:0}
 .advert-card header small{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em}
 .advert-card>p{margin:0;color:var(--muted);line-height:1.6;flex:1}

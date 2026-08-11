@@ -43,7 +43,10 @@
     if (shown.length < 3) return;                       // nothing worth filtering by
 
     let tabs = list.parentElement.querySelector('.shop-order-tabs');
-    const current = tabs?.querySelector('[aria-current="true"]')?.dataset.group || 'all';
+    const storageKey=`masjidPointShopOrderFilter:${location.pathname}:${list.id||'orders'}`;
+    const remembered=sessionStorage.getItem(storageKey)||'all';
+    const selected=shown.some(group=>group.key===remembered)?remembered:'all';
+    const current = tabs?.querySelector('[aria-current="true"]')?.dataset.group || selected;
     if (!tabs) {
       tabs = document.createElement('nav');
       tabs.className = 'shop-order-tabs';
@@ -55,6 +58,7 @@
 
     const show = key => {
       const group = GROUPS.find(g => g.key === key) || GROUPS[0];
+      sessionStorage.setItem(storageKey,group.key);
       for (const card of cards) card.hidden = !group.match(statusText(card));
       tabs.querySelectorAll('button').forEach(b =>
         b.setAttribute('aria-current', b.dataset.group === key ? 'true' : 'false'));

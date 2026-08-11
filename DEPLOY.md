@@ -1,8 +1,8 @@
 # Putting MasjidPoint on an EC2 instance
 
-For getting the platform online at a fixed address that survives reboots. It runs in the
-development JSON mode behind a shared password — see [PRODUCTION.md](PRODUCTION.md) for what has to
-change before real money moves through it.
+For getting the platform online at a fixed address that survives reboots. This EC2 recipe is for
+development or staging. Use the PostgreSQL, private object storage and SMTP configuration in
+[PRODUCTION.md](PRODUCTION.md) before real money or personal documents move through it.
 
 ## What you need
 
@@ -54,30 +54,10 @@ It starts on boot and restarts if it crashes, so the site stays up without you.
 
 ## The admin password
 
-A deployment with no administrators of its own signs in with:
-
-```
-admin@masjidpoint.co.uk / Admin!2026Secure
-```
-
-Fixed and known on purpose, so that wiping the data never locks anyone out of the panel.
-
-**It is published in this repository, so treat it as a way in, not a way to stay.** Anyone who
-reads the code can use it until it is changed. Two ways to close it:
-
-- Sign in and change it under **Admin profiles**. That writes your password to the database, after
-  which the default opens nothing and restarts change nothing.
-- Or set your own before first start, in `/etc/masjidpoint.env`:
-
-  ```
-  ADMIN_PASSWORD=something-long-and-yours
-  ```
-
-While the default is still in use, the server says so at startup:
-
-```bash
-sudo journalctl -u masjidpoint | grep -A3 "default password"
-```
+There is no published default administrator password. A local empty installation generates a
+one-time random bootstrap password and prints it to the server console. Any staging or production
+deployment must set `ADMIN_EMAIL`, a strong `ADMIN_PASSWORD`, and a permanent `SESSION_SECRET` in
+its secret manager before first startup.
 
 ## Updating after a change
 
@@ -125,10 +105,11 @@ Worth doing before every update until PostgreSQL is in place.
 
 ## Before this takes real payments
 
-Two API holes make the shared password the only thing protecting the data:
+The state endpoint is filtered by the signed-in account and protected documents require ownership
+or administrator access. Dedicated endpoints now handle account decisions, payment verification,
+settlements, products, pricing, bank settings and public applications. The generic collection API
+remains only as a compatibility layer while the last legacy screens are migrated.
 
-- `GET /api/state` returns every record, including password hashes
-- `PUT /api/collection/<key>` replaces a whole collection without authenticating
-
-Both need fixing, along with PostgreSQL and SMTP from [PRODUCTION.md](PRODUCTION.md), before the
-password gate comes off.
+Before launch, configure PostgreSQL, private object storage, SMTP, a permanent `SESSION_SECRET`, a
+new administrator password, HTTPS, scheduled backups and rate limiting as described in
+[PRODUCTION.md](PRODUCTION.md).

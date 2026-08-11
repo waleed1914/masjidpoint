@@ -250,8 +250,21 @@
     actions.prepend(basket);
   }
 
+  let activePaymentDraft = null;
   document.querySelector('#open-cart').onclick = () => document.querySelector('#cart-drawer').hidden = false;
-  document.querySelector('#close-cart').onclick = () => document.querySelector('#cart-drawer').hidden = true;
+  document.querySelector('#close-cart').onclick = async () => {
+    if (activePaymentDraft) {
+      await fetch('/api/shop/order/cancel-draft', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ order: activePaymentDraft.id, email: activePaymentDraft.customer.email }) }).catch(() => {});
+      activePaymentDraft = null;
+      form.hidden = false;
+      document.querySelector('#cart-lines').hidden = false;
+      document.querySelector('#payment-step')?.remove();
+      placing = false;
+      submit.disabled = false;
+      syncSubmitLabel();
+    }
+    document.querySelector('#cart-drawer').hidden = true;
+  };
   document.querySelector('#shop-search').oninput = render;
   document.querySelector('#shop-category').onchange = e => { category = e.target.value; render(); };
   document.querySelector('#shop-price').onchange = render;
@@ -306,19 +319,18 @@
       history: [{ status: 'ordered', at: placedAt, by: 'customer' }]
     };
     if (method.needsAddress) order.deliveryAddress = { line1: d.get('line1'), line2: d.get('line2'), city: d.get('city'), postcode: d.get('postcode') };
-    items.forEach(item => products.find(p => p.id === item.productId).stock -= item.quantity);
-    orders.push(order);
-    await Promise.all([MasjidDB.save('masjidPointProducts', products), MasjidDB.save('masjidPointShopOrders', orders)]);
+    const response = await fetch('/api/shop/order', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ order }) });
+    const result = await response.json();
+    if (!response.ok) { alert(result.error || 'Your order could not be placed.'); return; }
+    Object.assign(order, result.order);
     // `e.currentTarget` is null once the handler has awaited, so hold the form reference.
     form.hidden = true;
     document.querySelector('#cart-lines').hidden = true;
-    cart = [];
-    saveCart();
-    render();
     // Orders paid up front stop at a payment step — bank details, the reference to quote and a
     // place to send evidence — before the receipt. Pay-at-the-mosque owes nothing yet, so it goes
     // straight through.
-    if (method.paysUpfront) return showPaymentStep(order);
+    if (method.paysUpfront) { activePaymentDraft = order; return showPaymentStep(order); }
+    cart = []; saveCart(); render();
     return showSuccess(order);
   };
 
@@ -336,9 +348,9 @@
     success.insertAdjacentHTML('beforeend', signedIn
       ? `<p class="order-account"><a href="my-account">See this order in your account →</a></p>`
       : `<div class="order-next">
-           <h3>Keep track of this order</h3>
-           <p>Create an account and we'll keep this order — and any job applications — in one place. Your details are already filled in, so you only need a password.</p>
-           <a class="button" href="customer-signup?order=${encodeURIComponent(order.id)}">Create my account →</a>
+           <h3>${order.customerAccountExists ? 'This order is linked to your account' : 'One individual account for everything'}</h3>
+           <p>${order.customerAccountExists?'Sign in with the same individual account you use for job applications and previous mosque-shop orders.':'Create one individual account for this order and every job application. Your details are already filled in.'}</p>
+           <a class="button" href="${order.customerAccountExists?`login?return=my-account&email=${encodeURIComponent(order.customer?.email||'')}`:`customer-signup?order=${encodeURIComponent(order.id)}&email=${encodeURIComponent(order.customer?.email||'')}&name=${encodeURIComponent(order.customer?.name||'')}&phone=${encodeURIComponent(order.customer?.phone||'')}`}">${order.customerAccountExists?'Sign in to view my order':'Create my individual account'} →</a>
            <p class="order-alt">Already have one? <a href="login?return=my-account">Sign in</a></p>
          </div>`);
     success.hidden = false;
@@ -393,9 +405,8 @@
         <p class="payment-step-error" id="proof-error" hidden></p>
         <div class="payment-step-actions">
           <button class="button" type="submit">Send payment proof →</button>
-          <button type="button" id="proof-later">I'll send proof later</button>
         </div>
-        <p class="payment-step-note">Your order is held either way. It is prepared once MasjidPoint verifies the payment.</p>
+        <p class="payment-step-note">Your order will be held until MasjidPoint receives and verifies this payment proof.</p>
       </form>`;
     step.hidden = false;
     for (let node = step.parentElement; node; node = node.parentElement) {
@@ -404,11 +415,6 @@
 
     const proofForm = step.querySelector('#proof-form');
     const error = step.querySelector('#proof-error');
-
-    step.querySelector('#proof-later').onclick = () => {
-      step.hidden = true;
-      showSuccess(order, `<p class="order-banner">Send your receipt whenever you are ready — quote reference <strong>${esc(reference)}</strong>.</p>`);
-    };
 
     proofForm.onsubmit = async event => {
       event.preventDefault();
@@ -440,10 +446,14 @@
         });
         const result = await response.json();
         if (!response.ok) throw Error(result.error || 'That could not be sent.');
+        activePaymentDraft = null;
+        cart = [];
+        saveCart();
+        render();
         step.hidden = true;
         showSuccess(order, '<p class="order-banner order-banner-done">Payment proof received. MasjidPoint will verify it and confirm your order.</p>');
       } catch (failure) {
-        error.textContent = `${failure.message} Your order is saved — you can send the receipt later.`;
+        error.textContent = `${failure.message} Please try again before leaving this page.`;
         error.hidden = false;
         button.disabled = false;
         button.textContent = 'Send payment proof →';

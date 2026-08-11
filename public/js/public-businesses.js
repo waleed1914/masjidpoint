@@ -23,7 +23,7 @@
     <article class="business-card" data-category="${esc(request.category || 'Other')}" data-request-id="${esc(request.id)}" data-masjid="${esc(request.masjid || '')}">
       <div class="card-image ${TONES[request.category] || 'tone-default'}">
         <span class="verified">✓ Masjid verified</span>
-        <span class="card-mark">${esc(initials(request.name))}</span>
+        <span class="card-mark" data-business-avatar data-business-reference="${esc(request.reference||request.id)}" data-business-name="${esc(request.name)}" data-image-class="card-person-photo">${esc(initials(request.name))}</span>
       </div>
       <div class="card-body">
         <span class="category">${esc(request.category || 'Local business')}</span>

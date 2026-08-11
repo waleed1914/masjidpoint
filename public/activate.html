@@ -29,8 +29,8 @@
 
         <section class="activation-step" data-step="2">
           <button class="inline-back" id="otp-back" type="button">← Change email</button><p class="step-kicker">Verify your email</p><h1>Enter your six-digit code</h1><p>We sent a verification code to <strong id="masked-email"></strong>.</p>
-          <div class="demo-code">Prototype test code: <strong>123456</strong></div>
-          <form id="otp-form" novalidate><fieldset class="otp-group"><legend class="sr-only">Six-digit verification code</legend><input inputmode="numeric" maxlength="1" aria-label="Digit 1"><input inputmode="numeric" maxlength="1" aria-label="Digit 2"><input inputmode="numeric" maxlength="1" aria-label="Digit 3"><input inputmode="numeric" maxlength="1" aria-label="Digit 4"><input inputmode="numeric" maxlength="1" aria-label="Digit 5"><input inputmode="numeric" maxlength="1" aria-label="Digit 6"></fieldset><p class="otp-error" id="otp-error" hidden>The code is incorrect. Use 123456 for this prototype.</p><button class="button full-button" type="submit">Verify email →</button></form>
+          <div class="demo-code">Your secure email link verifies this account automatically.</div>
+          <form id="otp-form" novalidate><fieldset class="otp-group"><legend class="sr-only">Verification complete</legend><input inputmode="numeric" maxlength="1" aria-label="Digit 1"><input inputmode="numeric" maxlength="1" aria-label="Digit 2"><input inputmode="numeric" maxlength="1" aria-label="Digit 3"><input inputmode="numeric" maxlength="1" aria-label="Digit 4"><input inputmode="numeric" maxlength="1" aria-label="Digit 5"><input inputmode="numeric" maxlength="1" aria-label="Digit 6"></fieldset><p class="otp-error" id="otp-error" hidden>Use the secure link from your approval email.</p><button class="button full-button" type="submit">Verify email →</button></form>
           <p class="resend-line">Didn’t receive it? <button id="resend-code" type="button" disabled>Resend in <span id="resend-timer">30</span>s</button></p>
         </section>
 
@@ -39,7 +39,7 @@
           <form id="password-form" novalidate>
             <label class="activation-field"><span>New password</span><span class="password-input"><input id="new-password" type="password" required autocomplete="new-password"><button type="button" data-toggle-password="new-password">Show</button></span></label>
             <div class="strength-bars"><i></i><i></i><i></i><i></i></div>
-            <ul class="password-rules"><li data-rule="length">At least 8 characters</li><li data-rule="upper">One uppercase letter</li><li data-rule="number">One number</li><li data-rule="special">One special character</li></ul>
+            <ul class="password-rules"><li data-rule="length">At least 12 characters</li><li data-rule="upper">One uppercase letter</li><li data-rule="number">One number</li><li data-rule="special">One special character</li></ul>
             <label class="activation-field"><span>Confirm password</span><span class="password-input"><input id="confirm-password" type="password" required autocomplete="new-password"><button type="button" data-toggle-password="confirm-password">Show</button></span><small class="input-error" id="password-error" hidden>Passwords must match and meet every requirement.</small></label>
             <button class="button full-button" type="submit">Activate my account →</button>
           </form>
@@ -50,6 +50,6 @@
       <footer>Need help? <a href="mailto:support@masjidpoint.co.uk">Contact support</a> · Your information is protected under UK GDPR.</footer>
     </section>
   </main>
-<script src="local-db.js?v=10"></script><script src="activate.js?v=10"></script>
+<script src="local-db.js?v=24"></script><script src="activate.js?v=11"></script>
 </body>
 </html>

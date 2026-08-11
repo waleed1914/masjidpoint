@@ -79,12 +79,8 @@
   // a listing goes live as soon as it is approved and paid for.
   section.querySelectorAll('[data-listing-toggle]').forEach(button => {
     button.addEventListener('click', async () => {
-      const latest = await MasjidDB.state();
-      const rows = latest.masjidPointBusinessRequests || [];
-      const row = rows.find(r => r.id === button.dataset.listingToggle);
-      if (!row) return;
-      row.listing = row.listing === 'enabled' ? 'disabled' : 'enabled';
-      await MasjidDB.save('masjidPointBusinessRequests', rows);
+      const response=await fetch('/api/advertising/decision',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:button.dataset.listingToggle,action:'toggle'})}),result=await response.json();
+      if(!response.ok)return alert(result.error||'The listing could not be updated.');
       location.reload();
     });
   });

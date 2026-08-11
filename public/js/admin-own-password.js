@@ -21,7 +21,7 @@
     const next = form.elements.next.value;
     const confirm = form.elements.confirm.value;
     if (!current || !next) return fail('Fill in your current and new password.');
-    if (next.length < 8) return fail('Your new password needs at least 8 characters.');
+    if (next.length < 12) return fail('Your new password needs at least 12 characters.');
     if (next !== confirm) return fail('The new passwords do not match.');
     if (next === current) return fail('Your new password is the same as your current one.');
 
@@ -31,7 +31,7 @@
       const response = await fetch('/api/admin/password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-Admin-Name': session.name || session.email },
-        body: JSON.stringify({ email: session.email, currentHash: await hash(current), nextHash: await hash(next) })
+        body: JSON.stringify({ email: session.email, currentPassword: current, nextPassword: next })
       });
       const result = await response.json().catch(() => ({}));
       if (!response.ok) return fail(result.error || 'Your password could not be changed.');

@@ -36,7 +36,11 @@ async function upload(selector,file){const doc=await cdp('DOM.getDocument'),node
 
  // 2. The confirmation offers an account, carrying the application reference.
  const offer=await ev(`({signup:document.querySelector('#success-signup')?.getAttribute('href'),signin:!!document.querySelector('#success-signin')})`);
- assert(offer.signup===`customer-signup?application=${encodeURIComponent(reference)}`,`Sign-up button points at ${offer.signup}`);
+ // The link carries the reference so the new account is joined to the application already made.
+ // It gained an &email= as well, to save typing it twice; assert what has to be true rather
+ // than the exact query string, so adding another hint here is not a failure.
+ assert(/^customer-signup\?/.test(offer.signup||'')&&new URLSearchParams((offer.signup||'').split('?')[1]).get('application')===reference,
+   `Sign-up button points at ${offer.signup}`);
  assert(offer.signin,'Confirmation does not offer sign-in for people who already have an account');
 
  // 3. Sign-up arrives prefilled — only the password is new.
@@ -50,8 +54,23 @@ async function upload(selector,file){const doc=await cdp('DOM.getDocument'),node
  await set('password',person.password);await set('confirm',person.password);
  await set('line1','9 Community Way');await set('city','Birmingham');await set('postcode','B10 0RX');
  await ev(`document.querySelector('#create-account').click()`);await sleep(2600);
- assert(/\/my-account(?:\.html)?$/.test(await ev('location.pathname')),'Sign-up did not land in the account portal');
+ // Creating the account no longer signs you straight in: an address has to be proved before it
+ // can receive anything, so a six-digit code goes out by email and the page asks for it. In
+ // development the mail is written to the outbox instead of being sent, which is where this reads
+ // it from — the same place a developer would look.
+ assert(await ev(`!!document.querySelector('[name=code]')&&document.querySelector('[name=code]').offsetParent!==null`),
+   'Sign-up did not ask for the emailed verification code');
+ const code=await verificationCode(person.email);
+ assert(/^\d{6}$/.test(code||''),`No verification code was emailed (got ${code})`);
+ await set('code',code);
+ await ev(`document.querySelector('#verification-form').requestSubmit()`);await sleep(2600);
+ assert(/\/login(?:\.html)?$/.test(await ev('location.pathname')),`Verifying the code did not return to sign-in (${await ev('location.pathname')})`);
  assert(!exceptions.length,`Sign-up raised: ${exceptions.join(', ')}`);
+
+ // Now sign in the way the newly verified person would.
+ await set('email',person.email);await set('password',person.password);
+ await ev(`document.querySelector('#login-form').requestSubmit()`);await sleep(3000);
+ assert(/\/my-account(?:\.html)?$/.test(await ev('location.pathname')),'Signing in after verification did not reach the account portal');
 
  db=await state();
  const customer=(db.masjidPointCustomers||[]).find(c=>c.email===person.email);
@@ -75,9 +94,9 @@ async function upload(selector,file){const doc=await cdp('DOM.getDocument'),node
  // send the receipt — before the confirmation. The order is saved either way, so this takes the
  // "send proof later" route and stays about what the account portal shows.
  await ev(`document.querySelector('#place-order').click()`);await sleep(2600);
- const paymentStep=await ev(`!!document.querySelector('#proof-later')`);
+ const paymentStep=await ev(`!!document.querySelector('#proof-form')`);
  assert(paymentStep,'Checkout did not reach the payment step');
- await ev(`document.querySelector('#proof-later').click()`);await sleep(1000);
+ await sendPaymentProof(ev,upload,sleep);
  assert(await ev(`!document.querySelector('#order-success').hidden`),'Order was not confirmed');
  const orderOffer=await ev(`document.querySelector('#order-success .order-next a.button')?.getAttribute('href')||document.querySelector('#order-success .order-account a')?.getAttribute('href')`);
  assert(orderOffer,'Order confirmation offers no route to an account');
@@ -153,3 +172,45 @@ async function upload(selector,file){const doc=await cdp('DOM.getDocument'),node
 
  console.log(JSON.stringify({passed:true,customer:person.email,application:reference,checks:['apply with no account','confirmation offers an account','sign-up prefilled from the application','linked records previewed','account created and signed in','pre-account application appears','shop order linked by email','header shows the account when signed in','account menu opens the portal','jobs board flags roles already applied for','other roles keep their apply button','details editable later','email locked as the link key','wrong password refused','sign out and back in','duplicate email refused']},null,2));
 })().catch(e=>{console.error('FAIL',e.message);process.exitCode=1}).finally(()=>{try{ws?.close()}catch{}try{browser?.kill()}catch{}});
+
+// An order paid up front is now held until the receipt arrives — the "send proof later" escape
+// was removed on purpose, so the journey has to send real evidence to reach the confirmation.
+async function sendPaymentProof(ev,upload,sleep){
+ const fs=require('fs'),os=require('os');
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'mp-receipt-'));
+ const receipt=path.join(dir,'receipt.png');
+ fs.writeFileSync(receipt,Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==','base64'));
+ await ev(`(()=>{const f=document.querySelector('#proof-form');
+   f.elements.bankReference.value='E2E-'+Date.now();
+   f.elements.bankReference.dispatchEvent(new Event('input',{bubbles:true}))})()`);
+ await upload('#proof-form [name=file]',receipt);
+ await ev(`document.querySelector('#proof-form button[type=submit]').click()`);
+ await sleep(2600);
+}
+
+// The six-digit code the server emailed. In development nothing is sent — each message is written
+// to the outbox in the data directory the server was started with, so the newest one addressed to
+// this person is the code just issued.
+async function verificationCode(email){
+  // The server issues a fixed 123456 under MASJIDPOINT_TEST_MODE, which the runner sets, so a
+  // suite never has to scrape a mailbox. Reading the outbox is the fallback for a run against
+  // a server started by hand without it.
+  if(process.env.MASJIDPOINT_TEST_MODE==='1')return '123456';
+  const fs=require('fs');
+  const dir=path.join(process.env.MASJIDPOINT_DATA_DIR||path.join(__dirname,'..','data'),'email-outbox');
+  for(let attempt=0;attempt<20;attempt++){
+    try{
+      const files=fs.readdirSync(dir).filter(f=>f.endsWith('.json'))
+        .map(f=>({f,at:fs.statSync(path.join(dir,f)).mtimeMs})).sort((a,b)=>b.at-a.at);
+      for(const {f} of files){
+        const mail=JSON.parse(fs.readFileSync(path.join(dir,f),'utf8'));
+        if(String(mail.to||'').toLowerCase()!==String(email).toLowerCase())continue;
+        const found=String(mail.subject||'').match(/(\d{6})/)||String(mail.text||'').match(/(\d{6})/)
+          ||String(mail.html||'').match(/(\d{6})/);
+        if(found)return found[1];
+      }
+    }catch{}
+    await new Promise(r=>setTimeout(r,400));
+  }
+  return null;
+}

@@ -9,6 +9,7 @@
   const LINKS = [
     { href: 'businesses', label: 'Businesses' },
     { href: 'masjids', label: 'Masjids' },
+    { href: 'donations', label: 'Donate' },
     { href: 'shops', label: 'Masjid Shop' },
     { href: 'public-jobs', label: 'Jobs' }
   ];

@@ -82,13 +82,12 @@ const Register=require('../lib/invoice-register');
  assert(!exceptions.length,`Business invoice sheet raised: ${exceptions.join(', ')}`);
 
  // 7. Export and PDFs are actually served.
- const csv=await fetch(`${base}/api/invoices/export.csv`).then(r=>r.text());
+ const csv=await ev(`fetch('/api/invoices/export.csv').then(r=>r.text())`);
  const csvLines=csv.trim().split(/\r?\n/);
  assert(csvLines.length===entries.length+1,`CSV has ${csvLines.length-1} rows, expected ${entries.length}`);
  assert(csv.includes('Mosque shop')&&csv.includes('Job listing'),'CSV export is missing one of the invoice types');
- const shopPdf=await fetch(`${base}${wanted.pdfHref}`);
- const businessPdf=await fetch(`${base}${business.pdfHref}`);
- assert(shopPdf.status===200&&businessPdf.status===200,'An invoice PDF did not render');
+ const pdfStatuses=await ev(`Promise.all([fetch(${JSON.stringify(wanted.pdfHref)}),fetch(${JSON.stringify(business.pdfHref)})]).then(items=>items.map(item=>item.status))`);
+ assert(pdfStatuses.every(status=>status===200),'An invoice PDF did not render');
 
  console.log(JSON.stringify({passed:true,invoices:entries.length,business:businessEntries.length,shop:shopEntries.length,invoiced:totals.invoiced,mosqueShare:totals.mosqueShare,checks:['cancelled and refunded statuses','unified register','summary tiles match','type filter','status tabs','search','row opens invoice','shop invoice sheet','business invoice sheet','CSV export covers both','PDF for both']},null,2));
 })().catch(e=>{console.error('FAIL',e.message);process.exitCode=1}).finally(()=>{try{ws?.close()}catch{}try{browser?.kill()}catch{}});

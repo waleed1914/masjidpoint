@@ -10,7 +10,7 @@
   <section class="customer-form-card">
     <p class="eyebrow"><span></span> Create your account</p>
     <h1 id="signup-heading">Keep track of everything</h1>
-    <p class="customer-lede" id="signup-lede">One account to follow your job applications and shop orders, and to save your details for next time.</p>
+    <p class="customer-lede" id="signup-lede">Create one individual account for both job applications and mosque-shop orders. Anything using this email will appear together.</p>
 
     <div class="prefill-note" id="prefill-note" hidden></div>
 
@@ -23,13 +23,18 @@
         <label class="wide"><span>Address <small>(optional — you can add this later)</small></span><input name="line1" placeholder="Street address" autocomplete="address-line1"></label>
         <label><span>Town or city</span><input name="city" autocomplete="address-level2"></label>
         <label><span>&nbsp;</span><span class="field-spacer"></span></label>
-        <label class="wide"><span>Password <em>*</em></span><input name="password" type="password" required minlength="8" autocomplete="new-password"><small>At least 8 characters.</small></label>
+        <label class="wide"><span>Password <em>*</em></span><input name="password" type="password" required minlength="12" autocomplete="new-password"><small>At least 12 characters.</small></label>
         <label class="wide"><span>Confirm password <em>*</em></span><input name="confirm" type="password" required autocomplete="new-password"></label>
       </div>
       <p class="customer-error" id="signup-error" hidden></p>
       <button class="button" type="submit" id="create-account">Create account →</button>
       <p class="customer-alt">Already have an account? <a href="login">Sign in</a></p>
     </form>
+    <section class="customer-verification" id="customer-verification" hidden>
+      <p class="eyebrow"><span></span> Verify your email</p><h2>Enter your 6-digit code</h2>
+      <p>We sent the code to <strong id="verification-email"></strong>. It expires in 10 minutes.</p>
+      <form id="verification-form"><label><span>Verification code</span><input name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="000000" required></label><p class="customer-error" id="verification-error" hidden></p><button class="button" type="submit">Verify email →</button><button class="setup-password" id="resend-customer-code" type="button">Resend code</button></form>
+    </section>
   </section>
 
   <aside class="customer-aside" id="linked-preview" hidden>
@@ -47,5 +52,5 @@
 </footer>
 
 <script src="local-db.js?v=20"></script>
-<script src="customer-signup.js?v=1"></script>
+<script src="customer-signup.js?v=2"></script>
 </body></html>

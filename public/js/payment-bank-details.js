@@ -13,7 +13,7 @@
 
   const pendingCard = reference => `<section class="customer-bank-card bank-card-pending"><header><span>£</span><div><strong>Payment details to follow</strong><small>Bank-transfer details have not been published yet.</small></div></header><div><span class="wide bank-reference"><small>Payment reference</small><strong>${esc(reference)}</strong></span></div><p>Your order is saved. Contact the mosque to arrange payment, quoting this reference — you will be notified once payment has been verified.</p></section>`;
 
-  if (/\/business-portal(?:\.html)?$/.test(location.pathname)) {
+  if (/\/business-(?:portal|invoices)(?:\.html)?$/.test(location.pathname)) {
     const session = JSON.parse(sessionStorage.getItem('masjidPointSession') || 'null');
     const app = (state.masjidPointAdminApplications || []).find(x => x.reference === session?.reference);
     const code = app?.businessCode || app?.reference || 'Your business payment code';

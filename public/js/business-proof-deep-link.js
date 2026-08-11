@@ -1,0 +1,1 @@
+(function(){const invoice=new URLSearchParams(location.search).get('proof');if(!invoice)return;let attempts=0;const timer=setInterval(()=>{const button=document.querySelector(`[data-own-proof="${CSS.escape(invoice)}"]`);if(button){clearInterval(timer);button.click()}else if(++attempts>50)clearInterval(timer)},100)})();

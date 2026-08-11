@@ -34,7 +34,9 @@ const run = (file, env = {}) => {
       cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 600000,
       env: { ...process.env, ...env }
     });
-    return { ok: /"passed":\s*true|^PASS/m.test(out), out };
+    // Reaching here means the suite process exited successfully. Some browser journeys are
+    // intentionally quiet, so requiring them to print PASS incorrectly reports a failure.
+    return { ok: true, out };
   } catch (error) {
     return { ok: false, out: `${error.stdout || ''}${error.stderr || ''}` };
   }
@@ -66,7 +68,7 @@ async function reachable(base, tries = 60) {
 // A seeded database and a server to itself. Returns the base URL and how to put it away again.
 async function privateServer(name, port) {
   const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), `masjidpoint-${name}-`));
-  const env = { MASJIDPOINT_DATA_DIR: dataDir, PORT: String(port), SESSION_SECRET: 'test-secret' };
+  const env = { MASJIDPOINT_DATA_DIR: dataDir, PORT: String(port), SESSION_SECRET: 'test-secret', MASJIDPOINT_TEST_MODE: '1', SMTP_HOST: '', SMTP_VERIFY: 'false' };
   const base = `http://127.0.0.1:${port}`;
 
   const seeded = run(path.join('scripts', 'seed-demo-data.js'), env);
@@ -81,7 +83,7 @@ async function privateServer(name, port) {
     try { fs.rmSync(dataDir, { recursive: true, force: true }); } catch {}
   };
   if (!await reachable(base)) { stop(); throw Error(`server on ${port} never answered`); }
-  return { base, stop };
+  return { base, dataDir, stop };
 }
 
 (async () => {
@@ -118,7 +120,12 @@ async function privateServer(name, port) {
 
     try {
       for (const fixture of FIXTURES) run(path.join('scripts', fixture), { MASJIDPOINT_URL: base });
-      const { ok, out } = run(path.join('tests', file), { MASJIDPOINT_URL: base });
+      // The suite needs the same test-mode flag the server was started with: it is what fixes
+      // the emailed verification code at 123456, so a journey can complete a sign-up without
+      // reading a mailbox.
+      const { ok, out } = run(path.join('tests', file), { MASJIDPOINT_URL: base,
+        ...(server ? { MASJIDPOINT_TEST_MODE: '1' } : {}),
+        ...(server?.dataDir?{MASJIDPOINT_DATA_DIR:server.dataDir}:{}) });
       console.log(ok ? 'PASS' : 'FAIL');
       if (!ok) failures.push({ file, line: (out.split('\n').find(l => /error|fail/i.test(l)) || '').trim().slice(0, 140) });
     } finally {

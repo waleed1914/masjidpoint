@@ -46,7 +46,7 @@
     results.innerHTML = list.map(({ request, mosque, city }) => `
       <article class="business-tile"${request.website ? ` data-website="${esc(request.website)}"` : ''}>
         <header>
-          <span class="business-mark">${esc(initials(request.name))}</span>
+          <span class="business-mark" data-business-avatar data-business-reference="${esc(request.reference||request.id)}" data-business-name="${esc(request.name)}" data-image-class="business-mark">${esc(initials(request.name))}</span>
           <div>
             <h2>${request.website
               ? `<a class="business-name-link" href="${esc(request.website)}" target="_blank" rel="noopener">${esc(request.name)}</a>`

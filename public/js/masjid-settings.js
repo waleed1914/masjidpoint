@@ -34,7 +34,12 @@
     const record = list.find(app => app.reference === masjid.reference || app.id === masjid.reference);
     if (!record) throw Error('This masjid record no longer exists.');
     mutate(record);
-    await MasjidDB.save('masjidPointAdminApplications', list);
+    const response = await fetch('/api/account/profile', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({details: record.details, photo: record.photo || ''})
+    });
+    const result = await response.json();
+    if (!response.ok) throw Error(result.error || 'Your profile could not be saved.');
   }
 
   // ---- photo ----
@@ -174,7 +179,7 @@
     const next = passwordForm.elements.next.value;
     const confirm = passwordForm.elements.confirm.value;
     if (!current || !next) return fail('Fill in your current and new password.');
-    if (next.length < 8) return fail('Your new password needs at least 8 characters.');
+    if (next.length < 12) return fail('Your new password needs at least 12 characters.');
     if (next !== confirm) return fail('The new passwords do not match.');
     if (next === current) return fail('Your new password is the same as your current one.');
 
@@ -186,7 +191,7 @@
     // it had just fetched, which only worked because every hash on the platform was public.
     const change = await fetch('/api/account/password', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: account.email, currentHash: await hash(current), nextHash: await hash(next) })
+      body: JSON.stringify({ email: account.email, currentPassword: current, nextPassword: next })
     }).catch(() => null);
     if (!change || !change.ok) {
       const said = change ? await change.json().catch(() => ({})) : {};

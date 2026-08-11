@@ -8,6 +8,17 @@
   const error = document.querySelector('#signup-error');
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const hash = async value => masjidSha256(value);
+  const verification = document.querySelector('#customer-verification');
+  const verificationForm = document.querySelector('#verification-form');
+  let verificationEmail = '';
+  function showVerification(email) {
+    verificationEmail = String(email || '').trim().toLowerCase();
+    form.hidden = true; verification.hidden = false;
+    document.querySelector('#verification-email').textContent = verificationEmail;
+    document.querySelector('#signup-heading').textContent = 'Check your inbox';
+    document.querySelector('#signup-lede').textContent = 'Verify your email to securely activate your individual account.';
+    verificationForm.elements.code.focus();
+  }
 
   // Find whatever the visitor has already done, either by explicit reference or by email.
   const application = (state.masjidPointJobApplications || []).find(a =>
@@ -18,7 +29,7 @@
     ? { name: application.fullName, email: application.email, phone: application.phone, source: 'application' }
     : order
       ? { name: order.customer?.name, email: order.customer?.email, phone: order.customer?.phone, address: order.deliveryAddress, source: 'order' }
-      : { email: params.get('email') || '', source: null };
+      : { name:params.get('name')||'',email:params.get('email')||'',phone:params.get('phone')||'',source:params.get('order')?'order':params.get('application')?'application':null };
 
   const set = (name, value) => { if (value) form.elements[name].value = value; };
   set('name', seedFrom.name);
@@ -34,8 +45,8 @@
     const note = document.querySelector('#prefill-note');
     note.hidden = false;
     note.innerHTML = seedFrom.source === 'application'
-      ? `We've filled in your details from application <strong>${esc(application.reference)}</strong>. Just choose a password.`
-      : `We've filled in your details from order <strong>${esc(order.id)}</strong>. Just choose a password.`;
+      ? `We've filled in your details from application <strong>${esc(application?.reference||params.get('application'))}</strong>. Just choose a password.`
+      : `We've filled in your details from order <strong>${esc(order?.id||params.get('order'))}</strong>. Just choose a password.`;
     document.querySelector('#signup-heading').textContent = 'Just one more step';
     document.querySelector('#signup-lede').textContent =
       'Set a password and your account is ready — everything you have already done will be waiting inside.';
@@ -62,7 +73,7 @@
     error.hidden = true;
     const data = new FormData(form);
     const password = String(data.get('password') || '');
-    if (password.length < 8) { error.textContent = 'Your password must be at least 8 characters.'; error.hidden = false; return; }
+    if (password.length < 12) { error.textContent = 'Your password must be at least 12 characters.'; error.hidden = false; return; }
     if (password !== String(data.get('confirm'))) { error.textContent = 'The two passwords do not match.'; error.hidden = false; return; }
 
     const button = document.querySelector('#create-account');
@@ -78,16 +89,12 @@
           name: String(data.get('name') || '').trim(),
           email: String(data.get('email') || '').trim(),
           phone: String(data.get('phone') || '').trim(),
-          passwordHash: await hash(password), address
+          password, address
         })
       });
       const result = await response.json();
       if (!response.ok) throw Error(result.error || 'We could not create the account.');
-      sessionStorage.setItem('masjidPointSession', JSON.stringify({
-        role: 'customer', customerId: result.customer.id, email: result.customer.email,
-        name: result.customer.name, signedInAt: new Date().toISOString()
-      }));
-      location.href = 'my-account';
+      showVerification(result.customer.email);
     } catch (problem) {
       error.textContent = problem.message;
       error.hidden = false;
@@ -95,4 +102,12 @@
       button.textContent = 'Create account →';
     }
   };
+  verificationForm.onsubmit = async event => {
+    event.preventDefault(); const verificationError = document.querySelector('#verification-error'); verificationError.hidden = true;
+    const response = await fetch('/api/customer/verification/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:verificationEmail,code:verificationForm.elements.code.value})});
+    const result=await response.json();if(!response.ok){verificationError.textContent=result.error||'The code could not be verified.';verificationError.hidden=false;return}
+    location.href=`login?verified=1&email=${encodeURIComponent(verificationEmail)}`;
+  };
+  document.querySelector('#resend-customer-code').onclick=async()=>{const verificationError=document.querySelector('#verification-error');verificationError.hidden=true;const response=await fetch('/api/customer/verification/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:verificationEmail})});const result=await response.json();verificationError.textContent=result.message||result.error;verificationError.hidden=false;verificationError.style.color=response.ok?'#174d3f':''};
+  if(params.get('verify'))showVerification(params.get('email'));
 })();

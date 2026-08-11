@@ -20,3 +20,10 @@ tests/qa-*/
 .DS_Store
 Thumbs.db
 *.swp
+
+# Working copies of the store made while debugging. These hold real uploaded
+# documents — payment proofs, donation receipts, business logos, CVs — so they
+# must never reach the repository.
+data-*/
+.tmp-*/
+*.log

@@ -9,14 +9,17 @@ globalThis.ShopFulfilment = require('../lib/shop-fulfilment');
 const fulfilment = require('../lib/shop-fulfilment');
 const invoices = require('../lib/invoice-register');
 const settlements = require('../lib/settlement-register');
+const crypto = require('crypto');
 
 const BASE = accounts.BASE;
+let adminToken = '';
+const authHeaders = () => adminToken ? { 'X-MasjidPoint-Session': adminToken } : {};
 const state = () => fetch(`${BASE}/api/state`).then(r => r.json());
 const post = (path, body) => fetch(`${BASE}${path}`, {
-  method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Admin-Name': 'Backend test' }, body: JSON.stringify(body)
+  method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() }, body: JSON.stringify(body)
 });
 const put = (key, value) => fetch(`${BASE}/api/collection/${key}`, {
-  method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Admin-Name': 'Backend test' }, body: JSON.stringify(value)
+  method: 'PUT', headers: { 'Content-Type': 'application/json', ...authHeaders() }, body: JSON.stringify(value)
 });
 
 const results = [];
@@ -26,6 +29,12 @@ async function test(name, fn) {
 }
 
 (async () => {
+  const login = await post('/api/admin/login', {
+    email: accounts.ADMIN.email,
+    passwordHash: crypto.createHash('sha256').update(accounts.ADMIN.password).digest('hex')
+  });
+  adminToken = (await login.json()).session;
+  assert.ok(adminToken, 'administrator test login failed');
   /* ------------------------------------------------------- fulfilment rules */
   await test('fulfilment: three methods with distinct status chains', () => {
     assert.deepStrictEqual(fulfilment.ORDER, ['collect_pay_now', 'collect_pay_at_mosque', 'delivery']);
@@ -170,30 +179,58 @@ async function test(name, fn) {
   });
 
   /* ---------------------------------------------------------------- routes */
+  await test('security: forged admin headers cannot manage administrators', async () => {
+    const res = await fetch(`${BASE}/api/admin/users`, { headers: { 'X-Admin-Role': 'super_admin', 'X-Admin-Name': 'Forged owner' } });
+    assert.strictEqual(res.status, 401);
+  });
+
+  await test('security: financial exports require an administrator session', async () => {
+    const res = await fetch(`${BASE}/api/finance/export.csv?type=invoices`);
+    assert.strictEqual(res.status, 401);
+  });
+
+  await test('security: finance collections reject forged browser roles', async () => {
+    const res = await fetch(`${BASE}/api/collection/masjidPointFinance`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Admin-Role': 'super_admin' },
+      body: JSON.stringify(db.masjidPointFinance)
+    });
+    assert.strictEqual(res.status, 403);
+  });
+
+  await test('security: operational decisions reject anonymous callers', async () => {
+    const checks = await Promise.all([
+      fetch(`${BASE}/api/job/decision`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }),
+      fetch(`${BASE}/api/advertising/decision`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }),
+      fetch(`${BASE}/api/admin/product`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }),
+      fetch(`${BASE}/api/order/advance`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })
+    ]);
+    assert.ok(checks.every(response => response.status === 401), checks.map(response => response.status).join(','));
+  });
+
   await test('route: shop invoice PDF renders', async () => {
     const order = (db.masjidPointShopOrders || [])[0];
-    const res = await fetch(`${BASE}/api/shop/invoice.pdf?order=${encodeURIComponent(order.id)}`);
+    const res = await fetch(`${BASE}/api/shop/invoice.pdf?order=${encodeURIComponent(order.id)}`, { headers: authHeaders() });
     const head = Buffer.from(await res.arrayBuffer()).subarray(0, 5).toString();
     assert.strictEqual(res.status, 200);
     assert.strictEqual(head, '%PDF-');
   });
 
   await test('route: shop invoice 404s for an unknown order', async () => {
-    const res = await fetch(`${BASE}/api/shop/invoice.pdf?order=ORD-DOES-NOT-EXIST`);
+    const res = await fetch(`${BASE}/api/shop/invoice.pdf?order=ORD-DOES-NOT-EXIST`, { headers: authHeaders() });
     assert.strictEqual(res.status, 404);
   });
 
   await test('route: listing invoice PDF renders', async () => {
     const account = (db.masjidPointFinance.accounts || []).find(a => (a.invoices || []).length);
     assert.ok(account, 'no account with an invoice');
-    const res = await fetch(`${BASE}/api/finance/invoice.pdf?code=${encodeURIComponent(account.code)}&invoice=${encodeURIComponent(account.invoices[0].number)}`);
+    const res = await fetch(`${BASE}/api/finance/invoice.pdf?code=${encodeURIComponent(account.code)}&invoice=${encodeURIComponent(account.invoices[0].number)}`, { headers: authHeaders() });
     const head = Buffer.from(await res.arrayBuffer()).subarray(0, 5).toString();
     assert.strictEqual(res.status, 200);
     assert.strictEqual(head, '%PDF-');
   });
 
   await test('route: invoice CSV covers the whole register', async () => {
-    const csv = await fetch(`${BASE}/api/invoices/export.csv`).then(r => r.text());
+    const csv = await fetch(`${BASE}/api/invoices/export.csv`, { headers: authHeaders() }).then(r => r.text());
     const rows = csv.trim().split(/\r?\n/);
     assert.strictEqual(rows.length, invoices.build(await state()).length + 1);
     assert.ok(csv.includes('Mosque shop'), 'CSV omits shop invoices');

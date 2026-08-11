@@ -60,7 +60,7 @@
 
   /* --------------------------------------------------------------- shop orders */
   const orders = (state.masjidPointShopOrders || [])
-    .filter(o => String(o.customer?.email || '').toLowerCase() === email)
+    .filter(o => String(o.customer?.email || '').toLowerCase() === email && o.status !== 'payment_pending' && !(o.paymentStatus === 'awaiting_bank_transfer' && !o.paymentProofId))
     .sort((a, b) => String(b.placedAt || '').localeCompare(String(a.placedAt || '')));
 
   document.querySelector('#orders-list').innerHTML = orders.map(o => {
@@ -88,15 +88,17 @@
   document.querySelector('#orders-empty').hidden = orders.length > 0;
   document.querySelector('#count-orders').textContent = orders.length;
 
+
   /* -------------------------------------------------------------------- tabs */
   const tabs = document.querySelector('#account-tabs');
+  const accountTabKey='masjidPointIndividualAccountTab';
+  const showAccountTab=name=>{const button=tabs.querySelector(`[data-tab="${name}"]`)||tabs.querySelector('[data-tab]');if(!button)return;tabs.querySelectorAll('button').forEach(item=>item.classList.toggle('active',item===button));['applications','orders','details'].forEach(panel=>document.querySelector(`#panel-${panel}`).hidden=panel!==button.dataset.tab);sessionStorage.setItem(accountTabKey,button.dataset.tab)};
   tabs.addEventListener('click', event => {
     const button = event.target.closest('[data-tab]');
     if (!button) return;
-    tabs.querySelectorAll('button').forEach(b => b.classList.toggle('active', b === button));
-    ['applications', 'orders', 'details'].forEach(name =>
-      document.querySelector(`#panel-${name}`).hidden = name !== button.dataset.tab);
+    showAccountTab(button.dataset.tab);
   });
+  showAccountTab(sessionStorage.getItem(accountTabKey)||'applications');
 
   /* ----------------------------------------------------------------- details */
   const form = document.querySelector('#details-form');
@@ -116,7 +118,7 @@
     const current = String(data.get('currentPassword') || '');
     const next = String(data.get('newPassword') || '');
     if (!current) { detailsError.textContent = 'Enter your current password to save changes.'; detailsError.hidden = false; return; }
-    if (next && next.length < 8) { detailsError.textContent = 'The new password must be at least 8 characters.'; detailsError.hidden = false; return; }
+    if (next && next.length < 12) { detailsError.textContent = 'The new password must be at least 12 characters.'; detailsError.hidden = false; return; }
 
     const button = document.querySelector('#save-details');
     button.disabled = true; button.textContent = 'Saving…';
@@ -127,9 +129,9 @@
       const response = await fetch('/api/customer/profile', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          id: customer.id, passwordHash: await hash(current),
+          id: customer.id, currentPassword: current,
           name: String(data.get('name') || '').trim(), phone: String(data.get('phone') || '').trim(),
-          address, ...(next ? { newPasswordHash: await hash(next) } : {})
+          address, ...(next ? { newPassword: next } : {})
         })
       });
       const result = await response.json();

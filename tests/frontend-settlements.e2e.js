@@ -42,6 +42,7 @@ const Register=require('../lib/settlement-register');
  await connect();await cdp('Page.enable');await cdp('Runtime.enable');
  await go(`${base}/admin-login.html`,1700);
  if(await ev(`!!document.querySelector('#admin-email')`)){await ev(`document.querySelector('#admin-email').value='admin@masjidpoint.co.uk';document.querySelector('#admin-password').value=${JSON.stringify(ADMIN_PASSWORD)};document.querySelector('#admin-login-form').requestSubmit()`);await sleep(2000)}
+ const adminToken=await ev(`JSON.parse(sessionStorage.getItem('masjidPointAdminSession')||'null')?.token||''`),adminHeaders={'Content-Type':'application/json','X-MasjidPoint-Session':adminToken};
 
  // 1. Net mode shows one figure and the correct direction.
  await go(`${base}/admin-payments.html#settlements`,3600);
@@ -76,7 +77,7 @@ const Register=require('../lib/settlement-register');
 
  // 5. Recording cash received clears exactly those orders and nothing else.
  const cashOrders=Register.cashHeld(db,target.masjid).map(item=>item.id);
- const remit=await fetch(`${base}/api/mosque-cash/remit`,{method:'POST',headers:{'Content-Type':'application/json','X-Admin-Name':'Settlement test'},body:JSON.stringify({masjid:target.masjid,transactionReference:`CASH-TEST-${Date.now()}`,note:'Automated settlement test'})}).then(r=>r.json());
+ const remit=await fetch(`${base}/api/mosque-cash/remit`,{method:'POST',headers:adminHeaders,body:JSON.stringify({masjid:target.masjid,transactionReference:`CASH-TEST-${Date.now()}`,note:'Automated settlement test'})}).then(r=>r.json());
  assert(remit.ok&&Number(remit.amount)===target.owedToPlatform,`Remittance recorded ${remit.amount}, expected ${target.owedToPlatform}`);
  assert(remit.orders===cashOrders.length,`Remittance cleared ${remit.orders} orders, expected ${cashOrders.length}`);
  db=await state();
@@ -88,11 +89,11 @@ const Register=require('../lib/settlement-register');
  assert((db.masjidPointFinance.audit||[]).some(x=>x.action==='cash.remitted'&&x.entityId===target.masjid),'Cash remittance was not audited');
 
  // 5. Remitting twice must not double count.
- const again=await fetch(`${base}/api/mosque-cash/remit`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({masjid:target.masjid,transactionReference:'CASH-TEST-DUPLICATE'})});
+ const again=await fetch(`${base}/api/mosque-cash/remit`,{method:'POST',headers:adminHeaders,body:JSON.stringify({masjid:target.masjid,transactionReference:'CASH-TEST-DUPLICATE'})});
  assert(again.status===400,'A second remittance with nothing owed should be rejected');
 
  // 6. Settling pays out listings and shop shares together, then leaves nothing due.
- const settle=await fetch(`${base}/api/settle`,{method:'POST',headers:{'Content-Type':'application/json','X-Admin-Name':'Settlement test'},body:JSON.stringify({masjid:target.masjid,transactionReference:`SET-TEST-${Date.now()}`,note:'Automated settlement test'})}).then(r=>r.json());
+ const settle=await fetch(`${base}/api/settle`,{method:'POST',headers:adminHeaders,body:JSON.stringify({masjid:target.masjid,transactionReference:`SET-TEST-${Date.now()}`,note:'Automated settlement test'})}).then(r=>r.json());
  assert(settle.ok!==false,`Settlement failed: ${settle.error||'unknown'}`);
  db=await state();
  const afterSettle=Register.position(db,target.masjid);
@@ -109,7 +110,7 @@ const Register=require('../lib/settlement-register');
  db=await state();
  const before=Register.position(db,target.masjid);
  assert(before.owedToMosque>0&&before.owedToPlatform>0,'Net fixture did not create both directions');
- const netResult=await fetch(`${base}/api/settle/net`,{method:'POST',headers:{'Content-Type':'application/json','X-Admin-Name':'Settlement test'},body:JSON.stringify({masjid:target.masjid,transactionReference:`NET-${netRun}`,note:'Automated net settlement'})}).then(r=>r.json());
+ const netResult=await fetch(`${base}/api/settle/net`,{method:'POST',headers:adminHeaders,body:JSON.stringify({masjid:target.masjid,transactionReference:`NET-${netRun}`,note:'Automated net settlement'})}).then(r=>r.json());
  assert(netResult.ok,`Net settlement failed: ${netResult.error||'unknown'}`);
  assert(Number(netResult.net)===Number((before.owedToMosque-before.owedToPlatform).toFixed(2)),`Net settled ${netResult.net}, expected ${(before.owedToMosque-before.owedToPlatform).toFixed(2)}`);
  db=await state();

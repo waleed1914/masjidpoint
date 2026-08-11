@@ -46,8 +46,12 @@ document.querySelector('#category-chips')?.addEventListener('click', event => {
 
 searchForm?.addEventListener('submit', event => {
   event.preventDefault();
-  filterCards();
-  document.querySelector('#discover')?.scrollIntoView({ behavior: 'smooth' });
+  const params = new URLSearchParams();
+  const query = (searchInput?.value || '').trim();
+  const masjid = masjidFilter?.value || '';
+  if (query) params.set('q', query);
+  if (masjid) params.set('masjid', masjid);
+  window.location.href = `businesses${params.toString() ? `?${params}` : ''}`;
 });
 
 masjidFilter?.addEventListener('change', () => filterCards());

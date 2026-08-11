@@ -28,3 +28,9 @@
 .cash-handover-body .cash-note{margin:16px 0 0;font-size:12px;color:#687a75}
 .cash-handover-actions{display:flex;justify-content:flex-end;gap:11px;padding:18px 24px;background:#f5f1e8;border-top:1px solid #c8d2cb}
 .cash-handover-actions button[data-cash-cancel]{border:1px solid #b4c2ba;background:#fff;padding:11px 18px}
+.shop-revenue-summary{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid #c2cdc6;background:#e7f0ea}
+.shop-revenue-summary>div{display:grid;gap:4px;padding:18px 20px;border-right:1px solid #c2cdc6}.shop-revenue-summary>div:last-child{border-right:0}
+.shop-revenue-summary small{font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:#60746d}.shop-revenue-summary strong{font:700 26px var(--font-display);color:#123f35}.shop-revenue-summary span{font-size:11px;color:#687a75}
+.mosque-order-item .mosque-revenue-calculation{margin-top:6px;padding:6px 9px;background:#e7f0ea;color:#315e51;width:max-content;max-width:100%;box-sizing:border-box}.mosque-order-item .mosque-revenue-calculation b{color:#123f35}
+.shop-settlement-state{display:block;margin-top:4px;font-size:10px;font-weight:700}.shop-settlement-state.due{color:#8a6d3b}.shop-settlement-state.settled{color:#2f725f}
+@media(max-width:760px){.shop-revenue-summary{grid-template-columns:1fr}.shop-revenue-summary>div{border-right:0;border-bottom:1px solid #c2cdc6}.mosque-order-item{grid-template-columns:48px 1fr}.mosque-order-item>b{grid-column:2}}

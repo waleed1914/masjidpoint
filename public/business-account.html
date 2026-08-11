@@ -4,14 +4,14 @@
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="Manage your MasjidPoint business account and sign-in details.">
   <title>Business profile — MasjidPoint</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet">
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="business-portal.css"><link rel="stylesheet" href="notifications.css"><link rel="stylesheet" href="account-settings.css?v=1">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="business-portal.css?v=2"><link rel="stylesheet" href="notifications.css"><link rel="stylesheet" href="account-settings.css?v=2">
   <link rel="stylesheet" href="mobile.css?v=1">
   <script src="sha256.js?v=1"></script>
   <link rel="stylesheet" href="loader.css?v=1">
   <script src="loader.js?v=1"></script>
   <script src="portal-section.js?v=1"></script>
 </head>
-<body class="business-page"><script src="business-auth.js"></script>
+<body class="business-page"><script src="business-auth.js?v=2"></script>
   <aside class="business-sidebar">
     <a class="brand brand-light" href="/"><span class="brand-mark"><span></span></span><span>Masjid<span>Point</span></span></a>
     <div class="business-identity"><span>··</span><p><strong>Business</strong><small>Ref: —</small></p></div>
@@ -36,6 +36,18 @@
       </section>
 
       <section class="account-panel">
+        <header><div><h2>Business images</h2><p>Manage the owner photo and business logo shown on your public listing.</p></div></header>
+        <form class="account-body" id="images-form" novalidate>
+          <div class="business-image-settings">
+            <article><div class="account-image-preview" id="owner-photo-preview"><span>Owner</span></div><div><h3>Business owner photo</h3><p>Shown before the logo only when you give public permission.</p><label class="account-file"><input name="ownerPhoto" type="file" accept="image/png,image/jpeg,image/webp"><span>Choose owner photo</span></label><label class="public-photo-toggle"><input name="publicPhotoConsent" type="checkbox"><span>Show my owner photo publicly on business cards</span></label><button class="remove-account-image" data-remove-image="owner" type="button">Remove owner photo</button></div></article>
+            <article><div class="account-image-preview logo" id="business-logo-preview"><span>Logo</span></div><div><h3>Business logo</h3><p>Used when your owner photo is private or unavailable.</p><label class="account-file"><input name="logo" type="file" accept="image/png,image/jpeg,image/webp"><span>Choose business logo</span></label><button class="remove-account-image" data-remove-image="logo" type="button">Remove business logo</button></div></article>
+          </div>
+          <p class="account-error" id="images-error" hidden></p>
+          <footer><button class="button" type="submit">Save business images</button><span class="account-saved" id="images-saved" hidden>Images saved ✓</span></footer>
+        </form>
+      </section>
+
+      <section class="account-panel">
         <header><div><h2>Who we contact</h2><p>Used for approvals, payment reminders and job applications.</p></div></header>
         <form class="account-body" id="contact-form" novalidate>
           <div class="account-fields">
@@ -53,10 +65,10 @@
         <form class="account-body" id="password-form" novalidate>
           <div class="account-fields">
             <label class="wide"><span>Current password <em>*</em></span><input name="current" type="password" autocomplete="current-password" required></label>
-            <label><span>New password <em>*</em></span><input name="next" type="password" autocomplete="new-password" minlength="8" required></label>
-            <label><span>Confirm new password <em>*</em></span><input name="confirm" type="password" autocomplete="new-password" minlength="8" required></label>
+            <label><span>New password <em>*</em></span><input name="next" type="password" autocomplete="new-password" minlength="12" required></label>
+            <label><span>Confirm new password <em>*</em></span><input name="confirm" type="password" autocomplete="new-password" minlength="12" required></label>
           </div>
-          <p class="account-hint">At least 8 characters. Use something you do not use elsewhere.</p>
+          <p class="account-hint">At least 12 characters. Use something you do not use elsewhere.</p>
           <p class="account-error" id="password-error" hidden></p>
           <footer><button class="button" type="submit">Change password</button><span class="account-saved" id="password-saved" hidden>Password changed ✓</span></footer>
         </form>
@@ -64,6 +76,6 @@
     </section>
   </main>
   <div class="toast" id="account-toast" hidden></div>
-  <script src="local-db.js?v=13"></script><script src="business-account.js?v=1"></script><script src="notifications.js"></script>
+  <script src="local-db.js?v=13"></script><script src="business-account.js?v=2"></script><script src="notifications.js"></script>
 </body>
 </html>

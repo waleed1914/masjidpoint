@@ -42,11 +42,18 @@
   const cashOrders = own.filter(o => Number(o.mosqueOwesAdmin) > 0);
   const owedToAdmin = Number(cashOrders.reduce((sum, o) => sum + Number(o.mosqueOwesAdmin || 0), 0).toFixed(2));
   const cashPending = own.filter(o => o.paymentStatus === 'pay_at_mosque' && o.status !== 'delivered');
+  const settlementHistory=state.masjidPointFinance?.settlementHistory||[];
+  const settledOrderIds=new Set(settlementHistory.filter(entry=>entry.orderId).map(entry=>entry.orderId));
+  const bankPaidOrders=own.filter(order=>ShopFulfilment.methodOf(order).paysUpfront&&order.paymentStatus==='paid');
+  const shopEarned=Number(bankPaidOrders.reduce((sum,order)=>sum+Number(order.mosqueRevenue||0),0).toFixed(2));
+  const shopSettlementDue=Number(bankPaidOrders.filter(order=>!settledOrderIds.has(order.id)).reduce((sum,order)=>sum+Number(order.mosqueRevenue||0),0).toFixed(2));
+  const shopSettled=Number(bankPaidOrders.filter(order=>settledOrderIds.has(order.id)).reduce((sum,order)=>sum+Number(order.mosqueRevenue||0),0).toFixed(2));
 
   const section = document.createElement('section');
   section.className = 'request-panel mosque-shop-orders';
   section.id = 'shop-orders';
   section.innerHTML = `<header><div><h2>Shop orders</h2><p>Every order bought through your shop, including deliveries handled by admin. Hand over collection orders only after taking any payment due.</p></div><span>${own.filter(o => o.status !== 'delivered').length} active</span></header>
+  <div class="shop-revenue-summary"><div><small>Total mosque earnings from shop</small><strong>${money(shopEarned)}</strong><span>From verified customer payments</span></div><div><small>Awaiting settlement from MasjidPoint</small><strong>${money(shopSettlementDue)}</strong><span>${bankPaidOrders.filter(order=>!settledOrderIds.has(order.id)).length} paid order(s)</span></div><div><small>Settled to mosque</small><strong>${money(shopSettled)}</strong><span>Shop revenue already transferred</span></div></div>
   ${owedToAdmin > 0 || cashPending.length ? `<div class="cash-owed-banner">
     <div><small>Cash taken at the mosque — owed to MasjidPoint</small><strong>${money(owedToAdmin)}</strong><span>From ${cashOrders.length} cash order(s) you have handed over.</span></div>
     ${cashPending.length ? `<div><small>Still to collect</small><strong>${money(cashPending.reduce((sum, o) => sum + Number(o.total || 0), 0))}</strong><span>${cashPending.length} cash order(s) not yet handed over.</span></div>` : ''}
@@ -58,9 +65,9 @@
       <header><div><strong>${esc(o.id)}</strong><small>${new Date(o.placedAt).toLocaleString('en-GB')}</small></div><span>${esc(String(o.status || '').replaceAll('_', ' '))}</span></header>
       <div class="mosque-order-customer"><strong>${esc(o.customer?.name || 'Customer')}</strong><span>${esc(o.customer?.email || '')}${o.customer?.phone ? ` · ${esc(o.customer.phone)}` : ''}</span></div>
       <div class="mosque-order-method"><span class="shop-method-badge ${method.key}">${esc(method.short)}</span><small>${esc(ShopFulfilment.paymentLabel(o))}</small>${address.length ? `<small class="mosque-order-address">Delivered to ${esc(address.join(', '))}</small>` : ''}<a class="shop-invoice-link" href="/api/shop/invoice.pdf?order=${encodeURIComponent(o.id)}" target="_blank" rel="noopener">Invoice ${esc(o.invoiceNumber || o.id)} ↓</a></div>
-      ${(o.items || []).map(i => `<div class="mosque-order-item"><img src="${esc(i.image || imageFor(i.productId))}" alt="" onerror="this.hidden=true"><span><strong>${esc(i.name)} × ${i.quantity}</strong><small>${esc(i.description)}</small></span><b>${money(i.price * i.quantity)}</b></div>`).join('')}
+      ${(o.items || []).map(i => {const lineTotal=Number(i.price||0)*Number(i.quantity||0),share=Number(i.mosqueSharePercent||0),earned=Number(i.mosqueRevenue??lineTotal*share/100);return `<div class="mosque-order-item"><img src="${esc(i.image || imageFor(i.productId))}" alt="" onerror="this.hidden=true"><span><strong>${esc(i.name)} × ${i.quantity}</strong><small>${esc(i.description)}</small><small class="mosque-revenue-calculation">${money(lineTotal)} sale × ${share}% mosque share = <b>${money(earned)}</b></small></span><b>${money(lineTotal)}</b></div>`}).join('')}
       ${Number(o.deliveryFee) > 0 ? `<div class="mosque-order-item mosque-order-fee"><span><strong>Delivery</strong></span><b>${money(o.deliveryFee)}</b></div>` : ''}
-      <footer><span>Mosque revenue <strong>${money(o.mosqueRevenue)}</strong>${Number(o.mosqueOwesAdmin) > 0 ? `<small class="order-owed">Cash taken ${money(o.cashTakenAtMosque)} · ${money(o.mosqueOwesAdmin)} owed to MasjidPoint</small>` : ''}</span>${footerFor(o)}</footer>
+      <footer><span>Mosque revenue <strong>${money(o.mosqueRevenue)}</strong><small class="shop-settlement-state ${settledOrderIds.has(o.id)?'settled':'due'}">${settledOrderIds.has(o.id)?'Settled to mosque':'Awaiting settlement from MasjidPoint'}</small>${Number(o.mosqueOwesAdmin) > 0 ? `<small class="order-owed">Cash taken ${money(o.cashTakenAtMosque)} · ${money(o.mosqueOwesAdmin)} owed to MasjidPoint</small>` : ''}</span>${footerFor(o)}</footer>
     </article>`;
   }).join('') || (awaitingPayment
     ? `<p class="portal-empty">Nothing to prepare yet. ${awaitingPayment} order${awaitingPayment === 1 ? '' : 's'} awaiting payment verification by MasjidPoint — they appear here once the payment is confirmed.</p>`
@@ -105,20 +112,9 @@
       ? await confirmCash(order)
       : confirm(`Confirm ${order.id} was handed to ${order.customer?.name}?`);
     if (!agreed) return;
-    const at = new Date().toISOString();
-    order.status = 'delivered';
-    order.deliveredAt = at;
-    order.history ||= [];
-    if (takePayment) {
-      order.paymentStatus = 'paid';
-      order.paidAt = at;
-      order.paymentVerifiedBy = `masjid:${app.reference}`;
-      order.cashTakenAtMosque = Number(order.total || 0);
-      order.mosqueOwesAdmin = adminShareOf(order);
-      order.history.push({ status: 'payment_taken_at_mosque', at, by: `masjid:${app.reference}`, amount: order.cashTakenAtMosque, owed: order.mosqueOwesAdmin });
-    }
-    order.history.push({ status: 'delivered', at, by: `masjid:${app.reference}` });
-    await MasjidDB.save('masjidPointShopOrders', orders);
+    const currentSession=JSON.parse(sessionStorage.getItem('masjidPointSession')||'null');
+    const response=await fetch('/api/order/advance',{method:'POST',headers:{'Content-Type':'application/json','X-MasjidPoint-Session':currentSession?.token||''},body:JSON.stringify({id,takePayment})}),result=await response.json();
+    if(!response.ok)return alert(result.error||'The handover could not be recorded.');
     location.reload();
   }
 

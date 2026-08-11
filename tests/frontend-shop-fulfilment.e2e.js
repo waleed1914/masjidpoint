@@ -8,6 +8,7 @@ async function ev(expression){const r=await cdp('Runtime.evaluate',{expression,a
 const go=async(u,ms=2200)=>{exceptions=[];await cdp('Page.navigate',{url:u});await sleep(ms)};
 const set=(name,value)=>ev(`(()=>{const e=document.querySelector('form [name=${JSON.stringify(name)}]');if(!e)throw Error('Missing ${name}');e.value=${JSON.stringify(value)};e.dispatchEvent(new Event('input',{bubbles:true}));e.dispatchEvent(new Event('change',{bubbles:true}))})()`);
 const accounts=require('./seed-accounts.js');
+async function upload(selector,file){const doc=await cdp('DOM.getDocument'),node=await cdp('DOM.querySelector',{nodeId:doc.root.nodeId,selector});assert(node.nodeId,`Missing file input ${selector}`);await cdp('DOM.setFileInputFiles',{nodeId:node.nodeId,files:[file]})}
 const state=()=>fetch(`${base}/api/state`).then(r=>r.json());
 // An existing admin session sends admin-login.html straight to the dashboard, so only fill the form when it is there.
 const adminLogin=async()=>{await go(`${base}/admin-login.html`,1500);if(await ev(`!!document.querySelector('#admin-email')`)){await ev(`document.querySelector('#admin-email').value='admin@masjidpoint.co.uk';document.querySelector('#admin-password').value=${JSON.stringify(ADMIN_PASSWORD)};document.querySelector('#admin-login-form').requestSubmit()`);await sleep(1800)}assert(/\/admin(?:\.html)?$/.test(await ev('location.pathname')),'Admin login failed')};
@@ -58,10 +59,10 @@ const adminLogin=async()=>{await go(`${base}/admin-login.html`,1500);if(await ev
  // Delivery is paid up front, so checkout stops at the payment step before confirming. The order
  // is already saved by then; "send proof later" is the route that does not need a file upload.
  await ev(`document.querySelector('#place-order').click()`);await sleep(2400);
- assert(await ev(`!!document.querySelector('#proof-later')`),'A paid-up-front order did not reach the payment step');
+ assert(await ev(`!!document.querySelector('#proof-form')`),'A paid-up-front order did not reach the payment step');
  const quoted=await ev(`(document.querySelector('.payment-step-reference')||{}).textContent||''`);
  assert(/[A-Z]{3}-/.test(quoted),`The payment step does not show a reference to quote: "${quoted}"`);
- await ev(`document.querySelector('#proof-later').click()`);await sleep(1000);
+ await sendPaymentProof(ev,upload,sleep);
  assert(await ev(`!document.querySelector('#order-success').hidden`),'Checkout did not confirm the order to the customer');
  db=await state();
  const deliveryOrder=[...(db.masjidPointShopOrders||[])].reverse().find(o=>o.customer?.email===deliveryEmail);
@@ -70,7 +71,10 @@ const adminLogin=async()=>{await go(`${base}/admin-login.html`,1500);if(await ev
  assert(Number(deliveryOrder.deliveryFee)===4.5,'Delivery fee was not stored on the order');
  assert(Number(deliveryOrder.total)===Number((deliveryOrder.goodsTotal+4.5).toFixed(2)),'Delivery order total excludes the fee');
  assert(deliveryOrder.deliveryAddress?.postcode==='B12 0XS','Delivery address was not captured');
- assert(deliveryOrder.paymentStatus==='awaiting_bank_transfer','Delivery order should owe a bank transfer');
+ // It owed a bank transfer when placed; sending the receipt moves it to submitted, waiting on
+ // an administrator to verify. Either is a delivery order that has not been paid yet.
+ assert(['awaiting_bank_transfer','submitted'].includes(deliveryOrder.paymentStatus),
+   `Delivery order should owe a bank transfer, not ${deliveryOrder.paymentStatus}`);
  assert(deliveryOrder.invoiceNumber?.startsWith('SHP-'),'Delivery order has no shop invoice number');
 
  // 4. Pay-at-mosque order owes the mosque, not the bank.
@@ -161,9 +165,25 @@ const adminLogin=async()=>{await go(`${base}/admin-login.html`,1500);if(await ev
  assert(!exceptions.length,`Cash handover raised: ${exceptions.join(', ')}`);
 
  // 9. The invoice PDF renders for a shop order.
- const pdf=await fetch(`${base}/api/shop/invoice.pdf?order=${encodeURIComponent(deliveryOrder.id)}`);
+ const invoiceToken=await ev(`JSON.parse(sessionStorage.getItem('masjidPointSession')||'null')?.token||''`);
+ const pdf=await fetch(`${base}/api/shop/invoice.pdf?order=${encodeURIComponent(deliveryOrder.id)}`,{headers:{'X-MasjidPoint-Session':invoiceToken}});
  const head=Buffer.from(await pdf.arrayBuffer()).subarray(0,5).toString();
  assert(pdf.status===200&&head==='%PDF-','Shop invoice PDF did not render');
 
  console.log(JSON.stringify({passed:true,mosque:target.name,deliveryFee:4.5,deliveryOrder:deliveryOrder.id,deliveryInvoice:deliveryOrder.invoiceNumber,collectionOrder:collectOrder.id,adminChain:chain,cashOwedToAdmin:Number((collectOrder.total-collectOrder.mosqueRevenue).toFixed(2)),checks:['per-mosque fulfilment settings','three options at checkout','delivery address required','delivery fee on total','pay-at-mosque owes the mosque','admin desk method-aware','delivery bypasses the mosque','mosque sees buyer and method','cash handover shows what the mosque owes','owed running total','shop invoice PDF']},null,2));
 })().catch(e=>{console.error('FAIL',e.message);process.exitCode=1}).finally(()=>{try{ws?.close()}catch{}try{browser?.kill()}catch{}});
+
+// An order paid up front is now held until the receipt arrives — the "send proof later" escape
+// was removed on purpose, so the journey has to send real evidence to reach the confirmation.
+async function sendPaymentProof(ev,upload,sleep){
+ const fs=require('fs'),os=require('os');
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'mp-receipt-'));
+ const receipt=path.join(dir,'receipt.png');
+ fs.writeFileSync(receipt,Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==','base64'));
+ await ev(`(()=>{const f=document.querySelector('#proof-form');
+   f.elements.bankReference.value='E2E-'+Date.now();
+   f.elements.bankReference.dispatchEvent(new Event('input',{bubbles:true}))})()`);
+ await upload('#proof-form [name=file]',receipt);
+ await ev(`document.querySelector('#proof-form button[type=submit]').click()`);
+ await sleep(2600);
+}

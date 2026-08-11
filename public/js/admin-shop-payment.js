@@ -9,7 +9,7 @@ function proofSummaryHtml(proof, esc) {
   if (proof.date) bits.push(`<span><small>Paid on</small><strong>${esc(proof.date)}</strong></span>`);
   if (proof.status) bits.push(`<span><small>Evidence</small><strong>${esc(proof.status)}</strong></span>`);
   if (proof.adminNote) bits.push(`<span><small>Note</small><strong>${esc(proof.adminNote)}</strong></span>`);
-  const link = proof.evidence && proof.evidence.key
+  const link = proof.evidence && (proof.evidence.objectKey || proof.evidence.key)
     ? `<a class="review-link" href="/api/shop/proof/file?id=${encodeURIComponent(proof.id)}" target="_blank" rel="noopener">Open the file ${proof.evidence.name ? '(' + esc(proof.evidence.name) + ')' : ''} →</a>`
     : proof.fileData ? `<a class="review-link" href="${esc(proof.fileData)}" target="_blank" rel="noopener">Open the file →</a>` : '';
   return `<div class="proof-summary">${bits.join('')}${link}</div>`;
@@ -62,41 +62,11 @@ function proofSummaryHtml(proof, esc) {
       const current = await MasjidDB.state(), items = current.masjidPointShopOrders || [];
       const order = items.find(x => x.id === button.dataset.shopPayment);
       if (!confirm(`Confirm bank transfer ${order.paymentReference || order.id} for £${Number(order.total).toFixed(2)} was received?`)) return;
-      order.paymentStatus = 'paid';
-      order.paidAt = new Date().toISOString();
-      order.paymentVerifiedBy = JSON.parse(sessionStorage.getItem('masjidPointAdminSession') || 'null')?.name || 'Admin';
-      order.history ||= [];
-      order.history.push({ status: 'payment_verified', at: order.paidAt, by: order.paymentVerifiedBy });
-
-      // Verifying a payment changed the order and told nobody. The customer had paid, sent
-      // evidence, and was left refreshing the page to find out whether it had been accepted.
-      const proofs = current.masjidPointPaymentProofs || [];
-      const linked = proofs.find(pr => pr.orderId === order.id || (order.paymentProofId && pr.id === order.paymentProofId));
-      if (linked && linked.status === 'submitted') { linked.status = 'approved'; linked.decidedAt = order.paidAt; }
-
-      const notes = current.masjidPointNotifications || [];
-      const mosque = order.mosqueName || order.masjid || order.mosque || 'the masjid';
-      const collecting = !ShopFulfilment.methodOf(order).delivers;
-      notes.unshift({
-        id: `NTF-${Date.now()}`,
-        audience: `customer:${String(order.customer?.email || '').toLowerCase()}`,
-        title: 'Payment verified',
-        message: `Your £${Number(order.total).toFixed(2)} payment for ${order.id} has been verified. `
-          + (collecting
-            ? `Download your receipt and collect your order from ${mosque}.`
-            : 'Download your receipt — your order will be delivered to you.'),
-        href: 'my-account',
-        key: `order-paid-${order.id}`,
-        read: false,
-        createdAt: new Date().toISOString()
-      });
-
-      await Promise.all([
-        MasjidDB.save('masjidPointShopOrders', items),
-        MasjidDB.save('masjidPointPaymentProofs', proofs),
-        MasjidDB.save('masjidPointNotifications', notes)
-      ]);
-      location.reload();
+      const proof=(current.masjidPointPaymentProofs||[]).find(item=>item.orderId===order.id||(order.paymentProofId&&item.id===order.paymentProofId));
+      if(!proof)return alert('No submitted payment evidence is connected to this order.');
+      const decision=await fetch('/api/admin/payment-proof/decision',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:proof.id,status:'approved',note:'Verified against the bank account.'})}),decisionResult=await decision.json();
+      if(!decision.ok)return alert(decisionResult.error||'The payment could not be verified.');
+      location.reload();return;
     });
   }
 

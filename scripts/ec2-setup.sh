@@ -14,9 +14,9 @@
 # deliberate: PRODUCTION.md refuses to start NODE_ENV=production without both, and this script is
 # for getting the platform visible at a fixed address, not for taking real money.
 #
-# The site is open — visitors land straight on it. PUT /api/collection/:key still writes without
-# authenticating, so anyone who finds the address can rewrite the data. Fine for showing the
-# platform to someone; not fine once it holds anything real. See DEPLOY.md.
+# Writes and uploaded documents now require a signed-in session, and passwords are stored with
+# bcrypt. What this script does NOT give you is a certificate: run scripts/enable-https.sh once a
+# domain points here, or passwords and session cookies cross the network in the clear.
 
 set -euo pipefail
 
@@ -87,7 +87,7 @@ fi
 echo "==> Installing dependencies"
 cd "$APP_DIR"
 sudo -u "$APP_USER" npm install --omit=dev --no-audit --no-fund --loglevel=error
-sudo -u "$APP_USER" mkdir -p "$APP_DIR/data/uploads" "$APP_DIR/data/email-outbox"
+sudo -u "$APP_USER" mkdir -p "$APP_DIR/data/private-objects" "$APP_DIR/data/email-outbox"
 
 # ---- Environment ------------------------------------------------------------
 # Kept out of the repository and readable only by the service account. The password persists across
@@ -185,6 +185,7 @@ if systemctl is-active --quiet masjidpoint; then
   echo " It restarts by itself on reboot and if it crashes."
   echo " Logs:    sudo journalctl -u masjidpoint -f"
   echo " Update:  sudo bash $APP_DIR/scripts/ec2-setup.sh"
+  echo " HTTPS:   sudo bash $APP_DIR/scripts/enable-https.sh yourdomain.com"
   echo "================================================================"
 else
   echo "The service did not start. What it said:" >&2

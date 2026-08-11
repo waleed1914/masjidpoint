@@ -26,6 +26,7 @@
     ['admin-masjid-products', 'Shop', '▧'],
     ['admin-invoices', 'Invoices', '▣'],
     ['admin-payments', 'Payments & settlements', '£'],
+    ['admin-customers', 'Individuals', '◉'],
     ['admin-bank-settings', 'Bank details', '¤']
   ];
   if (session?.role === 'finance_admin') links = links.filter(([href]) => ['admin','admin-businesses','admin-invoices','admin-payments','admin-bank-settings'].includes(href));

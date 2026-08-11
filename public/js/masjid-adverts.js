@@ -75,7 +75,7 @@
       && (!q || `${a.name} ${a.description} ${a.category}`.toLowerCase().includes(q)));
     document.querySelector('#advert-grid').innerHTML = list.map(a => `
       <article class="advert-card">
-        <header><span class="advert-mark">${esc(initials(a.name))}</span><div><h3>${esc(a.name)}</h3><small>${esc(a.category || 'Local business')}</small></div></header>
+        <header><span class="advert-mark" data-business-avatar data-business-reference="${esc(a.reference||a.id)}" data-business-name="${esc(a.name)}" data-button-class="business-image-trigger advert-image-trigger" data-image-class="advert-mark">${esc(initials(a.name))}</span><div><h3>${esc(a.name)}</h3><small>${esc(a.category || 'Local business')}</small></div></header>
         <p>${esc(a.description || '')}</p>
         <dl>
           ${a.phone ? `<div><dt>Phone</dt><dd>${esc(a.phone)}</dd></div>` : ''}
