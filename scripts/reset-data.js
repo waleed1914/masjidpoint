@@ -10,7 +10,12 @@ const path = require('path');
 const crypto = require('crypto');
 
 const root = path.join(__dirname, '..');
-const target = path.join(root, 'data', 'masjidpoint.json');
+// Wherever the server is actually reading from, so a deployment with its store somewhere else is
+// reset rather than a file nothing loads.
+const dataDir = process.env.MASJIDPOINT_DATA_DIR
+  ? path.resolve(process.env.MASJIDPOINT_DATA_DIR)
+  : path.join(root, 'data');
+const target = path.join(dataDir, 'masjidpoint.json');
 const backups = path.join(root, 'backups');
 const hash = value => crypto.createHash('sha256').update(value).digest('hex');
 
@@ -73,4 +78,25 @@ console.log('');
 console.log('Admin sign-in (the only account left):');
 console.log(`  ${ADMIN_EMAIL} / ${ADMIN_PASSWORD}`);
 console.log('');
-console.log('Restart the server so it reloads the store:  PORT=4174 node server.js');
+// Emptying the collections used to leave every uploaded document behind: payment proofs,
+// donation receipts, CVs and business logos sat in the store directory belonging to records that
+// no longer existed. Nothing could reach them through the site, which made it easy to believe they
+// were gone. A wipe that leaves personal documents on disk is not a wipe.
+const documents = path.join(dataDir, 'private-objects');
+if (fs.existsSync(documents)) {
+  const count = (function walk(dir) {
+    return fs.readdirSync(dir, { withFileTypes: true })
+      .reduce((n, e) => n + (e.isDirectory() ? walk(path.join(dir, e.name)) : 1), 0);
+  })(documents);
+  fs.rmSync(documents, { recursive: true, force: true });
+  console.log(`Deleted ${count} uploaded document${count === 1 ? '' : 's'} from ${path.relative(root, documents) || documents}`);
+} else {
+  console.log('No uploaded documents to delete.');
+}
+
+// Undelivered mail from the old records — activation codes, reset links — is meaningless now.
+const outbox = path.join(dataDir, 'email-outbox');
+if (fs.existsSync(outbox)) { fs.rmSync(outbox, { recursive: true, force: true }); console.log('Cleared the email outbox.'); }
+
+console.log('');
+console.log('Restart the server so it reloads the store:  sudo systemctl restart masjidpoint');
