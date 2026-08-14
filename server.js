@@ -113,6 +113,19 @@ function issueSession(payload){
 // over HTTPS while still running in JSON mode, so keying it to NODE_ENV would have left the
 // session cookie usable over plain http on the very deployment that has a certificate. nginx
 // terminates TLS and passes X-Forwarded-Proto, which is what this reads.
+// One month on, without the overflow the obvious version has: setMonth on the 31st of January
+// gives the 3rd of March, skipping February altogether and drifting the billing date every time
+// it happens. Paying on a day the next month does not have settles on that month's last day.
+function addMonth(from){
+  const date=new Date(from), day=date.getDate(), target=new Date(date);
+  target.setDate(1);
+  target.setMonth(target.getMonth()+1);
+  const lastDay=new Date(target.getFullYear(),target.getMonth()+1,0).getDate();
+  target.setDate(Math.min(day,lastDay));
+  target.setHours(date.getHours(),date.getMinutes(),date.getSeconds(),date.getMilliseconds());
+  return target;
+}
+
 function requestIsSecure(req){
   const forwarded=String(req?.headers?.['x-forwarded-proto']||'').split(',')[0].trim().toLowerCase();
   if(forwarded)return forwarded==='https';
@@ -460,7 +473,28 @@ function reconcile(db, previousJobs=[]) {
     else{const current=(db.masjidPointMasjidPricing||[]).find(price=>price.masjidName===request.masjid||price.masjidReference===request.masjidReference);if(current){request.pricingSnapshot={advertisingPrice:Number(current.advertisingPrice),adminPercent:Number(current.adminPercent),mosquePercent:Number(current.mosquePercent),adminAmount:Number(current.advertisingPrice)*Number(current.adminPercent)/100,mosqueAmount:Number(current.advertisingPrice)*Number(current.mosquePercent)/100,updatedAt:current.updatedAt};request.price=Number(current.advertisingPrice)}}}}
   const groups=new Map(),addLine=(code,line)=>{if(!groups.has(code))groups.set(code,[]);groups.get(code).push(line)};
   for(const job of jobs){const code=job.businessCode;if(!code)continue;job.masjids.filter(m=>m.status==='approved'&&m.paymentStatus!=='paid').forEach(m=>addLine(code,{jobId:job.id,kind:'job',description:`${job.title} — ${m.name}`,masjid:m.name,amount:m.fee,adminPercent:Number(m.adminPercent??30),mosquePercent:Number(m.mosquePercent??70)}))}
-  for(const request of requests.filter(r=>r.status==='approved'&&r.paymentStatus!=='paid'&&r.businessCode)){const snap=request.pricingSnapshot||{},amount=Number(snap.advertisingPrice??request.price??0);if(amount>0)addLine(request.businessCode,{requestId:request.id,kind:'advertising',description:`Business advertising — ${request.masjid}`,masjid:request.masjid,amount,adminPercent:Number(snap.adminPercent??30),mosquePercent:Number(snap.mosquePercent??70)})}
+  // A month, or a trial, runs out. The listing comes down and the business is told, which is what
+  // turns it back into something the loop below will raise a fresh invoice for — the same charge
+  // it paid the first time, not a special renewal path.
+  for(const request of requests){
+    if(request.status!=='approved')continue;
+    const now=new Date();
+    const trialEnd=request.trialUntil?new Date(request.trialUntil):null;
+    const paidEnd=request.paidUntil?new Date(request.paidUntil):null;
+    const onTrial=request.paymentStatus==='trial'&&trialEnd&&!isNaN(trialEnd);
+    const onMonth=request.paymentStatus==='paid'&&paidEnd&&!isNaN(paidEnd);
+    if(!(onTrial&&trialEnd<=now)&&!(onMonth&&paidEnd<=now))continue;
+    request.paymentStatus='due';request.listing='disabled';
+    request.lapsedAt=now.toISOString();
+    const what=onTrial?'free trial':'advertising month';
+    notify(db,`business:${request.email}`,'Advertising has paused',
+      `Your ${what} for ${request.masjid} has ended and your listing is no longer showing. Pay the new invoice to put it back up.`,
+      'business-invoices',`advert-lapsed-${request.id}-${request.paidUntil||request.trialUntil}`);
+    notify(db,`masjid:${request.masjid}`,'A business listing has paused',
+      `${request.name} has reached the end of its ${what} and is no longer showing.`,
+      'masjid-listings',`advert-lapsed-masjid-${request.id}-${request.paidUntil||request.trialUntil}`);
+  }
+  for(const request of requests.filter(r=>r.status==='approved'&&!['paid','trial'].includes(r.paymentStatus)&&r.businessCode)){const snap=request.pricingSnapshot||{},amount=Number(snap.advertisingPrice??request.price??0);if(amount>0)addLine(request.businessCode,{requestId:request.id,kind:'advertising',description:`Business advertising — ${request.masjid}`,masjid:request.masjid,amount,adminPercent:Number(snap.adminPercent??30),mosquePercent:Number(snap.mosquePercent??70)})}
   // Which account a charge belongs to today. A business that has been issued a new business code
   // leaves its old account behind, and an unpaid workflow invoice there would go on billing the
   // same advertising request the new account is already billing — the charge appears twice, the
@@ -475,7 +509,7 @@ function reconcile(db, previousJobs=[]) {
   for(const [code,dueLines] of groups){const owner=(db.masjidPointAdminApplications||[]).find(a=>a.businessCode===code),acct=account(db,code,owner?.name||'Business',owner?.email||'');let invoice=acct.invoices.find(i=>i.workflow===true&&i.paid<i.amount&&!['cancelled','refunded'].includes(i.status));if(dueLines.length){if(!invoice){invoice={number:nextInvoiceNumber(db),date:new Date().toISOString().slice(0,10),due:new Date(Date.now()+14*864e5).toISOString().slice(0,10),amount:0,paid:0,shares:{},lines:[],workflow:true};acct.invoices.unshift(invoice)}invoice.lines=dueLines;invoice.amount=dueLines.reduce((s,l)=>s+Number(l.amount),0);invoice.shares={};dueLines.forEach(l=>invoice.shares[l.masjid]=(invoice.shares[l.masjid]||0)+Number(l.amount)*Number(l.mosquePercent??70)/100)}}
   for (const acct of db.masjidPointFinance.accounts) for (const inv of acct.invoices.filter(i=>i.workflow && i.paid>=i.amount && i.amount>0&&!['cancelled','refunded'].includes(i.status))) {
     for (const line of inv.lines||[]) {
-      if(line.requestId){const request=requests.find(r=>r.id===line.requestId);if(request&&request.paymentStatus!=='paid'){request.paymentStatus='paid';request.listing='enabled';const share=Number(line.amount)*Number(line.mosquePercent??70)/100;notify(db,`business:${request.email}`,'Advertising payment approved',`Your £${Number(line.amount).toFixed(2)} payment for ${request.masjid} was verified and your listing is live.`,'business-portal#listings',`advert-paid-business-${request.id}`);notify(db,`masjid:${request.masjid}`,'Advertising payment received',`${request.name} paid £${Number(line.amount).toFixed(2)} and the listing is now live. Your £${share.toFixed(2)} share is due.`,'masjid-portal#requests',`advert-paid-masjid-${request.id}`);notify(db,'admin','Mosque settlement due',`£${share.toFixed(2)} is due to ${request.masjid}.`,'admin-payments#settlements',`advert-settlement-${request.id}`)}continue}
+      if(line.requestId){const request=requests.find(r=>r.id===line.requestId);if(request){request.paidPeriods=Array.isArray(request.paidPeriods)?request.paidPeriods:[];if(!request.paidPeriods.includes(inv.number)){const now=new Date(),current=request.paidUntil?new Date(request.paidUntil):null;const from=current&&current>now?current:now;request.paidPeriods.push(inv.number);request.paymentStatus='paid';request.listing='enabled';request.paidAt=now.toISOString();request.paidUntil=addMonth(from).toISOString();const share=Number(line.amount)*Number(line.mosquePercent??70)/100;notify(db,`business:${request.email}`,'Advertising payment approved',`Your £${Number(line.amount).toFixed(2)} payment for ${request.masjid} was verified and your listing is live.`,'business-portal#listings',`advert-paid-business-${request.id}`);notify(db,`masjid:${request.masjid}`,'Advertising payment received',`${request.name} paid £${Number(line.amount).toFixed(2)} and the listing is now live. Your £${share.toFixed(2)} share is due.`,'masjid-portal#requests',`advert-paid-masjid-${request.id}`);notify(db,'admin','Mosque settlement due',`£${share.toFixed(2)} is due to ${request.masjid}.`,'admin-payments#settlements',`advert-settlement-${request.id}`)}}continue}
       const job=jobs.find(j=>j.id===line.jobId), choice=job?.masjids.find(m=>m.name===line.masjid);
       if (choice && choice.paymentStatus!=='paid') {
         choice.paymentStatus='paid'; job.status='live'; job.enabled=true; job.masjid=job.masjids.filter(m=>m.paymentStatus==='paid').map(m=>m.name).join(', ');
@@ -889,7 +923,7 @@ const server=http.createServer(async (req,res)=>{
     if(url.pathname==='/api/admin/business-trial'&&req.method==='POST'){
       const admin=requireAdmin(req,res,['super_admin','admin']);if(!admin)return;const input=await body(req),db=await load(),business=(db.masjidPointAdminApplications||[]).find(item=>item.type==='business'&&[item.reference,item.id,item.businessCode].includes(String(input.reference||'')));if(!business)return json(res,404,{error:'Business account not found.'});
       const enabled=input.enabled===true,before=Boolean(business.trialAdvertisingEnabled),changedAt=new Date().toISOString();business.trialAdvertisingEnabled=enabled;business.trialAdvertisingUpdatedAt=changedAt;business.trialAdvertisingUpdatedBy=admin.name||admin.email;
-      let published=0;for(const request of db.masjidPointBusinessRequests||[]){const belongs=request.reference===business.reference||request.id===business.reference||(business.businessCode&&request.businessCode===business.businessCode)||String(request.email||'').toLowerCase()===String(business.email||'').toLowerCase();if(!belongs)continue;request.trialAdvertisingEligible=enabled;if(enabled&&request.status==='approved'&&request.paymentStatus!=='paid'){request.paymentStatus='paid';request.paymentMethod='trial';request.trialAdvertising=true;request.trialGrantedAt=changedAt;request.listing='enabled';published++;notify(db,`business:${business.businessCode||business.email}`,'Trial advertising activated',`Your approved advertising through ${request.masjid} is now live with no payment required.`,'business-advertising',`trial-advert-live-${request.id}`)}}
+      let published=0;for(const request of db.masjidPointBusinessRequests||[]){const belongs=request.reference===business.reference||request.id===business.reference||(business.businessCode&&request.businessCode===business.businessCode)||String(request.email||'').toLowerCase()===String(business.email||'').toLowerCase();if(!belongs)continue;request.trialAdvertisingEligible=enabled;if(enabled&&request.status==='approved'&&!['paid','trial'].includes(request.paymentStatus)){const trialEnds=new Date(Date.now()+30*86400000);request.paymentStatus='trial';request.paymentMethod='trial';request.trialAdvertising=true;request.trialGrantedAt=changedAt;request.trialUntil=trialEnds.toISOString();request.listing='enabled';published++;notify(db,`business:${business.businessCode||business.email}`,'Trial advertising activated',`Your advertising through ${request.masjid} is live free for 30 days, until ${trialEnds.toLocaleDateString('en-GB',{day:'numeric',month:'long'})}. We will invoice you then to keep it up.`,'business-advertising',`trial-advert-live-${request.id}`)}}
       reconcile(db);audit(db,{action:enabled?'business.trial_enabled':'business.trial_disabled',entityType:'business',entityId:business.reference,actor:admin.name||admin.email,before:{trialAdvertisingEnabled:before},after:{trialAdvertisingEnabled:enabled,publishedListings:published},metadata:{businessCode:business.businessCode,name:business.name}});await save(db);return json(res,200,{ok:true,enabled,published});
     }
     if(url.pathname==='/api/admin/bank-settings'&&req.method==='POST'){
