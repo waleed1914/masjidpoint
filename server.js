@@ -126,6 +126,24 @@ function addMonth(from){
   return target;
 }
 
+// One email, one kind of account. Sign-in tries the individual account first and falls through to
+// masjid and business, so an address holding two kinds means one of them can never get in — and a
+// masjid registering with the address its business already uses was accepted, because the check
+// only ever looked at masjid applications. A business applying to several mosques is a feature and
+// is left alone; a second application to the same mosque is not.
+function emailBelongsElsewhere(db,email,{allowBusiness=false}={}){
+  const wanted=String(email||'').trim().toLowerCase();
+  if(!wanted)return null;
+  const applications=(db.masjidPointAdminApplications||[]).filter(a=>String(a.email||'').toLowerCase()===wanted);
+  const masjid=applications.find(a=>a.type==='masjid');
+  if(masjid)return 'This email address is already registered to a masjid on MasjidPoint. Use a different address, or sign in.';
+  const business=applications.find(a=>a.type==='business');
+  if(business&&!allowBusiness)return 'This email address is already registered to a business on MasjidPoint. Use a different address, or sign in.';
+  if((db.masjidPointCustomers||[]).some(c=>String(c.email||'').toLowerCase()===wanted))
+    return 'This email address already has a personal MasjidPoint account. Use a different address for an organisation.';
+  return null;
+}
+
 function requestIsSecure(req){
   const forwarded=String(req?.headers?.['x-forwarded-proto']||'').split(',')[0].trim().toLowerCase();
   if(forwarded)return forwarded==='https';
@@ -782,7 +800,7 @@ const server=http.createServer(async (req,res)=>{
     if(url.pathname==='/api/public/masjid-registration'&&req.method==='POST'){
       const input=await body(req),db=await load(),email=String(input.email||'').trim().toLowerCase(),postcode=String(input.postcode||'').trim().toUpperCase(),name=String(input.name||'').trim();
       if(!name||!email||!postcode||!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))return json(res,400,{error:'Enter the mosque name, postcode and a valid email address.'});
-      const duplicate=(db.masjidPointAdminApplications||[]).find(item=>item.type==='masjid'&&(String(item.email).toLowerCase()===email||(item.name===name&&String(item.details?.Postcode||'').toUpperCase()===postcode)));if(duplicate)return json(res,409,{error:'This mosque already has an application.',reference:duplicate.reference,status:duplicate.status});
+      const taken=emailBelongsElsewhere(db,email);if(taken)return json(res,409,{error:taken});const duplicate=(db.masjidPointAdminApplications||[]).find(item=>item.type==='masjid'&&(String(item.email).toLowerCase()===email||(item.name===name&&String(item.details?.Postcode||'').toUpperCase()===postcode)));if(duplicate)return json(res,409,{error:'This mosque already has an application.',reference:duplicate.reference,status:duplicate.status});
       const reference=`MSJ-${new Date().getFullYear()}-${crypto.randomBytes(3).toString('hex').toUpperCase()}`,submittedAt=new Date().toISOString();
       const app={id:reference,type:'masjid',name:name.slice(0,160),email,reference,status:'pending',submittedAt,details:{'Masjid name':name.slice(0,160),'Address':String(input.address||'').trim().slice(0,300),'Postcode':postcode.slice(0,12),'Masjid phone':String(input.masjidPhone||'').trim().slice(0,40),'Primary contact':String(input.contactName||'').trim().slice(0,120),'Role':String(input.role||'').trim().slice(0,80),'Contact number':String(input.contactPhone||'').trim().slice(0,40),'Email':email}};
       if(input.photo){const photo=dataUrlFile(input.photo);if(!photo||!photo.mime.startsWith('image/')||photo.buffer.length>3*1024*1024)return json(res,400,{error:'The mosque photo must be PNG, JPG or WebP up to 3 MB.'});app.photo=String(input.photo)}
@@ -791,6 +809,15 @@ const server=http.createServer(async (req,res)=>{
     if(url.pathname==='/api/public/advertising'&&req.method==='POST'){
       const input=await body(req),db=await load(),mosque=(db.masjidPointAdminApplications||[]).find(item=>item.type==='masjid'&&['approved','activated'].includes(item.status)&&(item.reference===input.masjidReference||item.name===input.masjid));
       if(!mosque)return json(res,400,{error:'Choose an active mosque.'});const name=String(input.name||'').trim(),email=String(input.email||'').trim().toLowerCase();if(!name||!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)||String(input.description||'').trim().length<20)return json(res,400,{error:'Complete the business name, valid email and description.'});
+      // A business may advertise through several mosques — that is the "Request another masjid"
+      // route — so an existing business application on this address is fine. A masjid or a personal
+      // account on it is not, and neither is a second application to the same mosque.
+      const claimed=emailBelongsElsewhere(db,email,{allowBusiness:true});
+      if(claimed)return json(res,409,{error:claimed});
+      const already=(db.masjidPointBusinessRequests||[]).find(r=>String(r.email||'').toLowerCase()===email
+        &&(r.masjidReference===mosque.reference||r.masjid===mosque.name)
+        &&!['rejected','cancelled'].includes(String(r.status||'')));
+      if(already)return json(res,409,{error:`You already have an application to advertise through ${mosque.name}.`,reference:already.reference});
       const pricing=(db.masjidPointMasjidPricing||[]).find(item=>item.reference===mosque.reference)||{},price=Number(pricing.businessPrice??pricing.advertisingPrice??20),adminPercent=Number(pricing.adminPercent??30),mosquePercent=100-adminPercent,reference=`MP-${new Date().getFullYear()}-${crypto.randomBytes(3).toString('hex').toUpperCase()}`,submittedAt=new Date().toISOString();
       const allowedAttendance=new Set(['','Very regularly — most days','Regularly — several times a week','Weekly — usually for Jumu’ah','Occasionally','I’m local but don’t regularly attend','I’m not local to this masjid']),attendanceFrequency=String(input.attendanceFrequency||'').trim();if(!allowedAttendance.has(attendanceFrequency))return json(res,400,{error:'Choose a valid attendance option.'});
       let contactPhoto=null;if(input.contactPhoto){const upload=dataUrlFile(input.contactPhoto);if(!upload||!['image/jpeg','image/png','image/webp'].includes(upload.mime)||upload.buffer.length>3*1024*1024)return json(res,400,{error:'Your photo must be a PNG, JPG or WebP image up to 3 MB.'});contactPhoto=await objectStorage.put({kind:'profile_photo',ownerType:'business_application',ownerId:reference,name:String(input.contactPhotoName||'contact-photo').slice(0,120),mime:upload.mime,buffer:upload.buffer})}
