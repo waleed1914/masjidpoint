@@ -136,11 +136,23 @@ function limit(req,res,name,max,windowMs,identity=''){
 }
 function csrfAllowed(req){
   if(!['POST','PUT','PATCH','DELETE'].includes(req.method)||process.env.MASJIDPOINT_TEST_MODE==='1')return true;
-  const expected=(()=>{try{return new URL(process.env.APP_BASE_URL||`${process.env.NODE_ENV==='production'?'https':'http'}://${req.headers.host}`).origin}catch{return''}})();
+  // Accept the address the request actually came in on as well as the configured one. Comparing
+  // only against APP_BASE_URL meant that setting it to https while the site was still served over
+  // http refused every sign-in on the platform — administrators, masjids, businesses, everyone —
+  // with a message that gave no hint the two disagreed about the scheme. The request's own origin
+  // is same-origin by definition, so accepting it protects against cross-site posts just as well
+  // and cannot lock anyone out over a mismatched setting.
+  const proto=String(req.headers['x-forwarded-proto']||'').split(',')[0].trim()
+    ||(req.socket?.encrypted?'https':(process.env.NODE_ENV==='production'?'https':'http'));
+  const expected=new Set();
+  for(const candidate of [process.env.APP_BASE_URL,`${proto}://${req.headers.host}`]){
+    if(!candidate)continue;
+    try{expected.add(new URL(candidate).origin)}catch{}
+  }
   const origin=String(req.headers.origin||'');
   const site=String(req.headers['sec-fetch-site']||'');
   if(process.env.NODE_ENV==='production'&&!origin&&!site)return false;
-  return (!origin||origin===expected)&&(!site||['same-origin','same-site','none'].includes(site));
+  return (!origin||expected.has(origin))&&(!site||['same-origin','same-site','none'].includes(site));
 }
 
 function readSession(req){
