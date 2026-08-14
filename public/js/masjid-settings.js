@@ -1,3 +1,7 @@
+// The same rule the server enforces. Checking only the length here meant a password with no
+// lowercase letter passed, went to the server, and came back refused — the round trip was the
+// only way to find out what was actually required.
+function strongPassword(value){return typeof value==='string'&&value.length>=12&&/[a-z]/.test(value)&&/[A-Z]/.test(value)&&/\d/.test(value)&&/[^A-Za-z0-9]/.test(value)}
 // Where a masjid manages how it appears. Until now a photo could only be attached during
 // registration, so every masjid already on the platform had no way to add one.
 (async function () {
@@ -179,7 +183,7 @@
     const next = passwordForm.elements.next.value;
     const confirm = passwordForm.elements.confirm.value;
     if (!current || !next) return fail('Fill in your current and new password.');
-    if (next.length < 12) return fail('Your new password needs at least 12 characters.');
+    if (!strongPassword(next)) return fail('Use at least 12 characters with uppercase, lowercase, a number and a symbol.');
     if (next !== confirm) return fail('The new passwords do not match.');
     if (next === current) return fail('Your new password is the same as your current one.');
 

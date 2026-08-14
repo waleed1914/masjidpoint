@@ -1,3 +1,7 @@
+// The same rule the server enforces. Checking only the length here meant a password with no
+// lowercase letter passed, went to the server, and came back refused — the round trip was the
+// only way to find out what was actually required.
+function strongPassword(value){return typeof value==='string'&&value.length>=12&&/[a-z]/.test(value)&&/[A-Z]/.test(value)&&/\d/.test(value)&&/[^A-Za-z0-9]/.test(value)}
 // The individual's portal: every job application and shop order tied to their email, plus the
 // details they can fill in over time. Records are matched on email, so anything they did before
 // creating the account still appears here.
@@ -118,7 +122,7 @@
     const current = String(data.get('currentPassword') || '');
     const next = String(data.get('newPassword') || '');
     if (!current) { detailsError.textContent = 'Enter your current password to save changes.'; detailsError.hidden = false; return; }
-    if (next && next.length < 12) { detailsError.textContent = 'The new password must be at least 12 characters.'; detailsError.hidden = false; return; }
+    if (next && !strongPassword(next)) { detailsError.textContent = 'Use at least 12 characters with uppercase, lowercase, a number and a symbol.'; detailsError.hidden = false; return; }
 
     const button = document.querySelector('#save-details');
     button.disabled = true; button.textContent = 'Saving…';

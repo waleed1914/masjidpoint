@@ -1,3 +1,7 @@
+// The same rule the server enforces. Checking only the length here meant a password with no
+// lowercase letter passed, went to the server, and came back refused — the round trip was the
+// only way to find out what was actually required.
+function strongPassword(value){return typeof value==='string'&&value.length>=12&&/[a-z]/.test(value)&&/[A-Z]/.test(value)&&/\d/.test(value)&&/[^A-Za-z0-9]/.test(value)}
 // Individual sign-up. Someone arriving straight from a job application or a shop order has
 // already typed their details once, so the form is prefilled from that record and only the
 // password is genuinely new.
@@ -73,7 +77,7 @@
     error.hidden = true;
     const data = new FormData(form);
     const password = String(data.get('password') || '');
-    if (password.length < 12) { error.textContent = 'Your password must be at least 12 characters.'; error.hidden = false; return; }
+    if (!strongPassword(password)) { error.textContent = 'Use at least 12 characters with uppercase, lowercase, a number and a symbol.'; error.hidden = false; return; }
     if (password !== String(data.get('confirm'))) { error.textContent = 'The two passwords do not match.'; error.hidden = false; return; }
 
     const button = document.querySelector('#create-account');

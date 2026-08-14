@@ -1,3 +1,7 @@
+// The same rule the server enforces. Checking only the length here meant a password with no
+// lowercase letter passed, went to the server, and came back refused — the round trip was the
+// only way to find out what was actually required.
+function strongPassword(value){return typeof value==='string'&&value.length>=12&&/[a-z]/.test(value)&&/[A-Z]/.test(value)&&/\d/.test(value)&&/[^A-Za-z0-9]/.test(value)}
 // Business account settings. Until now the sidebar's "Account settings" went nowhere, and there
 // was no way for a business to change its password after activation — the only route was the
 // forgotten-password email.
@@ -128,7 +132,7 @@
 
     const fail = message => { error.textContent = message; error.hidden = false; };
     if (!current || !next) return fail('Fill in your current and new password.');
-    if (next.length < 12) return fail('Your new password needs at least 12 characters.');
+    if (!strongPassword(next)) return fail('Use at least 12 characters with uppercase, lowercase, a number and a symbol.');
     if (next !== confirm) return fail('The new passwords do not match.');
     if (next === current) return fail('Your new password is the same as your current one.');
 
