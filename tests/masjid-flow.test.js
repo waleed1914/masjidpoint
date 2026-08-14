@@ -2,7 +2,26 @@ const crypto=require('crypto');
 const base=process.env.MASJIDPOINT_URL||'http://127.0.0.1:4174';
 const assert=(condition,message)=>{if(!condition)throw new Error(message)};
 const get=path=>fetch(base+path,{cache:'no-store'}).then(async r=>{assert(r.ok,`${path} returned ${r.status}`);return r.headers.get('content-type')?.includes('json')?r.json():r.text()});
-const put=(key,value)=>fetch(`${base}/api/collection/${key}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(value)}).then(async r=>{assert(r.ok,`Saving ${key} returned ${r.status}`);return r.json()});
+// The collections holding password hashes are the server's own now, so a suite that writes them
+// to stage an account has to sign in first — the same as the fixtures. A browser cannot, which is
+// the point: one holding a stale copy used to push it back and undo a password reset.
+let adminSession='';
+async function signInAsAdmin(){
+  if(adminSession)return adminSession;
+  const password=require('../scripts/seed-demo-data.js').ADMIN_PASSWORD;
+  const response=await fetch(`${base}/api/admin/login`,{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({email:'admin@masjidpoint.co.uk',password,passwordHash:passwordHash(password)})});
+  assert(response.ok,`Admin sign-in for the fixture returned ${response.status}`);
+  adminSession=(await response.json()).session||'';
+  return adminSession;
+}
+const put=async(key,value)=>{
+  const session=await signInAsAdmin();
+  const r=await fetch(`${base}/api/collection/${key}`,{method:'PUT',
+    headers:{'Content-Type':'application/json','X-MasjidPoint-Session':session},body:JSON.stringify(value)});
+  assert(r.ok,`Saving ${key} returned ${r.status}`);
+  return r.json();
+};
 const passwordHash=value=>crypto.createHash('sha256').update(value).digest('hex');
 (async()=>{
   const stamp=Date.now().toString().slice(-6),reference=`MSJ-TEST-${stamp}`,email=`automated.masjid.${stamp}@example.test`,name=`Automated Test Masjid ${stamp}`,password=`Test!${stamp}Aa`;
