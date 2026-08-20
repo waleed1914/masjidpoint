@@ -17,3 +17,16 @@
     console.error('payment proof', error);
   }
 })();
+
+// Replace the ambiguous post-submission action with the evidence that was actually sent.
+(async function(){
+  const session=JSON.parse(sessionStorage.getItem('masjidPointSession')||'null');if(session?.role!=='business')return;
+  await new Promise(resolve=>setTimeout(resolve,250));
+  const state=await MasjidDB.state(),app=(state.masjidPointAdminApplications||[]).find(item=>item.reference===session.reference);if(!app)return;
+  const code=app.businessCode||app.reference,proofs=state.masjidPointPaymentProofs||[];
+  document.querySelectorAll('[data-own-proof][disabled]').forEach(button=>{
+    const proof=[...proofs].reverse().find(item=>item.invoice===button.dataset.ownProof&&item.businessCode===code);if(!proof)return;
+    const link=document.createElement('a');link.className='button';link.href=`/api/shop/proof/file?id=${encodeURIComponent(proof.id)}`;link.target='_blank';link.rel='noopener';link.textContent='View submitted evidence →';button.replaceWith(link);
+  });
+  const amount=document.querySelector('#proof-form [name="amount"]');if(amount){amount.readOnly=true;amount.setAttribute('aria-readonly','true')}
+})();

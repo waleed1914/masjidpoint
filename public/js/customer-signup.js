@@ -115,3 +115,4 @@ function strongPassword(value){return typeof value==='string'&&value.length>=12&
   document.querySelector('#resend-customer-code').onclick=async()=>{const verificationError=document.querySelector('#verification-error');verificationError.hidden=true;const response=await fetch('/api/customer/verification/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:verificationEmail})});const result=await response.json();verificationError.textContent=result.message||result.error;verificationError.hidden=false;verificationError.style.color=response.ok?'#174d3f':''};
   if(params.get('verify'))showVerification(params.get('email'));
 })();
+{const style=document.createElement('link');style.rel='stylesheet';style.href='password-controls.css?v=1';document.head.appendChild(style);const script=document.createElement('script');script.src='password-controls.js?v=1';document.body.appendChild(script)}

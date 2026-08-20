@@ -5,5 +5,5 @@
   async function mosque(reference) { const details=document.querySelector('#request-details'); if(!details)return; const request=await find(reference); details.querySelector('.business-logo-review')?.remove(); const grid=details.querySelector('.portal-detail-grid'); if(grid&&request?.logo)grid.insertAdjacentHTML('afterbegin',card(request)); }
   async function admin() { const details=document.querySelector('#business-details'); if(!details)return; const query=new URLSearchParams(location.search),request=await find(query.get('reference')||query.get('application')); details.querySelector('.business-logo-review')?.remove(); if(request?.logo)details.insertAdjacentHTML('beforeend',card(request)); }
   document.addEventListener('click',event=>{const trigger=event.target.closest('[data-request],[data-scoped-request]');if(trigger)setTimeout(()=>mosque(trigger.dataset.request||trigger.dataset.scopedRequest),0)},true);
-  addEventListener('DOMContentLoaded',admin);
+  if(document.readyState==='loading')addEventListener('DOMContentLoaded',admin);else admin();
 })();

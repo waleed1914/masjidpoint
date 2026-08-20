@@ -397,7 +397,7 @@
       <form id="proof-form" novalidate>
         <h3>Send your payment receipt</h3>
         <div class="payment-step-fields">
-          <label><span>Amount paid <em>*</em></span><input name="amount" type="number" min="0.01" step="0.01" value="${Number(order.total).toFixed(2)}" required></label>
+          <label><span>Amount paid <em>*</em></span><input name="amount" type="number" min="0.01" step="0.01" value="${Number(order.total).toFixed(2)}" readonly aria-readonly="true" required><small>Fixed to your order total.</small></label>
           <label><span>Payment date <em>*</em></span><input name="date" type="date" value="${new Date().toISOString().slice(0, 10)}" required></label>
           <label class="wide"><span>Bank transaction reference <em>*</em></span><input name="bankReference" required placeholder="Shown on your bank statement"></label>
           <label class="wide"><span>Screenshot or receipt <em>*</em></span><input name="file" type="file" accept="image/png,image/jpeg,image/webp,application/pdf" required><small>PNG, JPG, WebP or PDF, up to 5 MB.</small></label>
@@ -415,12 +415,22 @@
 
     const proofForm = step.querySelector('#proof-form');
     const error = step.querySelector('#proof-error');
+    const proofInput = proofForm.elements.file;
+    proofInput.addEventListener('change', () => {
+      proofForm.querySelector('.selected-proof-feedback')?.remove();
+      const file = proofInput.files?.[0];
+      if (!file) return;
+      const feedback = document.createElement('small');
+      feedback.className = 'selected-proof-feedback';
+      feedback.textContent = `✓ ${file.name} selected and ready to upload`;
+      proofInput.closest('label').appendChild(feedback);
+    });
 
     proofForm.onsubmit = async event => {
       event.preventDefault();
       const button = proofForm.querySelector('button[type=submit]');
       const file = proofForm.elements.file.files[0];
-      const amount = Number(proofForm.elements.amount.value);
+      const amount = Number(order.total);
       const bankReference = proofForm.elements.bankReference.value.trim();
       if (!(amount > 0) || !bankReference || !file) {
         error.textContent = 'Enter the amount, your bank reference and attach the receipt.';
