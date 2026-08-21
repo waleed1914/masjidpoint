@@ -512,6 +512,49 @@ function reconcile(db, previousJobs=[]) {
     if(Number.isFinite(applied)&&applied>0){request.pricingSnapshot=owner.pricingSnapshot;request.price=applied}
     else if(Number.isFinite(held)&&held>0){request.price=held}
     else{const current=(db.masjidPointMasjidPricing||[]).find(price=>price.masjidName===request.masjid||price.masjidReference===request.masjidReference);if(current){request.pricingSnapshot={advertisingPrice:Number(current.advertisingPrice),adminPercent:Number(current.adminPercent),mosquePercent:Number(current.mosquePercent),adminAmount:Number(current.advertisingPrice)*Number(current.adminPercent)/100,mosqueAmount:Number(current.advertisingPrice)*Number(current.mosquePercent)/100,updatedAt:current.updatedAt};request.price=Number(current.advertisingPrice)}}}}
+  // Apply cleared workflow invoices before calculating what is still due. Previously this ran
+  // after `groups` was built: approving a proof paid the current invoice, but the same job was
+  // still seen as due for long enough to create a replacement invoice in that reconciliation.
+  // The job then became live while the business was incorrectly shown another payment demand.
+  for (const acct of db.masjidPointFinance.accounts) for (const inv of acct.invoices.filter(invoice =>
+    invoice.workflow && Number(invoice.paid) >= Number(invoice.amount) && Number(invoice.amount) > 0
+      && !['cancelled','refunded'].includes(invoice.status))) {
+    for (const line of inv.lines || []) {
+      if (line.requestId) {
+        const request = requests.find(item => item.id === line.requestId);
+        if (request) {
+          request.paidPeriods = Array.isArray(request.paidPeriods) ? request.paidPeriods : [];
+          if (!request.paidPeriods.includes(inv.number)) {
+            const now = new Date(), current = request.paidUntil ? new Date(request.paidUntil) : null;
+            const from = current && current > now ? current : now;
+            request.paidPeriods.push(inv.number);
+            request.paymentStatus = 'paid';
+            request.listing = 'enabled';
+            request.paidAt = now.toISOString();
+            request.paidUntil = addMonth(from).toISOString();
+            const share = Number(line.amount) * Number(line.mosquePercent ?? 70) / 100;
+            notify(db,`business:${request.email}`,'Advertising payment approved',`Your £${Number(line.amount).toFixed(2)} payment for ${request.masjid} was verified and your listing is live.`,'business-portal#listings',`advert-paid-business-${request.id}`);
+            notify(db,`masjid:${request.masjid}`,'Advertising payment received',`${request.name} paid £${Number(line.amount).toFixed(2)} and the listing is now live. Your £${share.toFixed(2)} share is due.`,'masjid-portal#requests',`advert-paid-masjid-${request.id}`);
+            notify(db,'admin','Mosque settlement due',`£${share.toFixed(2)} is due to ${request.masjid}.`,'admin-payments#settlements',`advert-settlement-${request.id}`);
+          }
+        }
+        continue;
+      }
+      const job = jobs.find(item => item.id === line.jobId);
+      const choice = job?.masjids.find(item => item.name === line.masjid);
+      if (choice && choice.paymentStatus !== 'paid') {
+        choice.paymentStatus = 'paid';
+        job.status = 'live';
+        job.enabled = true;
+        job.masjid = job.masjids.filter(item => item.paymentStatus === 'paid').map(item => item.name).join(', ');
+        notify(db,`business:${job.businessCode}`,`${job.title} is now live`,`Payment verified. The job is public through ${choice.name}.`,'public-jobs',`live-business-${job.id}-${choice.name}`);
+        const share = choice.fee * Number(choice.mosquePercent ?? 70) / 100;
+        notify(db,`masjid:${choice.name}`,'Job payment received',`${job.business} paid £${choice.fee.toFixed(2)}. Your £${share.toFixed(2)} share is awaiting admin settlement.`,'masjid-portal#settlements',`paid-masjid-${job.id}-${choice.name}`);
+        notify(db,'admin','Masjid settlement due',`£${share.toFixed(2)} is due to ${choice.name}.`,'admin-payments#settlements',`settlement-admin-${job.id}-${choice.name}`);
+      }
+    }
+  }
+
   const groups=new Map(),addLine=(code,line)=>{if(!groups.has(code))groups.set(code,[]);groups.get(code).push(line)};
   for(const job of jobs){const code=job.businessCode;if(!code)continue;job.masjids.filter(m=>m.status==='approved'&&m.paymentStatus!=='paid').forEach(m=>addLine(code,{jobId:job.id,kind:'job',description:`${job.title} — ${m.name}`,masjid:m.name,amount:m.fee,adminPercent:Number(m.adminPercent??30),mosquePercent:Number(m.mosquePercent??70)}))}
   // A month, or a trial, runs out. The listing comes down and the business is told, which is what
