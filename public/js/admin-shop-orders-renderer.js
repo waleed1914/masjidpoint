@@ -4,7 +4,17 @@
   const host = document.querySelector('#admin-order-list');
   const search = document.querySelector('#order-search');
   const count = document.querySelector('#order-count');
-  if (!host || !search || !count || !window.MasjidDB || !window.ShopFulfilment) return;
+  if (!host || !search || !count) return;
+
+  // local-db.js injects this renderer dynamically. On slower production connections it can
+  // arrive before the page's shared fulfilment helper, so wait instead of silently exiting.
+  for (let attempt = 0; attempt < 100 && (!window.MasjidDB || !window.ShopFulfilment); attempt += 1) {
+    await new Promise(resolve => setTimeout(resolve, 50));
+  }
+  if (!window.MasjidDB || !window.ShopFulfilment) {
+    host.innerHTML = '<p class="admin-empty">Orders could not be loaded. Refresh the page to try again.</p>';
+    return;
+  }
 
   const state = await MasjidDB.state();
   const orders = Array.isArray(state.masjidPointShopOrders) ? state.masjidPointShopOrders : [];
