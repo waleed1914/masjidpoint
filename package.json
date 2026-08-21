@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "node server.js",
-    "check": "node --check server.js && node --check lib/db.js && node --check lib/object-storage.js && node --check lib/email-service.js && node --check lib/finance-service.js && node --check lib/shop-fulfilment.js && node --check lib/shop-invoice.js && node --check lib/invoice-register.js && node --check lib/settlement-register.js && node --check public/js/local-db.js && node --check public/js/shop-fulfilment.js && node --check public/js/admin-shop-orders-renderer.js && node --check public/js/notifications.js",
+    "check": "node --check server.js && node --check lib/db.js && node --check lib/object-storage.js && node --check lib/email-service.js && node --check lib/finance-service.js && node --check lib/shop-fulfilment.js && node --check lib/shop-invoice.js && node --check lib/invoice-register.js && node --check lib/settlement-register.js && node --check public/js/local-db.js && node --check public/js/shop-fulfilment.js && node --check public/js/directory-data.js && node --check public/js/invoice-register.js && node --check public/js/settlement-register.js && node --check public/js/admin-shop-orders-renderer.js && node --check public/js/notifications.js && node scripts/check-public-assets.js",
     "seed": "node scripts/seed-demo-data.js",
     "reset": "node scripts/reset-data.js",
     "seed:print": "node scripts/seed-demo-data.js --print",
