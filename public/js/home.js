@@ -42,10 +42,8 @@
   }
 
   function isFiltering() {
-    const query = document.querySelector('#search-input')?.value.trim();
     const category = document.querySelector('#category-chips .chip.active')?.dataset.category;
-    const masjid = document.querySelector('#masjid-filter')?.value;
-    return Boolean(query || (category && category !== 'all') || masjid);
+    return Boolean(category && category !== 'all');
   }
 
   function moreButton(grid, total, shown, href, label) {
@@ -98,7 +96,7 @@
   });
 
   // These run after the page's own handlers, so the limit is restored once a filter is cleared.
-  ['#search-input', '#masjid-filter', '#category-chips'].forEach(selector => {
+  ['#category-chips'].forEach(selector => {
     const element = document.querySelector(selector);
     if (!element) return;
     ['input', 'change', 'click'].forEach(type =>
