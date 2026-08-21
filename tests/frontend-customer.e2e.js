@@ -72,6 +72,20 @@ async function upload(selector,file){const doc=await cdp('DOM.getDocument'),node
  await ev(`document.querySelector('#login-form').requestSubmit()`);await sleep(3000);
  assert(/\/my-account(?:\.html)?$/.test(await ev('location.pathname')),'Signing in after verification did not reach the account portal');
 
+ // Signing in as an individual must add their private orders/applications to the state without
+ // removing the public directories they could browse before signing in.
+ await ev(`sessionStorage.setItem('masjidPointAdminSession', JSON.stringify({role:'admin',token:'expired-admin-token',expiresAt:Date.now()-1}))`);
+ for (const page of [
+   { path: 'businesses', selector: '#business-results .business-tile', label: 'businesses' },
+   { path: 'masjids', selector: '#masjid-results .masjid-directory-card, #masjid-grid .masjid-card', label: 'masjids' },
+   { path: 'shops', selector: '#shop-results .shop-tile', label: 'masjid shops' }
+ ]) {
+   await go(`${base}/${page.path}`, 2400);
+   const visible = await ev(`document.querySelectorAll(${JSON.stringify(page.selector)}).length`);
+   assert(visible > 0, `Signing in as an individual hid the public ${page.label} directory`);
+ }
+ await go(`${base}/my-account`, 2400);
+
  db=await state();
  const customer=(db.masjidPointCustomers||[]).find(c=>c.email===person.email);
  assert(customer,'Customer record was not created');

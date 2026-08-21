@@ -26,5 +26,4 @@
   // Do not simulate a click here: this helper can load before the async shop controller has
   // attached its click handlers. Setting the panels directly removes that timing race.
   show(requested());
-  MasjidDB.ready.then(()=>show(requested()));
 })();

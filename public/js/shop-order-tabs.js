@@ -33,7 +33,14 @@
 
   function build(list) {
     const cards = [...list.querySelectorAll(CARD)].filter(c => c.querySelector('*') || c.textContent.trim());
-    if (cards.length < 2) return;                       // one order needs no filtering
+    if (cards.length < 2) {
+      // A previous render may have had enough orders to create filters. Do not leave a lone
+      // replacement card hidden by that old selection while the async payment data settles.
+      cards.forEach(card => { card.hidden = false; });
+      list.parentElement.querySelector('.shop-order-tabs')?.remove();
+      list.parentElement.querySelector('.shop-order-tabs-empty')?.remove();
+      return;
+    }
 
     const counts = new Map();
     for (const group of GROUPS) {
@@ -44,13 +51,10 @@
     if (shown.length < 3) return;                       // nothing worth filtering by
 
     let tabs = list.parentElement.querySelector('.shop-order-tabs');
-    const storageKey=`masjidPointShopOrderFilter:${location.pathname}:${list.id||'orders'}`;
-    const remembered=sessionStorage.getItem(storageKey)||'all';
-    const selected=shown.some(group=>group.key===remembered)?remembered:'all';
     const previous=tabs?.querySelector('[aria-current="true"]')?.dataset.group;
     // A payment/status update can remove the selected group entirely. Never keep filtering by a
     // tab that is no longer rendered, otherwise every order is hidden with no active tab visible.
-    const current=shown.some(group=>group.key===previous)?previous:selected;
+    const current=shown.some(group=>group.key===previous)?previous:'all';
     if (!tabs) {
       tabs = document.createElement('nav');
       tabs.className = 'shop-order-tabs';
@@ -62,7 +66,6 @@
 
     const show = key => {
       const group = GROUPS.find(g => g.key === key) || GROUPS[0];
-      sessionStorage.setItem(storageKey,group.key);
       for (const card of cards) card.hidden = !group.match(statusText(card));
       tabs.querySelectorAll('button').forEach(b =>
         b.setAttribute('aria-current', b.dataset.group === key ? 'true' : 'false'));

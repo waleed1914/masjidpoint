@@ -2,7 +2,14 @@
 // is - the platform is used by people who have not signed in, and they may still register and
 // apply, so no token is a valid state rather than an error.
 function sessionToken(){try{
-  for(const k of ['masjidPointAdminSession','masjidPointSession']){
+  // Public and account pages must use the signed-in person's account token. A stale admin
+  // session can remain in another tab; preferring it here made /api/state reject the request and
+  // left otherwise-public directories empty for an individual customer. Admin credentials are
+  // sent only from an actual administration page.
+  const keys=document.querySelector('.admin-page')
+    ? ['masjidPointAdminSession']
+    : ['masjidPointSession'];
+  for(const k of keys){
     const raw=sessionStorage.getItem(k); if(!raw)continue;
     const parsed=JSON.parse(raw); if(parsed&&parsed.token)return parsed.token;
   }
@@ -61,7 +68,7 @@ if(document.querySelector('.admin-page')){const financialStyle=document.createEl
 if(/\/admin-users(?:\.html)?$/.test(routePath())){const auditStyle=document.createElement('link');auditStyle.rel='stylesheet';auditStyle.href='admin-audit-view.css?v=1';document.head.appendChild(auditStyle);const auditScript=document.createElement('script');auditScript.src='admin-audit-view.js?v=1';document.body.appendChild(auditScript)}
 if(/\/admin-users(?:\.html)?$/.test(routePath())){const twoFactor=document.createElement('script');twoFactor.src='admin-2fa-controls.js?v=1';document.body.appendChild(twoFactor)}
 if(/\/masjid-portal(?:\.html)?$/.test(routePath())){const shopOrdersStyle=document.createElement('link');shopOrdersStyle.rel='stylesheet';shopOrdersStyle.href='masjid-shop-orders.css?v=4';document.head.appendChild(shopOrdersStyle);const shared=document.createElement('script');shared.src='shop-fulfilment.js?v=1';shared.onload=()=>{const shopOrdersScript=document.createElement('script');shopOrdersScript.src='masjid-shop-orders.js?v=5';document.body.appendChild(shopOrdersScript)};document.body.appendChild(shared)}
-if(/\/admin-masjid-products(?:\.html)?$/.test(routePath())){const stockScript=document.createElement('script');stockScript.src='admin-shop-stock.js?v=1';document.body.appendChild(stockScript);const shopPaymentStyle=document.createElement('link');shopPaymentStyle.rel='stylesheet';shopPaymentStyle.href='admin-shop-payment.css?v=3';document.head.appendChild(shopPaymentStyle);const shopPaymentScript=document.createElement('script');shopPaymentScript.src='admin-shop-payment.js?v=3';document.body.appendChild(shopPaymentScript);const tabPersistence=document.createElement('script');tabPersistence.src='admin-shop-tab-persistence.js?v=2';document.body.appendChild(tabPersistence)}
+if(/\/admin-masjid-products(?:\.html)?$/.test(routePath())){const stockScript=document.createElement('script');stockScript.src='admin-shop-stock.js?v=1';document.body.appendChild(stockScript);const shopPaymentStyle=document.createElement('link');shopPaymentStyle.rel='stylesheet';shopPaymentStyle.href='admin-shop-payment.css?v=3';document.head.appendChild(shopPaymentStyle);const shopPaymentScript=document.createElement('script');shopPaymentScript.src='admin-shop-payment.js?v=3';document.body.appendChild(shopPaymentScript);const tabPersistence=document.createElement('script');tabPersistence.src='admin-shop-tab-persistence.js?v=3';document.body.appendChild(tabPersistence)}
 if(['/business-portal','/masjid-shop'].some(path=>routePath()===path||routePath()===path+".html")){const bankStyle=document.createElement('link');bankStyle.rel='stylesheet';bankStyle.href='payment-bank-details.css?v=1';document.head.appendChild(bankStyle);const bankScript=document.createElement('script');bankScript.src='payment-bank-details.js?v=3';document.body.appendChild(bankScript)}
 if(/\/admin-masjid-products(?:\.html)?$/.test(routePath())){const secureScript=document.createElement('script');secureScript.src='admin-product-secure-save.js?v=1';document.body.appendChild(secureScript);const editStyle=document.createElement('link');editStyle.rel='stylesheet';editStyle.href='admin-product-edit.css?v=1';document.head.appendChild(editStyle);const editScript=document.createElement('script');editScript.src='admin-product-edit.js?v=1';document.body.appendChild(editScript)}
 if(/\/admin-masjid-products(?:\.html)?$/.test(routePath())){const operations=document.createElement('script');operations.src='admin-product-operations.js?v=1';document.body.appendChild(operations)}
