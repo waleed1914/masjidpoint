@@ -2,7 +2,7 @@
   if(document.querySelector('.notification-centre'))return;
   function baseRole(){if(document.body.classList.contains('admin-page'))return'admin';if(document.body.classList.contains('business-page'))return'business';if(document.body.classList.contains('portal-page'))return'masjid';return null}
   const role=baseRole();if(!role)return;const header=document.querySelector('main > header');if(!header)return;
-  const wrap=document.createElement('div');wrap.className='notification-centre';wrap.innerHTML='<button class="notification-bell" type="button" aria-label="Notifications">&#128276;<b hidden>0</b></button><section class="notification-menu" hidden><header><strong>Notifications</strong><button type="button">Close</button></header><div></div></section>';header.appendChild(wrap);
+  const wrap=document.createElement('div');wrap.className='notification-centre';wrap.innerHTML='<button class="notification-bell" type="button" aria-label="Notifications" aria-expanded="false">&#128276;<b hidden>0</b></button><section class="notification-menu" hidden><header><strong>Notifications</strong><button type="button">Close</button></header><div></div></section>';header.appendChild(wrap);
   const bell=wrap.querySelector('.notification-bell'),menu=wrap.querySelector('.notification-menu'),list=menu.querySelector('div');
   async function render(){
     const state=await MasjidDB.state(),session=JSON.parse(sessionStorage.getItem('masjidPointSession')||'null'),account=(state.masjidPointAdminApplications||[]).find(a=>a.reference===session?.reference),allowed=new Set([role]);
@@ -18,5 +18,12 @@
     list.innerHTML=items.length?items.map(n=>`<a href="${n.href}" data-id="${n.id}" class="${n.read?'':'unread'}"><strong>${n.title}</strong><span>${n.message}</span><small>${new Date(n.createdAt).toLocaleString('en-GB')}</small></a>`).join(''):'<p class="notification-empty">No notifications yet.</p>';
     list.querySelectorAll('[data-id]').forEach(a=>a.onclick=()=>fetch('/api/notifications/read',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:a.dataset.id})}))
   }
-  bell.onclick=async()=>{menu.hidden=!menu.hidden;if(!menu.hidden)await render()};menu.querySelector('header button').onclick=()=>menu.hidden=true;addEventListener('masjidpoint:ready',render);setTimeout(render,400);setInterval(render,10000)
+  bell.onclick=async()=>{menu.hidden=!menu.hidden;bell.setAttribute('aria-expanded',String(!menu.hidden));if(!menu.hidden)await render()};
+  function closeMenu(){menu.hidden=true;bell.setAttribute('aria-expanded','false')}
+  menu.querySelector('header button').onclick=closeMenu;
+  document.addEventListener('pointerdown',event=>{if(!menu.hidden&&!wrap.contains(event.target))closeMenu()});
+  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!menu.hidden){closeMenu();bell.focus()}});
+  list.addEventListener('click',event=>{if(event.target.closest('a'))closeMenu()});
+  addEventListener('blur',()=>{if(!menu.hidden)closeMenu()});
+  addEventListener('masjidpoint:ready',render);setTimeout(render,400);setInterval(render,10000)
 })();

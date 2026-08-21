@@ -1,5 +1,5 @@
 (function(){
-  const key='masjidPointAdminSession',form=document.querySelector('#admin-login-form'),email=document.querySelector('#admin-email'),password=document.querySelector('#admin-password'),error=document.querySelector('#admin-login-error'),button=document.querySelector('#admin-sign-in');
+  const key='masjidPointAdminSession',form=document.querySelector('#admin-login-form'),email=document.querySelector('#admin-email'),password=document.querySelector('#admin-password'),error=document.querySelector('#admin-login-error'),button=document.querySelector('#admin-sign-in');if(new URLSearchParams(location.search).get('expired')==='1'){error.textContent='Your administrator session expired after 30 minutes of inactivity. Please sign in again.';error.hidden=false}
   function target(){const value=new URLSearchParams(location.search).get('return')||'admin';return /^admin(?:-[a-z0-9-]+)?(?:\.html)?(?:[?#].*)?$/i.test(value)?value:'admin'}
   function fail(message){error.textContent=message;error.hidden=false}
   function save(result){sessionStorage.setItem(key,JSON.stringify({...result.user,token:result.session,signedInAt:Date.now(),expiresAt:result.expiresAt||Date.now()+1800000}));location.replace(target())}

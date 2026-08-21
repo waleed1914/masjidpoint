@@ -15,7 +15,7 @@
     .find(app => app.type === 'masjid' && (app.reference === session.reference || app.id === session.reference));
   if (!masjid) return;
 
-  const destination = `${location.origin}/advertise?masjidReference=${encodeURIComponent(masjid.reference)}&masjid=${encodeURIComponent(masjid.name)}`;
+  const destination = `${location.origin}/masjid-adverts?reference=${encodeURIComponent(masjid.reference)}`;
 
   // Printed at 260px, so the code is requested at a size that stays sharp on paper.
   const image = new Image();

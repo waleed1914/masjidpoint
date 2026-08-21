@@ -7,7 +7,7 @@
 })();
 {const script=document.createElement('script');script.src='admin-profile-finance.js?v=2';document.body.appendChild(script)}
 {const script=document.createElement('script');script.src='admin-masjid-shop-link.js?v=1';document.body.appendChild(script)}
-{const script=document.createElement('script');script.src='admin-masjid-qr.js?v=1';document.body.appendChild(script)}
+{const script=document.createElement('script');script.src='admin-masjid-qr.js?v=2';document.body.appendChild(script)}
 {const script=document.createElement('script');script.src='admin-qr-theme.js?v=1';document.body.appendChild(script)}
 {['admin-masjid-profile-products.css?v=1','admin-product-summary-filters.css?v=1','admin-order-payment.css?v=1','admin-shop-payment.css?v=3'].forEach(href=>{const style=document.createElement('link');style.rel='stylesheet';style.href=href;document.head.appendChild(style)});const shared=document.createElement('script');shared.src='shop-fulfilment.js?v=1';shared.onload=()=>{const script=document.createElement('script');script.src='admin-masjid-profile-products.js?v=2';document.body.appendChild(script)};document.body.appendChild(shared)}
 {const style=document.createElement('link');style.rel='stylesheet';style.href='admin-pending-account-gate.css?v=1';document.head.appendChild(style);const script=document.createElement('script');script.src='admin-pending-account-gate.js?v=1';document.body.appendChild(script)}

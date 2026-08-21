@@ -15,6 +15,7 @@ backups/
 tests/.*/
 tests/*-edge-*/
 tests/qa-*/
+tests/fresh-*/
 
 # OS and editor noise
 .DS_Store

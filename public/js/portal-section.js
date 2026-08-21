@@ -12,15 +12,14 @@
 (function () {
   'use strict';
 
-  // Only sections that actually exist. Earnings is still absent: nothing renders it, and a link
-  // that goes nowhere is worse than one that is not there. Active listings is here now because
-  // masjid-listings.js builds it.
+  // Only sections that actually exist in the shared portal document.
   const SECTIONS = {
     'masjid-requests': { title: 'Business requests', keep: ['#requests'] },
     'masjid-listings': { title: 'Active listings',   keep: ['#listings'] },
     'masjid-jobs':     { title: 'Job requests',      keep: ['.job-approval-panel'] },
     'masjid-orders':   { title: 'Shop orders',       keep: ['#shop-orders'] },
     'masjid-qr':       { title: 'Advertising QR',    keep: ['#qr-poster'] },
+    'masjid-earnings': { title: 'Earnings & settlements', keep: ['#masjid-earnings'] },
     // The business portal had the same fault: three of its six entries were anchors that scrolled
     // the dashboard rather than going anywhere.
     'business-advertising': { title: 'My advertising',   keep: ['#advertising'] },

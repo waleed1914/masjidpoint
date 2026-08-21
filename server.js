@@ -510,17 +510,18 @@ function reconcile(db, previousJobs=[]) {
     const onTrial=request.paymentStatus==='trial'&&trialEnd&&!isNaN(trialEnd);
     const onMonth=request.paymentStatus==='paid'&&paidEnd&&!isNaN(paidEnd);
     if(!(onTrial&&trialEnd<=now)&&!(onMonth&&paidEnd<=now))continue;
-    request.paymentStatus='due';request.listing='disabled';
+    if(request.cancelAtPeriodEnd===true){request.paymentStatus='not_due';request.listing='disabled';request.renewalStatus='stopped';request.stoppedAt=now.toISOString()}
+    else{request.paymentStatus='due';request.listing='disabled'}
     request.lapsedAt=now.toISOString();
     const what=onTrial?'free trial':'advertising month';
     notify(db,`business:${request.email}`,'Advertising has paused',
-      `Your ${what} for ${request.masjid} has ended and your listing is no longer showing. Pay the new invoice to put it back up.`,
+      request.renewalStatus==='stopped'?`Your ${what} for ${request.masjid} has ended. As requested, it was not renewed and no new charge was raised.`:`Your ${what} for ${request.masjid} has ended and your listing is no longer showing. Pay the new invoice to put it back up.`,
       'business-invoices',`advert-lapsed-${request.id}-${request.paidUntil||request.trialUntil}`);
     notify(db,`masjid:${request.masjid}`,'A business listing has paused',
       `${request.name} has reached the end of its ${what} and is no longer showing.`,
       'masjid-listings',`advert-lapsed-masjid-${request.id}-${request.paidUntil||request.trialUntil}`);
   }
-  for(const request of requests.filter(r=>r.status==='approved'&&!['paid','trial'].includes(r.paymentStatus)&&r.businessCode)){const snap=request.pricingSnapshot||{},amount=Number(snap.advertisingPrice??request.price??0);if(amount>0)addLine(request.businessCode,{requestId:request.id,kind:'advertising',description:`Business advertising — ${request.masjid}`,masjid:request.masjid,amount,adminPercent:Number(snap.adminPercent??30),mosquePercent:Number(snap.mosquePercent??70)})}
+  for(const request of requests.filter(r=>r.status==='approved'&&r.renewalStatus!=='stopped'&&!['paid','trial'].includes(r.paymentStatus)&&r.businessCode)){const snap=request.pricingSnapshot||{},amount=Number(snap.advertisingPrice??request.price??0);if(amount>0)addLine(request.businessCode,{requestId:request.id,kind:'advertising',description:`Business advertising — ${request.masjid}`,masjid:request.masjid,amount,adminPercent:Number(snap.adminPercent??30),mosquePercent:Number(snap.mosquePercent??70)})}
   // Which account a charge belongs to today. A business that has been issued a new business code
   // leaves its old account behind, and an unpaid workflow invoice there would go on billing the
   // same advertising request the new account is already billing — the charge appears twice, the
@@ -531,7 +532,7 @@ function reconcile(db, previousJobs=[]) {
     const job=jobs.find(j=>j.id===line.jobId);
     return job&&job.businessCode;
   };
-  for(const acct of db.masjidPointFinance.accounts){acct.invoices=acct.invoices.filter(inv=>{if(!inv.workflow||inv.paid>0)return true;const active=(inv.lines||[]).filter(line=>{const owner=codeForLine(line);if(owner&&owner!==acct.code)return false;if(line.requestId){const request=requests.find(r=>r.id===line.requestId);return request?.status==='approved'&&request.paymentStatus!=='paid'}const job=jobs.find(j=>j.id===line.jobId),choice=job?.masjids.find(m=>m.name===line.masjid);return choice?.status==='approved'&&choice.paymentStatus!=='paid'});inv.lines=active;inv.amount=active.reduce((s,l)=>s+Number(l.amount),0);inv.shares={};active.forEach(l=>inv.shares[l.masjid]=(inv.shares[l.masjid]||0)+Number(l.amount)*Number(l.mosquePercent??70)/100);return active.length>0})}
+  for(const acct of db.masjidPointFinance.accounts){acct.invoices=acct.invoices.filter(inv=>{if(!inv.workflow||inv.paid>0)return true;const active=(inv.lines||[]).filter(line=>{const owner=codeForLine(line);if(owner&&owner!==acct.code)return false;if(line.requestId){const request=requests.find(r=>r.id===line.requestId);return request?.status==='approved'&&request.renewalStatus!=='stopped'&&request.paymentStatus!=='paid'}const job=jobs.find(j=>j.id===line.jobId),choice=job?.masjids.find(m=>m.name===line.masjid);return choice?.status==='approved'&&choice.paymentStatus!=='paid'});inv.lines=active;inv.amount=active.reduce((s,l)=>s+Number(l.amount),0);inv.shares={};active.forEach(l=>inv.shares[l.masjid]=(inv.shares[l.masjid]||0)+Number(l.amount)*Number(l.mosquePercent??70)/100);return active.length>0})}
   for(const [code,dueLines] of groups){const owner=(db.masjidPointAdminApplications||[]).find(a=>a.businessCode===code),acct=account(db,code,owner?.name||'Business',owner?.email||'');let invoice=acct.invoices.find(i=>i.workflow===true&&i.paid<i.amount&&!['cancelled','refunded'].includes(i.status));if(dueLines.length){if(!invoice){invoice={number:nextInvoiceNumber(db),date:new Date().toISOString().slice(0,10),due:new Date(Date.now()+14*864e5).toISOString().slice(0,10),amount:0,paid:0,shares:{},lines:[],workflow:true};acct.invoices.unshift(invoice)}invoice.lines=dueLines;invoice.amount=dueLines.reduce((s,l)=>s+Number(l.amount),0);invoice.shares={};dueLines.forEach(l=>invoice.shares[l.masjid]=(invoice.shares[l.masjid]||0)+Number(l.amount)*Number(l.mosquePercent??70)/100)}}
   for (const acct of db.masjidPointFinance.accounts) for (const inv of acct.invoices.filter(i=>i.workflow && i.paid>=i.amount && i.amount>0&&!['cancelled','refunded'].includes(i.status))) {
     for (const line of inv.lines||[]) {
@@ -842,10 +843,13 @@ const server=http.createServer(async (req,res)=>{
     if(url.pathname==='/api/public/job-application'&&req.method==='POST'){
       const input=await body(req),db=await load(),job=(db.masjidPointJobs||[]).find(item=>item.id===input.jobId&&(item.status==='live'||item.enabled));if(!job)return json(res,404,{error:'This job is no longer accepting applications.'});
       const fullName=String(input.fullName||'').trim(),email=String(input.email||'').trim().toLowerCase(),phone=String(input.phone||'').trim();if(!fullName||!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)||phone.replace(/\D/g,'').length<10)return json(res,400,{error:'Enter your full name, valid email and phone number.'});
+      db.masjidPointJobApplications=db.masjidPointJobApplications||[];db.masjidPointCustomers=db.masjidPointCustomers||[];
+      const existingApplication=db.masjidPointJobApplications.find(item=>item.jobId===job.id&&String(item.email||'').trim().toLowerCase()===email);
+      if(existingApplication){const existingCustomer=db.masjidPointCustomers.find(item=>String(item.email||'').trim().toLowerCase()===email),accountExists=Boolean(existingCustomer?.passwordHash&&existingCustomer?.emailVerified);return json(res,409,{error:'You have already applied for this job. Sign in to check your application.',code:'ALREADY_APPLIED',reference:existingApplication.reference,jobTitle:job.title,accountExists});}
       const upload=dataUrlFile(input.file);if(!upload||!['application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document'].includes(upload.mime)||upload.buffer.length>5*1024*1024)return json(res,400,{error:'Upload a PDF, DOC or DOCX CV up to 5 MB.'});
       const reference=`APP-${new Date().getFullYear()}-${crypto.randomBytes(3).toString('hex').toUpperCase()}`,submittedAt=new Date().toISOString(),cv=await objectStorage.put({kind:'cv',ownerType:'job_application',ownerId:reference,name:String(input.fileName||'cv').slice(0,120),mime:upload.mime,buffer:upload.buffer});
       const application={reference,jobId:job.id,jobTitle:job.title,business:job.business||'',fullName:fullName.slice(0,160),email,phone:phone.slice(0,40),experienceYears:String(input.experienceYears||'').slice(0,60),additionalInformation:String(input.additionalInformation||'').trim().slice(0,1500),cvName:cv.originalName,cv,status:'Submitted',submittedAt};
-      db.masjidPointJobApplications=db.masjidPointJobApplications||[];db.masjidPointJobApplications.push(application);db.masjidPointCustomers=db.masjidPointCustomers||[];let customer=db.masjidPointCustomers.find(item=>String(item.email).toLowerCase()===email);if(!customer){customer={id:`CUS-${crypto.randomBytes(4).toString('hex').toUpperCase()}`,name:application.fullName,email,phone:application.phone,status:'pending_verification',applicationReferences:[],createdAt:submittedAt};db.masjidPointCustomers.push(customer)}customer.applicationReferences=Array.from(new Set([...(customer.applicationReferences||[]),reference]));
+      db.masjidPointJobApplications.push(application);let customer=db.masjidPointCustomers.find(item=>String(item.email).toLowerCase()===email);if(!customer){customer={id:`CUS-${crypto.randomBytes(4).toString('hex').toUpperCase()}`,name:application.fullName,email,phone:application.phone,status:'pending_verification',applicationReferences:[],createdAt:submittedAt};db.masjidPointCustomers.push(customer)}customer.applicationReferences=Array.from(new Set([...(customer.applicationReferences||[]),reference]));
       const accountExists=Boolean(customer.passwordHash&&customer.emailVerified);notify(db,`business:${job.businessCode||job.businessReference}`,'New job application',`${application.fullName} applied for ${job.title}.`,'business-applicants',`job-application-${reference}`);await save(db);return json(res,201,{ok:true,reference,jobTitle:job.title,submittedAt,accountExists});
     }
     if(url.pathname==='/api/business/job-application/decision'&&req.method==='POST'){
@@ -995,6 +999,19 @@ const server=http.createServer(async (req,res)=>{
       }
       if(Object.prototype.hasOwnProperty.call(input,'photo')){if(app.type!=='masjid')return json(res,403,{error:'Only a mosque profile has this photo.'});if(input.photo){const photo=dataUrlFile(input.photo);if(!photo||!photo.mime.startsWith('image/')||photo.buffer.length>3*1024*1024)return json(res,400,{error:'Choose a PNG, JPG or WebP image up to 3 MB.'});app.photo=String(input.photo)}else delete app.photo}
       app.profileUpdatedAt=new Date().toISOString();await save(db);return json(res,200,{ok:true,profile:{reference:app.reference,name:app.name,email:app.email,details:app.details,photo:app.photo||''}});
+    }
+    if(url.pathname==='/api/business/advertising-renewal'&&req.method==='POST'){
+      const session=readSession(req);if(!session)return json(res,401,{error:'Sign in to manage your advertising.'});
+      const input=await body(req),db=await load(),business=accountApplication(db,session);if(business?.type!=='business'||!['approved','activated'].includes(business.status)||['blocked','deactivated'].includes(business.accountStatus))return json(res,403,{error:'An active business account is required.'});
+      const request=(db.masjidPointBusinessRequests||[]).find(item=>item.id===String(input.id||''));if(!request)return json(res,404,{error:'Advertising listing not found.'});
+      const owns=request.reference===business.reference||request.businessCode===business.businessCode||String(request.email||'').toLowerCase()===String(business.email||'').toLowerCase();if(!owns)return json(res,403,{error:'This advertising listing does not belong to your account.'});
+      const periodEnd=request.paymentStatus==='trial'?request.trialUntil:request.paidUntil,end=periodEnd?new Date(periodEnd):null;if(request.status!=='approved'||!['paid','trial'].includes(request.paymentStatus)||!end||isNaN(end)||end<=new Date())return json(res,409,{error:'Only a currently active advertising period can have its renewal changed.'});
+      const action=String(input.action||'');if(!['stop','resume'].includes(action))return json(res,400,{error:'Choose whether to stop or resume renewal.'});
+      const before={cancelAtPeriodEnd:Boolean(request.cancelAtPeriodEnd),renewalStatus:request.renewalStatus||'active'};
+      request.cancelAtPeriodEnd=action==='stop';request.renewalStatus=action==='stop'?'stopping':'active';request.renewalChangedAt=new Date().toISOString();request.renewalChangedBy=`business:${business.businessCode||business.reference}`;
+      audit(db,{action:action==='stop'?'advertising.renewal_stop_scheduled':'advertising.renewal_resumed',entityType:'business_advertising',entityId:request.id,actor:business.name||business.email,before,after:{cancelAtPeriodEnd:request.cancelAtPeriodEnd,renewalStatus:request.renewalStatus,periodEnd:end.toISOString()}});
+      const when=end.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});notify(db,`masjid:${request.masjidReference||request.masjid}`,action==='stop'?'Advertising will end':'Advertising renewal restored',action==='stop'?`${request.name} has chosen not to renew after ${when}. The listing remains live until then.`:`${request.name} restored renewal for its listing.`,'masjid-listings',`advert-renewal-${request.id}-${action}-${request.renewalChangedAt}`);
+      await save(db);return json(res,200,{ok:true,cancelAtPeriodEnd:request.cancelAtPeriodEnd,renewalStatus:request.renewalStatus,periodEnd:end.toISOString()});
     }
     if(url.pathname==='/api/business/job'&&req.method==='POST'){
       const session=readSession(req);if(!session)return json(res,401,{error:'Sign in to create a job listing.'});
@@ -1223,7 +1240,7 @@ const server=http.createServer(async (req,res)=>{
     // portal-section.js then shows the section that address names. They are not separate files
     // because masjid-portal.js reads its elements without checking they exist, so a page missing
     // the parts it does not show would throw on every one of them.
-    const PORTAL_SECTIONS={'/masjid-requests':1,'/masjid-jobs':1,'/masjid-orders':1,'/masjid-qr':1,'/masjid-listings':1};
+    const PORTAL_SECTIONS={'/masjid-requests':1,'/masjid-jobs':1,'/masjid-orders':1,'/masjid-qr':1,'/masjid-listings':1,'/masjid-earnings':1};
     const BUSINESS_SECTIONS={'/business-advertising':1,'/business-profile':1,'/business-invoices':1,'/business-applicants':1};
     const requested=decodeURIComponent(
       url.pathname==='/'?'/index':(PORTAL_SECTIONS[url.pathname]?'/masjid-portal':(BUSINESS_SECTIONS[url.pathname]?'/business-portal':url.pathname)));

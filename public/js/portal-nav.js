@@ -8,8 +8,7 @@
   // anchor at all, so clicking Active listings, Job requests or Earnings simply reloaded the
   // dashboard — which is what made the sidebar feel broken.
   //
-  // Earnings is not here: nothing in the codebase renders it, so it was a link to a feature that
-  // does not exist. It comes back when it has something behind it. Active listings does now.
+  // Earnings now has its own route and a detailed paid-income and settlement ledger.
   const LINKS = [
     { href: 'masjid-portal',   icon: '▦', label: 'Dashboard',        page: true },
     { href: 'masjid-requests', icon: '◇', label: 'Business requests', page: true, badge: 'sidebar-pending' },
@@ -17,6 +16,7 @@
     { href: 'masjid-jobs',     icon: '▣', label: 'Job requests',      page: true },
     { href: 'masjid-products', icon: '⌗', label: 'Shop products',     page: true },
     { href: 'masjid-orders',   icon: '▥', label: 'Shop orders',       page: true },
+    { href: 'masjid-earnings', icon: '£', label: 'Earnings',          page: true },
     { href: 'masjid-qr',       icon: '▦', label: 'Advertising QR',    page: true },
     { href: 'masjid-settings', icon: '⚙', label: 'Masjid settings',   page: true }
   ];

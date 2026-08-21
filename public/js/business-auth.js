@@ -1,7 +1,8 @@
 (function(){
   const session=JSON.parse(sessionStorage.getItem('masjidPointSession')||'null');
-  if(!session||session.role!=='business'){
-    location.replace(`login?return=${encodeURIComponent((location.pathname.split('/').pop()||'').replace(/\.html$/,'')+location.search)}`);
+  if(!session||session.role!=='business'||(session.expiresAt&&Number(session.expiresAt)<=Date.now())){
+    sessionStorage.removeItem('masjidPointSession');
+    location.replace(`login?expired=1&return=${encodeURIComponent((location.pathname.split('/').pop()||'').replace(/\.html$/,'')+location.search)}`);
     return;
   }
   const initialise=async()=>{

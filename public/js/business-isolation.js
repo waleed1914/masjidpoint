@@ -26,7 +26,8 @@ function listingState(request){
   const days=Math.round((renewalDay-startOfToday)/86400000);
   if(days<=0)return '<span class="listing-status expired">Renewal due</span>';
   const when=until.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
-  return `<span class="listing-status ${cls}">${label}</span><small class="listing-remaining">${days} day${days===1?'':'s'} left · ${trial?'trial ends':'renews'} ${when}</small>`;
+  const periodAction=request.cancelAtPeriodEnd?'ends':trial?'trial ends':'renews';
+  return `<span class="listing-status ${cls}">${label}</span><small class="listing-remaining">${days} day${days===1?'':'s'} left · ${periodAction} ${when}</small>`;
 }
 (async function(){
   const session=JSON.parse(sessionStorage.getItem('masjidPointSession')||'null');if(session?.role!=='business')return;const state=await MasjidDB.state(),app=(state.masjidPointAdminApplications||[]).find(a=>a.reference===session.reference);if(!app)return;const code=app.businessCode,details=app.details||{},esc=v=>String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),money=n=>new Intl.NumberFormat('en-GB',{style:'currency',currency:'GBP'}).format(Number(n)||0),jobs=(state.masjidPointJobs||[]).filter(j=>j.businessReference===app.reference||j.businessCode===code),jobIds=new Set(jobs.map(j=>j.id)),requests=(state.masjidPointBusinessRequests||[]).filter(r=>r.reference===app.reference||r.email===app.email),account=state.masjidPointFinance.accounts.find(a=>a.code===code)||{invoices:[],payments:[]},applications=(state.masjidPointJobApplications||JSON.parse(localStorage.getItem('masjidPointJobApplications')||'[]')).filter(a=>jobIds.has(a.jobId)||a.businessCode===code),initials=app.name.split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase();
