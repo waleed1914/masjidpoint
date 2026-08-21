@@ -8,6 +8,7 @@ function sessionToken(){try{
   }
 }catch(_){}return ''}
 const overlayStyle=document.createElement('link');overlayStyle.rel='stylesheet';overlayStyle.href='responsive-overlays.css?v=1';document.head.appendChild(overlayStyle);
+const emptyStateStyle=document.createElement('link');emptyStateStyle.rel='stylesheet';emptyStateStyle.href='empty-states.css?v=1';document.head.appendChild(emptyStateStyle);
 const overlayDismiss=document.createElement('script');overlayDismiss.src='overlay-dismiss.js?v=1';document.body.appendChild(overlayDismiss);
 // The masjid portal sections are served from the one portal document at addresses of their own.
 // Every route check below matched "/masjid-portal" exactly, so on /masjid-orders the script that
