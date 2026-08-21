@@ -1,6 +1,8 @@
 (function(){
   const key='masjidPointAdminSession',form=document.querySelector('#admin-login-form'),email=document.querySelector('#admin-email'),password=document.querySelector('#admin-password'),error=document.querySelector('#admin-login-error'),button=document.querySelector('#admin-sign-in');if(new URLSearchParams(location.search).get('expired')==='1'){error.textContent='Your administrator session expired after 30 minutes of inactivity. Please sign in again.';error.hidden=false}
-  function target(){const value=new URLSearchParams(location.search).get('return')||'admin';return /^admin(?:-[a-z0-9-]+)?(?:\.html)?(?:[?#].*)?$/i.test(value)?value:'admin'}
+  // A new administrator session always begins at the overview. Returning directly to a data page
+  // raced that page's first authenticated state request and could render an empty masjid list.
+  function target(){return 'admin'}
   function fail(message){error.textContent=message;error.hidden=false}
   function save(result){sessionStorage.setItem(key,JSON.stringify({...result.user,token:result.session,signedInAt:Date.now(),expiresAt:result.expiresAt||Date.now()+1800000}));location.replace(target())}
   try{const current=JSON.parse(sessionStorage.getItem(key)||'null');if(['super_admin','admin','finance_admin','reviewer'].includes(current?.role)&&current.expiresAt>Date.now())location.replace(target())}catch(_){}
