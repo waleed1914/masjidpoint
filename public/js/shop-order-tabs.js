@@ -15,7 +15,7 @@
   // Orders move through these; anything unrecognised is grouped as "other" rather than hidden.
   const GROUPS = [
     { key: 'all', label: 'All', match: () => true },
-    { key: 'awaiting', label: 'Awaiting payment', match: t => /awaiting payment|payment due|evidence|unpaid/.test(t) },
+    { key: 'awaiting', label: 'Awaiting payment', match: t => !/payment verified|evidence approved|\bpaid\b/.test(t) && /awaiting[_ ](?:bank transfer|payment)|payment[_ ]pending|payment due|evidence submitted|unpaid/.test(t) },
     { key: 'ordered', label: 'Ordered', match: t => /\bordered\b/.test(t) },
     { key: 'preparing', label: 'Preparing', match: t => /preparing/.test(t) },
     { key: 'ready', label: 'Ready for collection', match: t => /ready for mosque|ready for collection|mosque received|ready/.test(t) },
@@ -26,8 +26,9 @@
 
   const statusText = card => {
     // Prefer an explicit status if the card carries one; fall back to reading the card.
-    const badge = card.querySelector('[data-order-status], .order-status, .shop-order-status, .status-badge, .portal-badge');
-    return String(badge?.textContent || card.dataset.orderStatus || card.textContent || '').toLowerCase();
+    const explicit=[card.dataset.orderStatus,card.dataset.paymentStatus].filter(Boolean).join(' ');
+    const badge = card.querySelector('[data-order-status], .order-status, .shop-order-status, .status-badge, .portal-badge, .shop-order-card>header>span');
+    return String(explicit || badge?.textContent || card.textContent || '').toLowerCase();
   };
 
   function build(list) {
@@ -86,7 +87,12 @@
       if (!list.dataset.tabsWatched) {
         list.dataset.tabsWatched = '1';
         // The lists re-render when an order moves; rebuild rather than leave stale counts.
-        new MutationObserver(() => build(list)).observe(list, { childList: true });
+        new MutationObserver(() => build(list)).observe(list, {
+          childList: true,
+          subtree: true,
+          attributes: true,
+          attributeFilter: ['data-order-status', 'data-payment-status']
+        });
       }
       return;
     }

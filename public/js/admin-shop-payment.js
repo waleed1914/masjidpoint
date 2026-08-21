@@ -28,6 +28,8 @@ function proofSummaryHtml(proof, esc) {
       const id = card.querySelector('header strong')?.textContent;
       const order = orders.find(x => x.id === id);
       if (!order) return;
+      card.dataset.orderStatus = order.status || '';
+      card.dataset.paymentStatus = order.paymentStatus || '';
       const method = ShopFulfilment.methodOf(order), paid = order.paymentStatus === 'paid';
       const box = document.createElement('div');
       box.className = `shop-payment-state ${order.paymentStatus}`;

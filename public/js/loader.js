@@ -16,8 +16,7 @@
   // Anyone who has asked for less movement gets no spinner and no overlay.
   if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-  const HARD_LIMIT = 6000;   // never cover the page for longer than this
-  const SETTLE = 260;        // let the first render finish before uncovering
+  const HARD_LIMIT = 6000;   // emergency escape only; never strand the page after a failed request
 
   // Applied while this script is still parsing, so the very first paint is already covered.
   const early = document.createElement('style');
@@ -104,10 +103,10 @@
     setTimeout(() => { if (waitForBody) { clearInterval(waitForBody); waitForBody = null; } }, 4000);
   }
 
-  // Whichever of these comes first wins.
+  // The hard limit is only a failure safeguard. Successful pages clear the loader from their real
+  // readiness signal below, without adding an artificial display delay.
   setTimeout(clear, HARD_LIMIT);
-  window.addEventListener('load', () => setTimeout(clear, SETTLE));
-  window.addEventListener('error', () => setTimeout(clear, SETTLE));
+  window.addEventListener('error', clear);
 
   // The data layer publishes a promise for its first fetch. Waiting on it is what makes the
   // overlay useful rather than decorative: the page is uncovered once it has something true to
@@ -115,9 +114,17 @@
   const waitForData = () => {
     const ready = window.MasjidDB && window.MasjidDB.ready;
     if (!ready || typeof ready.then !== 'function') return false;
-    ready.then(() => setTimeout(clear, SETTLE)).catch(() => clear());
+    ready.then(clear).catch(clear);
     return true;
   };
+
+  // A few authentication pages do not load application state. For those pages, the browser load
+  // event is the real readiness signal. Data-backed pages stay covered until MasjidDB.ready.
+  window.addEventListener('load', () => {
+    const needsData=[...document.scripts].some(script=>/\blocal-db\.js(?:\?|$)/.test(script.src));
+    if(!needsData)clear();
+    else waitForData();
+  });
 
   if (!waitForData()) {
     // local-db.js may not have run yet. Look again a few times, then stop and let the load

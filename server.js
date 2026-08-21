@@ -2,6 +2,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const zlib = require('zlib');
 const bcrypt = require('bcryptjs');
 require('dotenv').config();
 const {StateRepository}=require('./lib/db');
@@ -384,7 +385,21 @@ async function emailTransitions(before,after,actor='Super Admin'){
     }
   }
 }
-function json(res, status, body, extraHeaders) { res.writeHead(status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', ...(extraHeaders||{}) }); res.end(JSON.stringify(body)); }
+function json(res, status, body, extraHeaders) {
+  const payload=Buffer.from(JSON.stringify(body));
+  const acceptsGzip=/\bgzip\b/i.test(String(res.req?.headers?.['accept-encoding']||''));
+  const compress=acceptsGzip&&payload.length>=1024;
+  const output=compress?zlib.gzipSync(payload,{level:zlib.constants.Z_BEST_SPEED}):payload;
+  res.writeHead(status, {
+    'Content-Type':'application/json',
+    'Cache-Control':'no-store',
+    'Vary':'Accept-Encoding',
+    'Content-Length':String(output.length),
+    ...(compress?{'Content-Encoding':'gzip'}:{}),
+    ...(extraHeaders||{})
+  });
+  res.end(output);
+}
 function body(req) { return new Promise((resolve, reject) => { let raw=''; req.on('data', c => { raw += c; if (raw.length > 8e6) req.destroy(); }); req.on('end', () => { try { resolve(raw ? JSON.parse(raw) : {}); } catch(e) { reject(e); } }); }); }
 function dataUrlFile(value){const match=/^data:([^;,]+);base64,(.+)$/.exec(String(value||''));return match?{mime:match[1],buffer:Buffer.from(match[2],'base64')}:null}
 async function privateFile(res,document){
@@ -553,7 +568,10 @@ const server=http.createServer(async (req,res)=>{
   res.setHeader('X-Frame-Options','DENY');
   res.setHeader('Referrer-Policy','strict-origin-when-cross-origin');
   res.setHeader('Permissions-Policy','camera=(), microphone=(), geolocation=()');
-  if(process.env.NODE_ENV==='production')res.setHeader('Strict-Transport-Security','max-age=31536000; includeSubDomains');
+  // TLS is terminated by nginx in production, so the Node socket itself is plain HTTP. Trust the
+  // forwarded scheme just as sessionCookie() does; otherwise the live HTTPS site silently omits
+  // HSTS whenever NODE_ENV was not exported by the process manager.
+  if(requestIsSecure(req))res.setHeader('Strict-Transport-Security','max-age=31536000; includeSubDomains');
   // "//admin-login" is a protocol-relative URL: left as-is, new URL() reads the first
   // segment as the host and the path collapses to "/", quietly serving the home page for any
   // address with a doubled slash. Collapse repeated slashes before parsing.
@@ -1235,7 +1253,10 @@ const server=http.createServer(async (req,res)=>{
     // The URL space stays flat — /styles.css, /masjid-shop.js, /assets/logo.svg — while the files
     // themselves are filed by kind. Each request is resolved against these roots in order, so
     // moving a file between them never changes the address anything links to.
-    const staticRoots=[path.join(root,'public'),path.join(root,'public','css'),path.join(root,'public','js'),path.join(root,'lib'),root];
+    // Only browser assets belong in the public URL space. Never add `root`, `lib`, `data` or
+    // another source directory here: doing so exposes server.js, package metadata, Git internals,
+    // database files and any deployment secrets that happen to live beside the application.
+    const staticRoots=[path.join(root,'public'),path.join(root,'public','css'),path.join(root,'public','js')];
     // Each masjid portal section has its own address, served by the one portal document.
     // portal-section.js then shows the section that address names. They are not separate files
     // because masjid-portal.js reads its elements without checking they exist, so a page missing
@@ -1244,6 +1265,10 @@ const server=http.createServer(async (req,res)=>{
     const BUSINESS_SECTIONS={'/business-advertising':1,'/business-profile':1,'/business-invoices':1,'/business-applicants':1};
     const requested=decodeURIComponent(
       url.pathname==='/'?'/index':(PORTAL_SECTIONS[url.pathname]?'/masjid-portal':(BUSINESS_SECTIONS[url.pathname]?'/business-portal':url.pathname)));
+    // Dotfiles are deployment metadata, never web assets. Keep this guard even though the public
+    // roots below are intentionally narrow, so a future asset-root change cannot expose .git,
+    // environment files, SSH material or similar hidden files again.
+    if(requested.split('/').some(segment=>segment.startsWith('.')))return json(res,404,{error:'Not found'});
     const usable=candidate=>fs.existsSync(candidate)&&!fs.statSync(candidate).isDirectory();
     let file=null;
     for(const base of staticRoots){
