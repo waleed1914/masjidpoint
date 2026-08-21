@@ -47,7 +47,10 @@
     const storageKey=`masjidPointShopOrderFilter:${location.pathname}:${list.id||'orders'}`;
     const remembered=sessionStorage.getItem(storageKey)||'all';
     const selected=shown.some(group=>group.key===remembered)?remembered:'all';
-    const current = tabs?.querySelector('[aria-current="true"]')?.dataset.group || selected;
+    const previous=tabs?.querySelector('[aria-current="true"]')?.dataset.group;
+    // A payment/status update can remove the selected group entirely. Never keep filtering by a
+    // tab that is no longer rendered, otherwise every order is hidden with no active tab visible.
+    const current=shown.some(group=>group.key===previous)?previous:selected;
     if (!tabs) {
       tabs = document.createElement('nav');
       tabs.className = 'shop-order-tabs';
