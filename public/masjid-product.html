@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Product details — MasjidPoint</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="site-nav.css?v=1">
+  <link rel="stylesheet" href="masjid-product.css?v=1">
+  <link rel="stylesheet" href="mobile.css?v=1">
+  <script src="sha256.js?v=1"></script>
+  <link rel="stylesheet" href="loader.css?v=1">
+  <script src="loader.js?v=1"></script>
+</head>
+<body class="product-detail-page">
+  <header data-site-nav></header>
+  <script src="site-nav.js?v=1"></script>
+  <main class="product-detail-shell">
+    <nav class="product-breadcrumb" aria-label="Breadcrumb">
+      <a id="back-to-shop" href="shops">← Back to mosque shop</a>
+    </nav>
+    <section class="product-detail-card" id="product-detail" hidden>
+      <div class="product-detail-media">
+        <img id="product-image" alt="" onerror="this.hidden=true">
+        <span id="product-stock-flag" hidden></span>
+      </div>
+      <div class="product-detail-copy">
+        <p class="eyebrow"><span></span><b id="product-category"></b></p>
+        <h1 id="product-name"></h1>
+        <p class="product-mosque">Available from <a id="product-mosque"></a></p>
+        <p class="product-description" id="product-description"></p>
+        <div class="product-purchase">
+          <div><small>Price</small><strong id="product-price"></strong></div>
+          <div><small>Availability</small><strong id="product-stock"></strong></div>
+        </div>
+        <div class="product-quantity-row">
+          <label for="product-quantity">Quantity</label>
+          <div class="quantity-control">
+            <button type="button" id="quantity-down" aria-label="Decrease quantity">−</button>
+            <input id="product-quantity" type="number" min="1" value="1" inputmode="numeric">
+            <button type="button" id="quantity-up" aria-label="Increase quantity">+</button>
+          </div>
+        </div>
+        <div class="product-actions">
+          <button class="button" type="button" id="detail-add">Add to cart</button>
+          <a class="button secondary" id="view-cart" href="#">View cart <b id="detail-cart-count">0</b></a>
+        </div>
+        <p class="product-feedback" id="product-feedback" role="status" aria-live="polite"></p>
+        <aside class="product-support-note">
+          <strong>Supporting the local mosque</strong>
+          <p>A share of this purchase supports <span id="support-mosque"></span>. Your fulfilment options are shown before checkout.</p>
+        </aside>
+      </div>
+    </section>
+    <section class="product-fulfilment" id="product-fulfilment" hidden>
+      <p class="eyebrow"><span></span> How you can receive it</p>
+      <h2>Collection and delivery options</h2>
+      <div id="product-fulfilment-options"></div>
+    </section>
+    <section class="product-related" id="product-related" hidden>
+      <div><p class="eyebrow"><span></span> More from this mosque</p><h2>You may also like</h2></div>
+      <div class="related-grid" id="related-products"></div>
+    </section>
+    <section class="product-not-found" id="product-not-found" hidden>
+      <span aria-hidden="true">◇</span><h1>Product not found</h1>
+      <p>This product may be out of stock or no longer available from this mosque.</p>
+      <a class="button" id="not-found-back" href="shops">Browse mosque shops</a>
+    </section>
+  </main>
+  <script src="local-db.js?v=20"></script>
+  <script src="shop-fulfilment.js?v=1"></script>
+  <script src="masjid-product.js?v=1"></script>
+</body>
+</html>

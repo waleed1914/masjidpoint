@@ -23,6 +23,8 @@ const D=require('../lib/directory-data.js');
    return stock.length&&ShopFulfilment.enabledFor(rate).length;
  });
  assert(mosques.length&&adverts.length&&expectedShops.length,'Seed must provide masjids, adverts and shops');
+ const detailMosque=expectedShops[0];
+ const detailProduct=products.find(p=>(p.mosques||[]).some(x=>x.reference===detailMosque.reference));
 
  browser=spawn(edge,['--headless=new',`--remote-debugging-port=${port}`,`--user-data-dir=${path.join(__dirname,'.dir-edge-'+Date.now())}`,'--no-first-run','--disable-gpu','about:blank'],{stdio:'ignore'});
  await connect();await cdp('Page.enable');await cdp('Runtime.enable');
@@ -32,6 +34,7 @@ const D=require('../lib/directory-data.js');
    'register-masjid.html','status.html','signup.html','login.html','candidate-apply.html','activate.html',
    'forgot-password.html','reset-password.html',
    `masjid-shop.html?reference=${encodeURIComponent(mosques[0].reference)}`,
+   `masjid-product.html?reference=${encodeURIComponent(detailMosque.reference)}&product=${encodeURIComponent(detailProduct.id)}`,
    `masjid-adverts.html?reference=${encodeURIComponent(mosques[0].reference)}`];
  const shapes=new Set();
  for(const page of PUBLIC){
@@ -49,6 +52,19 @@ const D=require('../lib/directory-data.js');
  // The shop still gets its basket, added into the shared header rather than a bespoke one.
  await go(`${base}/masjid-shop.html?reference=${encodeURIComponent(expectedShops[0].reference)}`,3000);
  assert(await ev(`!!document.querySelector('.site-nav #open-cart')&&!!document.querySelector('#cart-count')`),'Shop basket is missing from the shared header');
+
+ // Wide catalogues use three balanced columns and every card opens a product-detail page that
+ // writes to the exact same mosque-specific cart as checkout.
+ await cdp('Emulation.setDeviceMetricsOverride',{width:1536,height:864,deviceScaleFactor:1,mobile:false});
+ const shopLayout=await ev(`(()=>{const grid=document.querySelector('#public-products');const href=grid.querySelector('.product-media')?.getAttribute('href');return {columns:getComputedStyle(grid).gridTemplateColumns.split(' ').length,href}})()`);
+ assert(shopLayout.columns===3,`Wide mosque shop uses ${shopLayout.columns} columns, expected 3`);
+ assert(shopLayout.href?.startsWith('masjid-product?reference='),`Product card links to ${shopLayout.href}`);
+ await go(`${base}/${shopLayout.href}`,3000);
+ const detail=await ev(`({visible:!document.querySelector('#product-detail').hidden,name:document.querySelector('#product-name').textContent,mosque:document.querySelector('#product-mosque').textContent,cart:document.querySelector('#detail-cart-count').textContent})`);
+ assert(detail.visible&&detail.name===detailProduct.name,`Product detail shows ${detail.name}, expected ${detailProduct.name}`);
+ assert(detail.mosque===detailMosque.name,`Product detail belongs to ${detail.mosque}, expected ${detailMosque.name}`);
+ await ev(`(()=>{document.querySelector('#product-quantity').value='2';document.querySelector('#detail-add').click()})()`);await sleep(250);
+ assert(Number(await ev(`document.querySelector('#detail-cart-count').textContent`))===Math.min(2,detailProduct.stock),'Product detail did not add the selected quantity to the shared cart');
 
  // 2. Masjid directory lists every operational masjid and filters by city and area.
  await go(`${base}/masjids.html`);

@@ -17,6 +17,7 @@
   // Detail pages highlight the section they belong to.
   const PARENT = {
     'masjid-shop': 'shops',
+    'masjid-product': 'shops',
     'masjid-adverts': 'masjids',
     'advertise': 'businesses',
     'candidate-apply': 'public-jobs',

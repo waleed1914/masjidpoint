@@ -122,15 +122,16 @@
     document.querySelector('#public-products').innerHTML = list.map(p => {
       const inCart = cart.find(x => x.product.id === p.id)?.quantity || 0;
       const low = p.stock <= 5;
+      const detailsHref = `masjid-product?reference=${encodeURIComponent(mosque.reference)}&product=${encodeURIComponent(p.id)}`;
       return `<article class="public-product">
-        <div class="product-media">
+        <a class="product-media" href="${detailsHref}" aria-label="View ${esc(p.name)} details">
           <img src="${esc(p.image)}" alt="${esc(p.name)}" loading="lazy" onerror="this.hidden=true">
           ${low ? `<span class="product-flag low">Only ${p.stock} left</span>` : ''}
           ${inCart ? `<span class="product-flag in-cart">${inCart} in cart</span>` : ''}
-        </div>
+        </a>
         <div class="product-body">
           <small class="product-category">${esc(p.category)}</small>
-          <h2>${esc(p.name)}</h2>
+          <h2><a href="${detailsHref}">${esc(p.name)}</a></h2>
           <p>${esc(p.description)}</p>
           <footer>
             <span class="product-price"><strong>${money(p.price)}</strong><small>${p.stock} available</small></span>
@@ -478,6 +479,11 @@
   prefillDetails();
   render();
   renderCart();
+
+  // The product-detail page can send someone back with their existing cart already open.
+  if (new URLSearchParams(location.search).get('cart') === 'open') {
+    document.querySelector('#cart-drawer').hidden = false;
+  }
 
   // Methods paid up front continue to a payment step, so the button should not promise otherwise.
   const syncSubmitLabel = () => { if (!placing) submit.textContent = method?.paysUpfront ? 'Continue to payment →' : 'Place order'; };
