@@ -7,21 +7,24 @@
 <header data-site-nav></header><script src="site-nav.js?v=1"></script>
 
 <section class="adverts-hero">
-  <p class="eyebrow light"><span></span> Masjid directory</p>
-  <h1 id="masjid-name"></h1>
-  <p id="masjid-location">—</p>
-  <div class="adverts-hero-actions">
-    <a class="button" id="shop-link" href="#">Visit the shop →</a>
-    <a class="button secondary" id="jobs-link" href="public-jobs">See all jobs</a>
+  <div class="adverts-hero-inner">
+    <a class="adverts-back" href="masjids">&#8592; Back to all masjids</a>
+    <p class="eyebrow light"><span></span> Verified community masjid</p>
+    <h1 id="masjid-name"></h1>
+    <p id="masjid-location">—</p>
+    <div class="adverts-hero-actions">
+      <a class="button" id="shop-link" href="#">Visit the shop →</a>
+      <a class="button secondary" id="jobs-link" href="public-jobs">See all jobs</a>
+    </div>
+    <div class="adverts-stats" id="adverts-stats"></div>
   </div>
-  <div class="adverts-stats" id="adverts-stats"></div>
 </section>
 
 <main class="adverts-content">
   <section class="adverts-block" id="businesses-block">
     <div class="block-heading">
       <div><p class="eyebrow"><span></span> Trusted locally</p><h2>Businesses advertising here</h2><p>Every listing below is approved by this masjid and paid for through MasjidPoint.</p></div>
-      <div class="adverts-tools"><input id="advert-search" type="search" placeholder="Search business or service"><select id="advert-category"><option value="all">All categories</option></select></div>
+      <div class="adverts-tools"><input id="advert-search" type="search" placeholder="Search businesses"><select id="advert-category"><option value="all">All categories</option></select></div>
     </div>
     <div class="advert-grid" id="advert-grid"></div>
     <p class="adverts-empty" id="advert-empty" hidden>No businesses are advertising through this masjid yet.</p>
@@ -42,8 +45,13 @@
   </section>
 </main>
 
-<footer class="adverts-footer"><p>MasjidPoint — supporting local Muslim communities.</p><a href="/">Browse all masjids</a></footer>
+<footer>
+  <a class="brand brand-light" href="/"><span class="brand-mark" aria-hidden="true"><span></span></span><span>Masjid<span>Point</span></span></a>
+  <p>Connecting communities. Strengthening masjids.</p>
+  <div><a href="/#how-it-works">How it works</a><a href="businesses">Businesses</a><a href="masjids">Masjids</a><a href="shops">Masjid shops</a><a href="public-jobs">Jobs</a><a href="privacy">Privacy</a><a href="terms">Terms</a><a href="status">Check status</a><a href="admin-login">Admin</a></div>
+  <small>© 2026 MasjidPoint. All rights reserved.</small>
+</footer>
 
 <script src="local-db.js?v=20"></script>
-<script src="public-business-avatar.js?v=2"></script><script src="masjid-adverts.js?v=5"></script><script src="public-business-image-viewer.js?v=1"></script>
+<script src="public-business-avatar.js?v=2"></script><script src="masjid-adverts.js?v=6"></script><script src="public-business-image-viewer.js?v=1"></script>
 </body></html>

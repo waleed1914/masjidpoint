@@ -7,10 +7,14 @@
 <header data-site-nav></header><script src="site-nav.js?v=1"></script>
 
 <section class="directory-hero">
+  <a class="directory-back-home" href="/">&#8592; Back to home</a>
   <p class="eyebrow"><span></span> Masjid directory</p>
   <h1>Find a masjid near you</h1>
   <p>Every masjid below is verified. Open one to see the businesses it trusts, the jobs it shares and its community shop.</p>
-  <div class="directory-filters">
+  <button class="directory-filter-toggle" id="masjid-filter-toggle" type="button" aria-expanded="false" aria-controls="masjid-directory-filters">
+    <span class="filter-toggle-icon" aria-hidden="true"></span><span>Show filters</span>
+  </button>
+  <div class="directory-filters" id="masjid-directory-filters">
     <label>Search<input id="masjid-search" type="search" placeholder="Masjid name, address or postcode"></label>
     <label>City<select id="city-filter"><option value="all">All cities</option></select></label>
     <label>Area<select id="area-filter"><option value="all">All areas</option></select></label>
@@ -19,7 +23,6 @@
   </div>
 </section>
 
-<p class="directory-count" id="result-count"></p>
 <main class="directory-body">
   <div class="directory-grid" id="masjid-results"></div>
   <p class="directory-empty" id="masjid-empty" hidden>No masjids match your search. Try a different name or city.</p>
@@ -34,5 +37,5 @@
 
 <script src="local-db.js?v=20"></script>
 <script src="directory-data.js?v=1"></script>
-<script src="masjids.js?v=1"></script>
+<script src="masjids.js?v=2"></script>
 </body></html>

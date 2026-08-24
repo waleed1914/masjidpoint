@@ -15,6 +15,25 @@
   const empty = document.querySelector('#masjid-empty');
   const count = document.querySelector('#result-count');
 
+  // Filters start closed on every screen and remember the visitor's last choice.
+  const filterToggle = document.querySelector('#masjid-filter-toggle');
+  const filterHero = document.querySelector('.directory-hero');
+  const filterPreferenceKey = 'masjidPoint.masjidDirectoryFilters';
+  let filtersOpen = false;
+  try { filtersOpen = localStorage.getItem(filterPreferenceKey) === 'open'; } catch (_) {}
+  const paintFilterToggle = () => {
+    filterHero?.classList.toggle('filters-open', filtersOpen);
+    filterToggle?.setAttribute('aria-expanded', String(filtersOpen));
+    const label = filterToggle?.querySelector('span:last-child');
+    if (label) label.textContent = filtersOpen ? 'Hide filters' : 'Show filters';
+  };
+  if (filterToggle) filterToggle.onclick = () => {
+    filtersOpen = !filtersOpen;
+    try { localStorage.setItem(filterPreferenceKey, filtersOpen ? 'open' : 'closed'); } catch (_) {}
+    paintFilterToggle();
+  };
+  paintFilterToggle();
+
   [...new Set(summaries.map(s => s.city))].sort()
     .forEach(city => cityFilter.add(new Option(city, city)));
   [...new Set(summaries.map(s => s.area).filter(Boolean))].sort().forEach(a => areaFilter.add(new Option(a, a)));
@@ -62,7 +81,7 @@
     empty.hidden = list.length > 0;
     results.hidden = !list.length;
     const filtered = q || city !== 'all' || areaFilter.value !== 'all';
-    count.innerHTML = filtered
+    if (count) count.innerHTML = filtered
       ? `<strong>${list.length}</strong> of ${summaries.length} masjids match`
       : `<strong>${summaries.length}</strong> masjid${summaries.length === 1 ? '' : 's'} listed`;
   }

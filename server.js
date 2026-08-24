@@ -1361,7 +1361,8 @@ function validateProductionEnvironment(){
   if(!String(process.env.APP_BASE_URL).startsWith('https://'))throw new Error('APP_BASE_URL must use HTTPS in production.');
 }
 try{validateProductionEnvironment()}catch(error){console.error(`Startup failed: ${error.message}`);process.exit(1)}
+const serverHost=process.env.MASJIDPOINT_HOST||'127.0.0.1';
 Promise.all([repository.init(),emailService.init()])
   .then(announceBootstrapAdmin)
-  .then(()=>server.listen(port,'127.0.0.1',()=>console.log(`MasjidPoint server: http://127.0.0.1:${port} (${process.env.DATABASE_URL?'PostgreSQL':'development JSON fallback'})`)))
+  .then(()=>server.listen(port,serverHost,()=>console.log(`MasjidPoint server: http://${serverHost}:${port} (${process.env.DATABASE_URL?'PostgreSQL':'development JSON fallback'})`)))
   .catch(error=>{console.error(`Startup failed: ${error.message}`);process.exit(1)});

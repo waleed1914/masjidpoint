@@ -45,8 +45,23 @@
   // Signed out we prompt to join; signed in we show who you are and where your portal is.
   function accountMarkup() {
     if (!portal) {
-      return `<a class="site-nav-signin" href="login">Sign in</a>
-        <a class="button button-small" href="signup">Sign up</a>`;
+      return `<div class="site-nav-auth-links">
+          <a class="site-nav-signin" href="login">Sign in</a>
+          <a class="button button-small" href="signup">Sign up</a>
+        </div>
+        <div class="site-nav-account site-nav-guest-account">
+          <button class="site-nav-avatar" type="button" aria-expanded="false" aria-haspopup="true" aria-label="Sign in or create an account">
+            <span class="site-nav-profile-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="8" r="3.25"></circle><path d="M5.5 19c.45-3.65 2.65-5.5 6.5-5.5s6.05 1.85 6.5 5.5"></path></svg>
+            </span>
+            <span class="site-nav-caret" aria-hidden="true">â–¾</span>
+          </button>
+          <div class="site-nav-menu site-nav-guest-menu" hidden>
+            <p><strong>Welcome to MasjidPoint</strong><small>Access your account or join the community.</small></p>
+            <a href="login">Sign in</a>
+            <a href="signup">Create an account</a>
+          </div>
+        </div>`;
     }
     const name = session.name || session.email || 'Account';
     return `<div class="site-nav-account">
@@ -91,14 +106,16 @@
   // Account menu: opens on click, closes on outside click or Escape.
   const avatar = host.querySelector('.site-nav-avatar');
   if (avatar) {
+    const account = avatar.closest('.site-nav-account');
     const menu = host.querySelector('.site-nav-menu');
     const setOpen = open => { menu.hidden = !open; avatar.setAttribute('aria-expanded', String(open)); };
     avatar.onclick = event => { event.stopPropagation(); setOpen(menu.hidden); };
-    document.addEventListener('click', event => { if (!host.contains(event.target)) setOpen(false); });
+    document.addEventListener('click', event => { if (!account.contains(event.target)) setOpen(false); });
     document.addEventListener('keydown', event => { if (event.key === 'Escape') setOpen(false); });
-    menu.querySelector('[data-sign-out]').onclick = () => {
-      sessionStorage.removeItem('masjidPointSession');
-      location.href = '/';
-    };
+    const signOut = menu.querySelector('[data-sign-out]');
+    if (signOut) signOut.onclick = () => {
+        sessionStorage.removeItem('masjidPointSession');
+        location.href = '/';
+      };
   }
 })();

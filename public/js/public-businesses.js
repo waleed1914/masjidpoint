@@ -8,7 +8,14 @@
 
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const listings = (state.masjidPointBusinessRequests || []).filter(r =>
-    r.status === 'approved' && r.paymentStatus === 'paid' && r.listing === 'enabled');
+    r.status === 'approved' && r.paymentStatus === 'paid' && r.listing === 'enabled')
+    .map((request, index) => ({ request, index }))
+    .sort((a, b) => {
+      const aTime = Date.parse(a.request.approvedAt || a.request.decidedAt || a.request.submittedAt || '') || 0;
+      const bTime = Date.parse(b.request.approvedAt || b.request.decidedAt || b.request.submittedAt || '') || 0;
+      return bTime - aTime || a.index - b.index;
+    })
+    .map(item => item.request);
 
   const TONES = {
     'Food & catering': 'tone-food',

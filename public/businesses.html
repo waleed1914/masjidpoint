@@ -8,10 +8,14 @@
 <header data-site-nav></header><script src="site-nav.js?v=1"></script>
 
 <section class="directory-hero">
+  <a class="directory-back-home" href="/">&#8592; Back to home</a>
   <p class="eyebrow"><span></span> Business directory</p>
   <h1>Businesses your community trusts</h1>
   <p>Every business here is approved by the masjid it advertises through, and a share of what it pays goes straight back to that masjid.</p>
-  <div class="directory-filters">
+  <button class="directory-filter-toggle" id="business-filter-toggle" type="button" aria-expanded="false" aria-controls="business-directory-filters">
+    <span class="filter-toggle-icon" aria-hidden="true"></span><span>Show filters</span>
+  </button>
+  <div class="directory-filters" id="business-directory-filters">
     <label>Search<input id="business-search" type="search" placeholder="Business name, service or description"></label>
     <label>Category<select id="category-filter"><option value="all">All categories</option></select></label>
     <label>City<select id="city-filter"><option value="all">All cities</option></select></label>
@@ -20,7 +24,6 @@
   </div>
 </section>
 
-<p class="directory-count" id="result-count"></p>
 <main class="directory-body">
   <div class="directory-grid" id="business-results"></div>
   <p class="directory-empty" id="business-empty" hidden>No businesses match your search. Try another category or city.</p>
@@ -35,5 +38,5 @@
 
 <script src="local-db.js?v=20"></script>
 <script src="directory-data.js?v=1"></script>
-<script src="public-business-avatar.js?v=2"></script><script src="businesses.js?v=5"></script><script src="public-business-image-viewer.js?v=1"></script>
+<script src="public-business-avatar.js?v=2"></script><script src="businesses.js?v=6"></script><script src="public-business-image-viewer.js?v=1"></script>
 </body></html>

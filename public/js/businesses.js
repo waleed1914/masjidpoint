@@ -22,6 +22,26 @@
   const empty = document.querySelector('#business-empty');
   const count = document.querySelector('#result-count');
 
+  // Start with the large filter form tucked away on every device. Keep the visitor's explicit
+  // choice so returning to the directory does not make them reopen (or reclose) it.
+  const filterToggle = document.querySelector('#business-filter-toggle');
+  const filterHero = document.querySelector('.directory-hero');
+  const filterPreferenceKey = 'masjidPoint.businessDirectoryFilters';
+  let filtersOpen = false;
+  try { filtersOpen = localStorage.getItem(filterPreferenceKey) === 'open'; } catch (_) {}
+  const paintFilterToggle = () => {
+    filterHero?.classList.toggle('filters-open', filtersOpen);
+    filterToggle?.setAttribute('aria-expanded', String(filtersOpen));
+    const label = filterToggle?.querySelector('span:last-child');
+    if (label) label.textContent = filtersOpen ? 'Hide filters' : 'Show filters';
+  };
+  if (filterToggle) filterToggle.onclick = () => {
+    filtersOpen = !filtersOpen;
+    try { localStorage.setItem(filterPreferenceKey, filtersOpen ? 'open' : 'closed'); } catch (_) {}
+    paintFilterToggle();
+  };
+  paintFilterToggle();
+
   [...new Set(listings.map(l => l.request.category).filter(Boolean))].sort().forEach(c => categoryFilter.add(new Option(c, c)));
   [...new Set(listings.map(l => l.city))].sort().forEach(c => cityFilter.add(new Option(c, c)));
   [...new Set(listings.map(l => l.request.masjid).filter(Boolean))].sort().forEach(m => masjidFilter.add(new Option(m, m)));
@@ -43,14 +63,15 @@
       && (!q || `${l.request.name} ${l.request.description} ${l.request.category} ${l.request.masjid} ${l.city}`.toLowerCase().includes(q))
     ).sort((a, b) => a.request.name.localeCompare(b.request.name));
 
-    results.innerHTML = list.map(({ request, mosque, city }) => `
-      <article class="business-tile"${request.website ? ` data-website="${esc(request.website)}"` : ''}>
+    results.innerHTML = list.map(({ request, mosque, city }) => {
+      const reference = request.reference || request.id;
+      const detailUrl = `business-detail?reference=${encodeURIComponent(reference)}`;
+      return `
+      <article class="business-tile" role="link" tabindex="0" data-detail="${esc(detailUrl)}">
         <header>
           <span class="business-mark" data-business-avatar data-business-reference="${esc(request.reference||request.id)}" data-business-name="${esc(request.name)}" data-image-class="business-mark">${esc(initials(request.name))}</span>
           <div>
-            <h2>${request.website
-              ? `<a class="business-name-link" href="${esc(request.website)}" target="_blank" rel="noopener">${esc(request.name)}</a>`
-              : esc(request.name)}</h2>
+            <h2>${esc(request.name)}</h2>
             <span class="business-tags"><em class="business-category">${esc(request.category || 'Local business')}</em><em class="business-place">${esc(city)}</em></span>
           </div>
         </header>
@@ -62,28 +83,32 @@
         </dl>
         <footer>
           <span class="business-verified">✓ Approved by this masjid</span>
-          ${mosque
-            ? `<a class="via-masjid" href="masjid-adverts?reference=${encodeURIComponent(mosque.reference)}">${esc(request.masjid)} <b aria-hidden="true">→</b></a>`
-            : `<span>${esc(request.masjid || '')}</span>`}
+          <a class="business-detail-link" href="${esc(detailUrl)}">View details &#8594;</a>
         </footer>
-      </article>`).join('');
+      </article>`;
+    }).join('');
 
     empty.hidden = list.length > 0;
     results.hidden = !list.length;
     const filtered = q || categoryFilter.value !== 'all' || cityFilter.value !== 'all' || masjidFilter.value !== 'all';
-    count.innerHTML = filtered
+    if (count) count.innerHTML = filtered
       ? `<strong>${list.length}</strong> of ${listings.length} businesses match`
       : `<strong>${listings.length}</strong> business${listings.length === 1 ? '' : 'es'} listed`;
   }
 
-  // The whole card opens the business's website. The name is a real link so keyboard and screen
-  // reader users get one too; this only adds the surrounding area as a click target, and never
-  // steals a click meant for the phone, email, website or masjid link inside it.
+  // The surrounding card opens the complete public profile while contact links remain usable.
   results.addEventListener('click', event => {
     if (event.target.closest('a, button')) return;
     if (window.getSelection && String(window.getSelection()).trim()) return;
-    const website = event.target.closest('.business-tile')?.dataset.website;
-    if (website) window.open(website, '_blank', 'noopener');
+    const detail = event.target.closest('.business-tile')?.dataset.detail;
+    if (detail) location.href = detail;
+  });
+  results.addEventListener('keydown', event => {
+    if (!['Enter', ' '].includes(event.key) || event.target.closest('a, button')) return;
+    const detail = event.target.closest('.business-tile')?.dataset.detail;
+    if (!detail) return;
+    event.preventDefault();
+    location.href = detail;
   });
 
   search.oninput = render;

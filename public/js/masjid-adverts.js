@@ -74,17 +74,32 @@
       (category === 'all' || a.category === category)
       && (!q || `${a.name} ${a.description} ${a.category}`.toLowerCase().includes(q)));
     const grid = document.querySelector('#advert-grid');
-    grid.innerHTML = list.map(a => `
-      <article class="advert-card in-view" data-advert-id="${esc(a.id)}" style="display:flex;opacity:1;visibility:visible;transform:none">
+    grid.innerHTML = list.map(a => {
+      const detailHref = `/business-detail.html?reference=${encodeURIComponent(a.reference || a.id)}`;
+      return `
+      <article class="advert-card in-view" data-advert-id="${esc(a.id)}" data-detail-href="${esc(detailHref)}" tabindex="0" role="link" aria-label="View ${esc(a.name)} details" style="display:flex;opacity:1;visibility:visible;transform:none">
         <header><span class="advert-mark" data-business-avatar data-business-reference="${esc(a.reference||a.id)}" data-business-name="${esc(a.name)}" data-button-class="business-image-trigger advert-image-trigger" data-image-class="advert-mark">${esc(initials(a.name))}</span><div><h3>${esc(a.name)}</h3><small>${esc(a.category || 'Local business')}</small></div></header>
         <p>${esc(a.description || '')}</p>
         <dl>
-          ${a.phone ? `<div><dt>Phone</dt><dd>${esc(a.phone)}</dd></div>` : ''}
-          ${a.email ? `<div><dt>Email</dt><dd>${esc(a.email)}</dd></div>` : ''}
+          ${a.phone ? `<div><dt>Phone</dt><dd><a href="tel:${esc(String(a.phone).replace(/\s+/g, ''))}">${esc(a.phone)}</a></dd></div>` : ''}
+          ${a.email ? `<div><dt>Email</dt><dd><a href="mailto:${esc(a.email)}">${esc(a.email)}</a></dd></div>` : ''}
           ${a.website ? `<div><dt>Website</dt><dd><a href="${esc(a.website)}" target="_blank" rel="noopener">Visit site ↗</a></dd></div>` : ''}
         </dl>
-        <footer><span class="advert-verified">✓ Approved by ${esc(mosque.name)}</span></footer>
-      </article>`).join('');
+        <footer><span class="advert-verified">✓ Approved by ${esc(mosque.name)}</span><a class="advert-detail-link" href="${esc(detailHref)}">View details →</a></footer>
+      </article>`;
+    }).join('');
+    grid.querySelectorAll('[data-detail-href]').forEach(card => {
+      const openDetails = () => { location.href = card.dataset.detailHref; };
+      card.addEventListener('click', event => {
+        if (event.target.closest('a,button,input,select,textarea')) return;
+        openDetails();
+      });
+      card.addEventListener('keydown', event => {
+        if (!['Enter', ' '].includes(event.key) || event.target !== card) return;
+        event.preventDefault();
+        openDetails();
+      });
+    });
     document.querySelector('#advert-empty').hidden = list.length > 0;
     grid.hidden = !list.length;
   }
@@ -156,7 +171,7 @@
     image.onerror = () => figure.remove();
     image.src = mosque.photo;
     figure.appendChild(image);
-    hero.appendChild(figure);
+    hero.prepend(figure);
     hero.classList.add('has-photo');
   }
 

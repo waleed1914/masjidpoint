@@ -55,12 +55,14 @@
 @keyframes badge-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
 
 /* ---------- promise strip ---------- */
-.promise{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px;background:var(--cream);padding-top:52px;padding-bottom:52px}
+.promise{background:var(--cream);padding-top:52px;padding-bottom:52px}
+.promise-track{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
 .promise article{background:#fffdf8;border:1px solid rgba(18,63,53,.12);border-radius:14px;padding:24px;box-shadow:0 3px 14px rgba(18,63,53,.06);transition:transform .18s,box-shadow .18s}
 .promise article:hover{transform:translateY(-3px);box-shadow:0 18px 36px rgba(18,63,53,.13)}
 .promise-mark{width:42px;height:42px;border-radius:11px;display:grid;place-items:center;background:linear-gradient(145deg,#17513f,#0e3529);color:var(--gold);font-size:16px;font-weight:700}
 .promise h3{font-family:var(--font-display);font-size:18px;margin:14px 0 7px}
 .promise p{margin:0;font-size:10px;line-height:1.7;color:#6f7f79}
+.promise-dots{display:none}
 
 /* ---------- shared section heading ---------- */
 .section-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:24px}
@@ -84,6 +86,7 @@
 .shop-banner-art img{width:100%;aspect-ratio:1;object-fit:cover;display:block}
 .shop-banner-art span{display:block;padding:9px 11px;font-size:9px;font-weight:600;color:#e9f1ed}
 .shop-banner-art b{display:block;font-family:var(--font-display);font-size:13px;color:var(--gold);margin-top:2px}
+.shop-products-label,.shop-mobile-cta{display:none}
 
 /* ---------- how it works ---------- */
 .how-section{background:var(--cream)}
@@ -140,6 +143,51 @@
   .trust-row{gap:22px}
   .search-panel{padding:12px}
   .hero-story{right:-4px;top:43%;width:158px}.hero-story-step{padding:7px 8px}.hero-story-step small{display:none}.hero-story-line{height:15px}
+  .home-page .promise{display:block;padding:44px 0 42px 5vw;overflow:hidden}
+  .promise-track{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;overscroll-behavior-x:contain;padding:0 15vw 18px 0;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .promise-track::-webkit-scrollbar{display:none}
+  .promise-track article{flex:0 0 min(82vw,330px);min-height:205px;scroll-snap-align:start;scroll-snap-stop:always;padding:24px}
+  .promise-track article:hover{transform:none}
+  .promise-dots{display:flex;justify-content:center;align-items:center;gap:7px;width:calc(100% - 5vw);height:16px}
+  .promise-dots button{display:block!important;flex:0 0 7px!important;width:7px!important;min-width:7px!important;max-width:7px!important;height:7px!important;min-height:7px!important;max-height:7px!important;padding:0!important;margin:0!important;border:0!important;border-radius:999px;background:#b6c5be;box-shadow:none!important;cursor:pointer;line-height:0;appearance:none;transition:flex-basis .2s,width .2s,max-width .2s,background .2s}
+  .promise-dots button[aria-current="true"]{flex-basis:23px!important;width:23px!important;max-width:23px!important;background:var(--gold)}
+  .home-page .shop-banner h2{font-size:29px;line-height:1.08;letter-spacing:-.02em}
+  .home-page .shop-banner-copy #shop-cta{display:none!important}
+  .home-page .shop-products-label{
+    display:flex;
+    align-items:center;
+    gap:9px;
+    margin:20px 0 12px;
+    color:var(--gold);
+    font-size:9px;
+    font-weight:700;
+    letter-spacing:1px;
+    line-height:1.4;
+    text-transform:uppercase;
+  }
+  .home-page .shop-products-label:before{
+    content:"";
+    width:22px;
+    height:1px;
+    flex:0 0 22px;
+    background:var(--gold);
+  }
+  .home-page .shop-mobile-cta{
+    display:flex;
+    justify-content:center;
+    width:100%;
+    margin-top:18px;
+  }
+  .home-page #shop-preview{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:10px;
+    width:100%;
+    margin-top:4px;
+  }
+  .home-page #shop-preview>a:nth-child(n+3){display:none}
+  .home-page #shop-preview img{aspect-ratio:1.12;object-fit:cover}
+  .home-page #shop-preview span{min-height:48px;padding:8px 9px}
 }
 
 /* styles.css already styles a two-column .hero from the previous design. This page nests its own
@@ -203,3 +251,323 @@
 
 /* The uploaded photo sits in the same frame as the illustration it replaces. */
 .masjid-tile-art,.masjid-card-art{aspect-ratio:16/10}
+
+/* Keep the home-page business discovery compact and thumb-friendly on phones. */
+@media(max-width:560px){
+  .home-page #discover,
+  .home-page #masjids{
+    padding-top:40px;
+    padding-bottom:44px;
+    overflow:hidden;
+  }
+  .home-page #discover .section-heading,
+  .home-page #masjids .section-heading{
+    display:block;
+    margin-bottom:18px;
+  }
+  .home-page #discover .section-heading h2,
+  .home-page #masjids .section-heading h2{
+    max-width:none;
+    margin-top:8px;
+    font-size:clamp(29px,8.4vw,34px);
+    line-height:1.07;
+    letter-spacing:-.025em;
+  }
+  .home-page #discover .section-heading h2>span,
+  .home-page #masjids .section-heading h2>span{display:block}
+  .home-page #discover .section-sub,
+  .home-page #masjids .section-sub{
+    margin-top:12px;
+    max-width:34ch;
+    font-size:11px;
+    line-height:1.6;
+  }
+  .home-page #discover .section-heading>.arrow-link,
+  .home-page #masjids .section-heading>.arrow-link{
+    display:none!important;
+  }
+  .home-page #business-grid,
+  .home-page #masjid-grid{
+    display:flex;
+    gap:14px;
+    width:calc(100% + 5vw);
+    padding:0 8vw 12px 0;
+    overflow-x:auto;
+    overscroll-behavior-x:contain;
+    scroll-snap-type:x mandatory;
+    scroll-behavior:smooth;
+    scrollbar-width:none;
+    -webkit-overflow-scrolling:touch;
+  }
+  .home-page #business-grid::-webkit-scrollbar,
+  .home-page #masjid-grid::-webkit-scrollbar{display:none}
+  .home-page #business-grid .business-card{
+    flex:0 0 calc(100% - 24px);
+    border-radius:16px;
+    scroll-snap-align:start;
+    scroll-snap-stop:always;
+  }
+  .home-page #masjid-grid .masjid-card{
+    flex:0 0 calc(100% - 24px);
+    scroll-snap-align:start;
+    scroll-snap-stop:always;
+  }
+  .home-page #business-grid .business-card .card-image{
+    height:104px;
+  }
+  .home-page #business-grid .business-card .card-body{
+    padding:14px 15px 15px;
+  }
+  .home-page #business-grid .business-card h3{
+    font-size:18px;
+  }
+  .home-page #business-grid-more,
+  .home-page #masjid-grid-more{
+    display:inline-flex;
+    width:auto;
+    min-height:40px;
+    margin:0;
+    padding:6px 0;
+    border:0;
+    border-radius:0;
+    background:transparent;
+    box-shadow:none;
+    color:var(--green);
+    font-size:11px;
+    font-weight:700;
+    text-decoration:none;
+  }
+  .home-page #business-grid-more:hover,
+  .home-page #masjid-grid-more:hover{
+    background:transparent;
+    color:var(--green-2);
+  }
+  .home-page .business-carousel-dots,
+  .home-page .masjid-carousel-dots{
+    position:absolute;
+    left:50%;
+    top:50%;
+    transform:translate(-50%,-50%);
+    display:flex;
+    align-items:center;
+    justify-content:flex-start;
+    gap:7px;
+    min-height:12px;
+    margin:0;
+  }
+  .home-page .business-carousel-controls,
+  .home-page .masjid-carousel-controls{
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    gap:18px;
+    width:100%;
+    min-height:40px;
+    margin-top:2px;
+  }
+  .home-page .business-carousel-dots button,
+  .home-page .masjid-carousel-dots button{
+    display:block;
+    flex:0 0 7px;
+    width:7px;
+    min-width:7px;
+    max-width:7px;
+    height:7px;
+    min-height:7px;
+    max-height:7px;
+    margin:0;
+    padding:0;
+    border:0;
+    border-radius:999px;
+    background:#b6c5be;
+    appearance:none;
+    box-shadow:none;
+    transition:width .2s,max-width .2s,flex-basis .2s,background .2s;
+  }
+  .home-page .business-carousel-dots button[aria-current="true"],
+  .home-page .masjid-carousel-dots button[aria-current="true"]{
+    flex-basis:22px;
+    width:22px;
+    max-width:22px;
+    background:var(--gold);
+  }
+
+  /* Keep local opportunities short: one swipeable job at a time. */
+  .home-page #jobs{
+    display:block;
+    padding-top:42px;
+    padding-bottom:44px;
+    overflow:hidden;
+  }
+  .home-page #jobs .feature-copy h2{
+    margin-top:8px;
+    font-size:clamp(29px,8.4vw,34px);
+    line-height:1.07;
+    letter-spacing:-.025em;
+  }
+  .home-page #jobs .feature-copy h2>span{display:block}
+  .home-page #jobs .feature-copy>p:not(.eyebrow){
+    margin:12px 0 0;
+    max-width:34ch;
+    font-size:11px;
+    line-height:1.6;
+  }
+  .home-page #jobs .feature-copy>.button{display:none!important}
+  .home-page #home-job-preview{
+    display:flex;
+    gap:14px;
+    width:calc(100% + 5vw);
+    margin-top:22px;
+    padding:0 8vw 12px 0;
+    overflow-x:auto;
+    overscroll-behavior-x:contain;
+    scroll-snap-type:x mandatory;
+    scroll-behavior:smooth;
+    scrollbar-width:none;
+    -webkit-overflow-scrolling:touch;
+  }
+  .home-page #home-job-preview::-webkit-scrollbar{display:none}
+  .home-page #home-job-preview .job-card{
+    flex:0 0 calc(100% - 24px);
+    min-height:145px;
+    padding:20px 16px;
+    scroll-snap-align:start;
+    scroll-snap-stop:always;
+    box-shadow:0 8px 24px rgba(18,63,53,.08);
+  }
+  .home-page #home-job-preview .job-logo{width:44px;height:44px;font-size:20px}
+  .home-page #home-job-preview .job-card h3{font-size:18px}
+  .home-page #home-job-preview-more{
+    display:inline-flex;
+    width:auto;
+    min-height:40px;
+    margin:0;
+    padding:6px 0;
+    border:0;
+    border-radius:0;
+    background:transparent;
+    box-shadow:none;
+    color:var(--green);
+    font-size:11px;
+    font-weight:700;
+    text-decoration:none;
+  }
+  .home-page .job-carousel-controls{
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    width:100%;
+    min-height:40px;
+    margin-top:2px;
+  }
+  .home-page .job-carousel-dots{
+    position:absolute;
+    left:50%;
+    top:50%;
+    transform:translate(-50%,-50%);
+    display:flex;
+    align-items:center;
+    gap:7px;
+  }
+  .home-page .job-carousel-dots button{
+    display:block;
+    flex:0 0 7px;
+    width:7px;
+    min-width:7px;
+    max-width:7px;
+    height:7px;
+    min-height:7px;
+    max-height:7px;
+    margin:0;
+    padding:0;
+    border:0;
+    border-radius:999px;
+    background:#b6c5be;
+    appearance:none;
+    box-shadow:none;
+    transition:width .2s,max-width .2s,flex-basis .2s,background .2s;
+  }
+  .home-page .job-carousel-dots button[aria-current="true"]{
+    flex-basis:22px;
+    width:22px;
+    max-width:22px;
+    background:var(--gold);
+  }
+
+  /* One clear how-it-works step at a time, rather than three tall stacked cards. */
+  .home-page #how-it-works{
+    display:block;
+    padding-top:42px;
+    padding-bottom:44px;
+    overflow:hidden;
+  }
+  .home-page #how-it-works .section-heading{margin-bottom:22px}
+  .home-page #how-it-works .section-heading h2{
+    max-width:11ch;
+    margin-top:8px;
+    font-size:clamp(29px,8.4vw,34px);
+    line-height:1.08;
+    letter-spacing:-.025em;
+  }
+  .home-page #how-it-works .section-sub{margin-top:10px;font-size:11px;line-height:1.6}
+  .home-page #how-it-works .how-grid{
+    display:flex;
+    gap:14px;
+    width:calc(100% + 5vw);
+    margin-top:0;
+    padding:16px 8vw 12px 0;
+    overflow-x:auto;
+    overscroll-behavior-x:contain;
+    scroll-snap-type:x mandatory;
+    scroll-behavior:smooth;
+    scrollbar-width:none;
+    -webkit-overflow-scrolling:touch;
+  }
+  .home-page #how-it-works .how-grid::-webkit-scrollbar{display:none}
+  .home-page #how-it-works .how-grid article{
+    flex:0 0 calc(100% - 24px);
+    min-height:150px;
+    padding:28px 22px 22px;
+    border-radius:15px;
+    scroll-snap-align:start;
+    scroll-snap-stop:always;
+  }
+  .home-page #how-it-works .how-grid h3{color:var(--green);font-size:19px}
+  .home-page #how-it-works .how-grid p{color:#6f7f79;font-size:11px;line-height:1.65}
+  .home-page .how-carousel-controls{position:relative;width:100%;height:22px;margin-top:2px}
+  .home-page .how-carousel-dots{
+    position:absolute;
+    left:50%;
+    top:50%;
+    transform:translate(-50%,-50%);
+    display:flex;
+    align-items:center;
+    gap:7px;
+  }
+  .home-page .how-carousel-dots button{
+    display:block;
+    flex:0 0 7px;
+    width:7px;
+    min-width:7px;
+    max-width:7px;
+    height:7px;
+    min-height:7px;
+    max-height:7px;
+    margin:0;
+    padding:0;
+    border:0;
+    border-radius:999px;
+    background:#8aa399;
+    appearance:none;
+    box-shadow:none;
+    transition:width .2s,max-width .2s,flex-basis .2s,background .2s;
+  }
+  .home-page .how-carousel-dots button[aria-current="true"]{
+    flex-basis:22px;
+    width:22px;
+    max-width:22px;
+    background:var(--gold);
+  }
+}

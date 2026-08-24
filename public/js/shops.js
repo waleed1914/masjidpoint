@@ -33,6 +33,20 @@
   const results = document.querySelector('#shop-results');
   const empty = document.querySelector('#shop-empty');
   const count = document.querySelector('#result-count');
+  const hero = document.querySelector('#shops-directory-hero');
+  const filterToggle = document.querySelector('#shop-filter-toggle');
+  const filterStateKey = 'masjidPoint.shopsDirectoryFilters';
+
+  const setFiltersOpen = open => {
+    hero.classList.toggle('filters-open', open);
+    filterToggle.setAttribute('aria-expanded', String(open));
+    filterToggle.querySelector('span:last-child').textContent = open ? 'Hide search and filters' : 'Show search and filters';
+    try { localStorage.setItem(filterStateKey, open ? 'open' : 'closed'); } catch {}
+  };
+  let rememberedOpen = false;
+  try { rememberedOpen = localStorage.getItem(filterStateKey) === 'open'; } catch {}
+  setFiltersOpen(rememberedOpen);
+  filterToggle.onclick = () => setFiltersOpen(!hero.classList.contains('filters-open'));
 
   [...new Set(shops.map(s => s.city))].sort().forEach(c => cityFilter.add(new Option(c, c)));
   [...new Set(shops.map(s => s.area).filter(Boolean))].sort().forEach(a => areaFilter.add(new Option(a, a)));

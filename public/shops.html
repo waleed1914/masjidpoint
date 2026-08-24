@@ -1,4 +1,5 @@
 <!doctype html><html lang="en-GB"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Masjid shops — MasjidPoint</title><meta name="description" content="Browse every masjid community shop. Search by masjid or product and filter by city, category and delivery."><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet"><meta property="og:type" content="website"><meta property="og:site_name" content="MasjidPoint"><meta property="og:url" content="https://masjidpoint.co.uk/shops"><meta property="og:title" content="Masjid shops"><meta property="og:description" content="Order from your masjid shop — collect at the mosque or have it delivered."><meta property="og:image" content="https://masjidpoint.co.uk/share-card.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="MasjidPoint — community, connected"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Masjid shops"><meta name="twitter:description" content="Order from your masjid shop — collect at the mosque or have it delivered."><meta name="twitter:image" content="https://masjidpoint.co.uk/share-card.png"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="site-nav.css?v=1"><link rel="stylesheet" href="directory.css?v=1"><link rel="stylesheet" href="shops.css?v=1">  <link rel="stylesheet" href="mobile.css?v=1">
+  <link rel="stylesheet" href="shops.css?v=3">
   <script src="sha256.js?v=1"></script>
   <link rel="stylesheet" href="loader.css?v=1">
   <script src="loader.js?v=1"></script>
@@ -6,11 +7,16 @@
 <body class="directory-page shops-directory">
 <header data-site-nav></header><script src="site-nav.js?v=1"></script>
 
-<section class="directory-hero">
+<section class="directory-hero" id="shops-directory-hero">
+  <a class="directory-back" href="/">← Back to home</a>
   <p class="eyebrow"><span></span> Masjid shops</p>
   <h1>Shop with your masjid</h1>
   <p>Order everyday essentials from a masjid community shop. Collect from the masjid, pay when you collect, or have it delivered — a share of every purchase goes back to the masjid.</p>
-  <div class="directory-filters">
+  <button class="directory-filter-toggle" id="shop-filter-toggle" type="button" aria-expanded="false" aria-controls="shop-directory-filters">
+    <span class="filter-toggle-icon" aria-hidden="true"></span>
+    <span>Show search and filters</span>
+  </button>
+  <div class="directory-filters" id="shop-directory-filters">
     <label>Search<input id="shop-search" type="search" placeholder="Masjid or product name"></label>
     <label>City<select id="city-filter"><option value="all">All cities</option></select></label>
     <label>Area<select id="area-filter"><option value="all">All areas</option></select></label>
@@ -37,5 +43,5 @@
 <script src="local-db.js?v=20"></script>
 <script src="shop-fulfilment.js?v=1"></script>
 <script src="directory-data.js?v=1"></script>
-<script src="shops.js?v=1"></script>
+<script src="shops.js?v=2"></script>
 </body></html>

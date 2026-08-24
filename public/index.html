@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet">
   <meta property="og:type" content="website"><meta property="og:site_name" content="MasjidPoint"><meta property="og:url" content="https://masjidpoint.co.uk/"><meta property="og:title" content="MasjidPoint — Community, connected"><meta property="og:description" content="Discover trusted businesses, jobs and community shops through your local masjid."><meta property="og:image" content="https://masjidpoint.co.uk/share-card.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="MasjidPoint — community, connected"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="MasjidPoint — Community, connected"><meta name="twitter:description" content="Discover trusted businesses, jobs and community shops through your local masjid."><meta name="twitter:image" content="https://masjidpoint.co.uk/share-card.png"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="site-nav.css?v=1"><link rel="stylesheet" href="home.css?v=1">
-  <link rel="stylesheet" href="mobile.css?v=1">
+  <link rel="stylesheet" href="mobile.css?v=2">
   <script src="sha256.js?v=1"></script>
   <link rel="stylesheet" href="loader.css?v=1">
   <script src="loader.js?v=1"></script>
@@ -68,19 +68,23 @@
       </div>
     </section>
 
-    <section class="promise section" data-reveal>
-      <article><span class="promise-mark">✓</span><h3>Approved, not just listed</h3><p>Every business is reviewed by the masjid it advertises through before it appears anywhere on the platform.</p></article>
-      <article><span class="promise-mark">£</span><h3>A share goes back</h3><p>Each masjid sets its own price and keeps an agreed share of everything paid through it — settled transparently.</p></article>
-      <article><span class="promise-mark">⌂</span><h3>Genuinely local</h3><p>Shops you can collect from, jobs within reach, and traders your neighbours already know by name.</p></article>
+    <section class="promise section" data-reveal aria-label="Why use MasjidPoint">
+      <div class="promise-track" id="promise-track">
+        <article><span class="promise-mark">✓</span><h3>Approved, not just listed</h3><p>Every business is reviewed by the masjid it advertises through before it appears anywhere on the platform.</p></article>
+        <article><span class="promise-mark">£</span><h3>A share goes back</h3><p>Each masjid sets its own price and keeps an agreed share of everything paid through it — settled transparently.</p></article>
+        <article><span class="promise-mark">⌂</span><h3>Genuinely local</h3><p>Shops you can collect from, jobs within reach, and traders your neighbours already know by name.</p></article>
+      </div>
+      <div class="promise-dots" aria-label="Choose a benefit">
+        <button type="button" aria-label="Show benefit 1" aria-current="true"></button>
+        <button type="button" aria-label="Show benefit 2"></button>
+        <button type="button" aria-label="Show benefit 3"></button>
+      </div>
     </section>
 
     <section class="section" id="discover" data-reveal>
       <div class="section-heading">
-        <div><p class="eyebrow"><span></span> Explore nearby</p><h2>Businesses your community trusts</h2><p class="section-sub">Every listing is reviewed by the masjid it advertises through before it appears here.</p></div>
+        <div><p class="eyebrow"><span></span> Explore nearby</p><h2><span>Businesses your</span> <span>community trusts</span></h2><p class="section-sub">Every listing is reviewed by the masjid it advertises through before it appears here.</p></div>
         <a class="arrow-link" href="businesses">View all businesses <span>→</span></a>
-      </div>
-      <div class="filter-chips" role="group" aria-label="Business categories" id="category-chips">
-        <button class="chip active" data-category="all">All businesses</button>
       </div>
       <div class="business-grid" id="business-grid"></div>
       <p class="empty-state" id="empty-state" hidden>No matching businesses found. Try another search.</p>
@@ -92,14 +96,16 @@
         <h2>Everyday essentials.<br>Meaningful impact.</h2>
         <p>Order online and collect from your masjid, pay when you collect, or have it delivered to your door. A share of every purchase goes to the masjid.</p>
         <div class="shop-banner-ways"><em>Pay now, collect</em><em>Pay at the masjid</em><em>Delivery</em></div>
+        <p class="shop-products-label">Popular newly added products from masjids</p>
         <a class="button button-cream" id="shop-cta" href="shops">Visit a masjid shop</a>
       </div>
       <div class="shop-banner-art" aria-hidden="true" id="shop-preview"></div>
+      <a class="button button-cream shop-mobile-cta" href="shops">Visit a masjid shop</a>
     </section>
 
     <section class="masjids-section section" id="masjids" data-reveal>
       <div class="section-heading">
-        <div><p class="eyebrow"><span></span> At the heart of it all</p><h2>Find a masjid near you</h2><p class="section-sub">Open a masjid to see the businesses it trusts, the jobs it shares and its community shop.</p></div>
+        <div><p class="eyebrow"><span></span> At the heart of it all</p><h2><span>Find a masjid</span> <span>near you</span></h2><p class="section-sub">Open a masjid to see the businesses it trusts, the jobs it shares and its community shop.</p></div>
         <a class="arrow-link" href="masjids">Browse all masjids <span>→</span></a>
       </div>
       <div class="masjid-grid" id="masjid-grid"></div>
@@ -109,7 +115,7 @@
     <section class="feature-row section" id="jobs" data-reveal>
       <div class="feature-copy">
         <p class="eyebrow"><span></span> Local opportunities</p>
-        <h2>Find work with businesses you know</h2>
+        <h2><span>Find work with</span> <span>businesses you know</span></h2>
         <p>Roles shared by trusted businesses in your community — from flexible local work to the next step in your career, all advertised through a masjid.</p>
         <a class="button button-outline" href="public-jobs">Browse community jobs</a>
       </div>
@@ -165,6 +171,6 @@
     <div><a href="#how-it-works">How it works</a><a href="signup">Sign up</a><a href="register-masjid">Register a masjid</a><a href="advertise">Advertise</a><a href="privacy">Privacy</a><a href="terms">Terms</a><a href="status">Check status</a><a href="admin-login">Admin</a></div>
     <small>© 2026 MasjidPoint. All rights reserved.</small>
   </footer>
-  <script src="local-db.js?v=15"></script><script src="script.js?v=2"></script><script src="public-business-avatar.js?v=2"></script><script src="public-businesses.js?v=6"></script><script src="public-business-image-viewer.js?v=1"></script><script src="public-masjids.js?v=2"></script><script src="home.js?v=1"></script>
+  <script src="local-db.js?v=15"></script><script src="script.js?v=2"></script><script src="home.js?v=4"></script><script src="public-business-avatar.js?v=2"></script><script src="public-businesses.js?v=6"></script><script src="public-business-image-viewer.js?v=1"></script><script src="public-masjids.js?v=4"></script>
 </body>
 </html>

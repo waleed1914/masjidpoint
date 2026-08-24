@@ -630,9 +630,125 @@
   body > footer { min-width: 0 }
   body > footer > * { min-width: 0; max-width: 100% }
 
+  /* Public footer: a compact two-column directory instead of a loose row of
+   * links. Administrator access stays available on desktop but is deliberately
+   * removed from the public mobile navigation. */
+  body > footer {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0 !important;
+    padding: 34px 24px 28px !important;
+    background:
+      radial-gradient(circle at 92% 8%, rgba(198,161,91,.11), transparent 30%),
+      #0d3029 !important;
+  }
+  body > footer > .brand {
+    align-self: flex-start;
+    gap: 10px !important;
+    margin: 0 0 18px !important;
+    font-size: 18px !important;
+  }
+  body > footer > .brand .brand-mark {
+    width: 34px !important;
+    height: 38px !important;
+  }
+  body > footer > p {
+    justify-self: auto !important;
+    margin: 0 0 24px !important;
+    color: #d4e0db !important;
+    font-size: 12px !important;
+    line-height: 1.6 !important;
+  }
+  body > footer > div {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0 !important;
+    width: 100% !important;
+    padding: 10px 0 !important;
+    border-top: 1px solid rgba(255,255,255,.12);
+    border-bottom: 1px solid rgba(255,255,255,.12);
+  }
+  body > footer > div a {
+    display: flex !important;
+    align-items: center;
+    min-height: 42px !important;
+    padding: 7px 0 !important;
+    color: #f5f1e8 !important;
+    font-size: 12px !important;
+    text-decoration: none;
+  }
+  body > footer > div a:nth-child(even) { padding-left: 16px !important }
+  body > footer a[href="admin-login"],
+  body > footer a[href="/admin-login"],
+  body > footer a[href="admin-login.html"],
+  body > footer a[href="/admin-login.html"] { display: none !important }
+  body > footer > small {
+    justify-self: auto !important;
+    margin-top: 20px !important;
+    color: #8eaaa0 !important;
+    font-size: 10px !important;
+    line-height: 1.5 !important;
+  }
+
   /* A toast pinned to a corner clips on a narrow screen. */
   .toast {
     left: 16px !important; right: 16px !important; bottom: 16px !important;
     font-size: 12.5px !important; text-align: center;
+  }
+
+  /* Keep all three homepage impact figures together. The general mobile type
+   * floor made their labels wider and allowed the third figure to wrap below. */
+  .home-page .trust-row {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    width: 100%;
+  }
+  .home-page .trust-row > div { min-width: 0 }
+  .home-page .trust-row strong { font-size: 24px !important }
+  .home-page .trust-row span {
+    font-size: clamp(8px, 2.45vw, 10px) !important;
+    letter-spacing: .25px !important;
+    white-space: nowrap;
+  }
+
+  .home-page .business-carousel-dots button,
+  .home-page .masjid-carousel-dots button,
+  .home-page .job-carousel-dots button,
+  .home-page .how-carousel-dots button {
+    display: block !important;
+    flex: 0 0 7px !important;
+    width: 7px !important;
+    min-width: 7px !important;
+    max-width: 7px !important;
+    height: 7px !important;
+    min-height: 7px !important;
+    max-height: 7px !important;
+    padding: 0 !important;
+    border: 0 !important;
+  }
+  .home-page .business-carousel-dots button[aria-current="true"],
+  .home-page .masjid-carousel-dots button[aria-current="true"],
+  .home-page .job-carousel-dots button[aria-current="true"],
+  .home-page .how-carousel-dots button[aria-current="true"] {
+    flex-basis: 22px !important;
+    width: 22px !important;
+    max-width: 22px !important;
+  }
+  .home-page .shop-banner-ways {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 5px !important;
+    width: 100%;
+  }
+  .home-page .shop-banner-ways em {
+    flex: 0 1 auto;
+    min-width: 0;
+    padding: 6px clamp(6px, 2vw, 9px) !important;
+    font-size: clamp(7.5px, 2.2vw, 9px) !important;
+    letter-spacing: .2px !important;
+    line-height: 1.15 !important;
+    white-space: nowrap;
   }
 }

@@ -123,7 +123,7 @@
       const inCart = cart.find(x => x.product.id === p.id)?.quantity || 0;
       const low = p.stock <= 5;
       const detailsHref = `masjid-product?reference=${encodeURIComponent(mosque.reference)}&product=${encodeURIComponent(p.id)}`;
-      return `<article class="public-product">
+      return `<article class="public-product" data-product-details="${esc(detailsHref)}" tabindex="0" role="link" aria-label="View ${esc(p.name)} details">
         <a class="product-media" href="${detailsHref}" aria-label="View ${esc(p.name)} details">
           <img src="${esc(p.image)}" alt="${esc(p.name)}" loading="lazy" onerror="this.hidden=true">
           ${low ? `<span class="product-flag low">Only ${p.stock} left</span>` : ''}
@@ -141,6 +141,18 @@
       </article>`;
     }).join('');
     document.querySelector('#shop-empty').hidden = list.length > 0;
+    document.querySelectorAll('[data-product-details]').forEach(card => {
+      const openDetails = () => { location.href = card.dataset.productDetails; };
+      card.addEventListener('click', event => {
+        if (event.target.closest('a,button,input,select,textarea')) return;
+        openDetails();
+      });
+      card.addEventListener('keydown', event => {
+        if (!['Enter', ' '].includes(event.key) || event.target !== card) return;
+        event.preventDefault();
+        openDetails();
+      });
+    });
     document.querySelectorAll('[data-add]').forEach(b => b.onclick = () => {
       const p = products.find(x => x.id === b.dataset.add), line = cart.find(x => x.product.id === p.id);
       const full = line && line.quantity >= p.stock;
@@ -253,6 +265,9 @@
 
   let activePaymentDraft = null;
   document.querySelector('#open-cart').onclick = () => document.querySelector('#cart-drawer').hidden = false;
+  document.querySelector('#cart-drawer').addEventListener('click', event => {
+    if (event.target === event.currentTarget) document.querySelector('#close-cart').click();
+  });
   document.querySelector('#close-cart').onclick = async () => {
     if (activePaymentDraft) {
       await fetch('/api/shop/order/cancel-draft', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ order: activePaymentDraft.id, email: activePaymentDraft.customer.email }) }).catch(() => {});
@@ -270,6 +285,12 @@
   document.querySelector('#shop-category').onchange = e => { category = e.target.value; render(); };
   document.querySelector('#shop-price').onchange = render;
   document.querySelector('#shop-sort').onchange = render;
+  const filterToggle = document.querySelector('#shop-filter-toggle');
+  const filterOptions = document.querySelector('#shop-filter-options');
+  if (filterToggle && filterOptions) filterToggle.onclick = () => {
+    const open = document.body.classList.toggle('shop-filters-open');
+    filterToggle.setAttribute('aria-expanded', String(open));
+  };
   document.querySelector('#shop-clear').onclick = () => {
     document.querySelector('#shop-search').value = '';
     document.querySelector('#shop-category').value = 'all';
@@ -277,6 +298,8 @@
     document.querySelector('#shop-sort').value = 'featured';
     category = 'all';
     render();
+    document.body.classList.remove('shop-filters-open');
+    filterToggle?.setAttribute('aria-expanded', 'false');
   };
 
   let placing = false;

@@ -86,6 +86,26 @@
     const withShop = cards.find(c => c.shop > 0);
     const cta = document.querySelector('#shop-cta');
     if (cta && withShop) cta.href = `masjid-shop?reference=${encodeURIComponent(withShop.mosque.reference)}`;
+    const mobileCta = document.querySelector('.shop-mobile-cta');
+    if (mobileCta && withShop) mobileCta.href = `masjid-shop?reference=${encodeURIComponent(withShop.mosque.reference)}`;
+
+    // Build the homepage product preview from this same confirmed state response. Previously it
+    // relied on a second async homepage task, which could leave the label and button with an empty
+    // space between them on slower mobile loads.
+    const shopPreview = document.querySelector('#shop-preview');
+    if (shopPreview && products.length) {
+      shopPreview.removeAttribute('aria-hidden');
+      shopPreview.innerHTML = products.slice(0, 4).map(product => {
+        const selectedMosque = (product.mosques || [])[0];
+        if (!selectedMosque) return '';
+        return `<a href="masjid-shop?reference=${encodeURIComponent(selectedMosque.reference)}">
+          <img src="${esc(product.image)}" alt="${esc(product.name)}" loading="lazy" onerror="this.style.visibility='hidden'">
+          <span>${esc(product.name)}<b>${money(product.price)}</b></span>
+        </a>`;
+      }).join('');
+    }
+    window.refreshHomeGrid?.('#masjid-grid');
+    window.dispatchEvent(new CustomEvent('masjidpoint:masjids-rendered'));
   }
 
   /* -------------------------------------------------------------- job preview */

@@ -22,6 +22,66 @@
     }
   }
 
+  // On phones the three trust messages form a compact swipeable snap track. The dots both show
+  // the current card and act as controls; desktop keeps the ordinary three-column strip.
+  const promiseTrack = document.querySelector('#promise-track');
+  const promiseDots = [...document.querySelectorAll('.promise-dots button')];
+  if (promiseTrack && promiseDots.length) {
+    const promiseCards = [...promiseTrack.querySelectorAll('article')];
+    const mobileCarousel = matchMedia('(max-width: 560px)');
+    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+    let activePromise = 0;
+    let promiseTimer = null;
+    const cardLeft = card => card.offsetLeft - promiseTrack.offsetLeft;
+    const setPromiseDot = index => {
+      activePromise = index;
+      promiseDots.forEach((dot, dotIndex) => {
+        if (dotIndex === index) dot.setAttribute('aria-current', 'true');
+        else dot.removeAttribute('aria-current');
+      });
+    };
+    const movePromise = (index, smooth = true) => {
+      const next = (index + promiseCards.length) % promiseCards.length;
+      promiseTrack.scrollTo({ left: cardLeft(promiseCards[next]), behavior: smooth ? 'smooth' : 'auto' });
+      setPromiseDot(next);
+    };
+    const stopPromiseAuto = () => { clearTimeout(promiseTimer); promiseTimer = null; };
+    const startPromiseAuto = () => {
+      stopPromiseAuto();
+      if (!mobileCarousel.matches || reducedMotion.matches || document.hidden) return;
+      promiseTimer = setTimeout(() => {
+        movePromise(activePromise + 1);
+        startPromiseAuto();
+      }, 4500);
+    };
+    let promiseFrame = null;
+    promiseTrack.addEventListener('scroll', () => {
+      cancelAnimationFrame(promiseFrame);
+      promiseFrame = requestAnimationFrame(() => {
+        const closest = promiseCards.reduce((best, card, index) => {
+          const distance = Math.abs(cardLeft(card) - promiseTrack.scrollLeft);
+          return distance < best.distance ? { index, distance } : best;
+        }, { index: 0, distance: Infinity });
+        setPromiseDot(closest.index);
+      });
+    }, { passive: true });
+    promiseDots.forEach((dot, index) => dot.addEventListener('click', () => {
+      movePromise(index);
+      startPromiseAuto();
+    }));
+    promiseTrack.addEventListener('pointerdown', stopPromiseAuto, { passive: true });
+    promiseTrack.addEventListener('pointerup', startPromiseAuto, { passive: true });
+    promiseTrack.addEventListener('pointercancel', startPromiseAuto, { passive: true });
+    promiseTrack.addEventListener('focusin', stopPromiseAuto);
+    promiseTrack.addEventListener('focusout', startPromiseAuto);
+    document.addEventListener('visibilitychange', startPromiseAuto);
+    mobileCarousel.addEventListener?.('change', () => {
+      if (!mobileCarousel.matches) movePromise(0, false);
+      startPromiseAuto();
+    });
+    startPromiseAuto();
+  }
+
   // The home page is a shop window, not the directory: show the newest few and send people to the
   // full list. Everything stays in the DOM so the search still looks across all of it — a search
   // that only found the five on screen would be worse than no search.
@@ -30,6 +90,13 @@
   // card onto a second row on another.
   const GRIDS = ['#business-grid', '#masjid-grid'];
   const FALLBACK = 4;
+  const mobileHomeCarousel = matchMedia('(max-width: 560px)');
+  const mobileCarouselState = {
+    business: { destroy: () => {}, signature: '' },
+    masjid: { destroy: () => {}, signature: '' },
+    job: { destroy: () => {}, signature: '' },
+    how: { destroy: () => {}, signature: '' }
+  };
 
   function perRow(cards) {
     if (!cards.length) return FALLBACK;
@@ -41,15 +108,10 @@
     return count || FALLBACK;
   }
 
-  function isFiltering() {
-    const category = document.querySelector('#category-chips .chip.active')?.dataset.category;
-    return Boolean(category && category !== 'all');
-  }
-
-  function moreButton(grid, total, shown, href, label) {
+  function moreButton(grid, total, shown, href, label, compact = false) {
     const id = `${grid.id}-more`;
     let button = document.querySelector(`#${id}`);
-    if (total <= shown) { button?.remove(); return; }
+    if (!compact && total <= shown) { button?.remove(); return; }
     if (!button) {
       button = document.createElement('a');
       button.id = id;
@@ -57,7 +119,85 @@
       grid.insertAdjacentElement('afterend', button);
     }
     button.href = href;
-    button.textContent = `${label} (${total}) →`;
+    button.textContent = compact ? 'View all \u2192' : `${label} (${total}) \u2192`;
+  }
+
+  function setupHomeCarousel(grid, cards, kind) {
+    const carousel = mobileCarouselState[kind];
+    const visibleCards = cards.filter(card => !card.hidden);
+    const signature = visibleCards.map(card => card.dataset.requestId || card.textContent).join('|');
+    if (!mobileHomeCarousel.matches || visibleCards.length < 2) {
+      carousel.destroy();
+      carousel.destroy = () => {};
+      carousel.signature = '';
+      document.querySelector(`.${kind}-carousel-controls`)?.remove();
+      return;
+    }
+    if (signature === carousel.signature && document.querySelector(`.${kind}-carousel-dots`)) return;
+    carousel.destroy();
+    document.querySelector(`.${kind}-carousel-controls`)?.remove();
+    carousel.signature = signature;
+
+    const controls = document.createElement('div');
+    controls.className = `${kind}-carousel-controls`;
+    const dots = document.createElement('div');
+    dots.className = `${kind}-carousel-dots`;
+    dots.setAttribute('aria-label', `Choose a ${kind}`);
+    dots.innerHTML = visibleCards.map((_, index) => `<button type="button" aria-label="Show ${kind} ${index + 1}"${index === 0 ? ' aria-current="true"' : ''}></button>`).join('');
+    controls.appendChild(dots);
+    grid.insertAdjacentElement('afterend', controls);
+    const viewAll = document.querySelector(`#${grid.id}-more`);
+    if (viewAll) controls.appendChild(viewAll);
+    const dotButtons = [...dots.querySelectorAll('button')];
+    const cardLeft = card => card.offsetLeft - grid.offsetLeft;
+    let active = 0;
+    let timer = null;
+    let frame = null;
+    const setActive = index => {
+      active = index;
+      dotButtons.forEach((dot, dotIndex) => dot.toggleAttribute('aria-current', dotIndex === index));
+    };
+    const moveTo = (index, smooth = true) => {
+      const next = (index + visibleCards.length) % visibleCards.length;
+      grid.scrollTo({ left: cardLeft(visibleCards[next]), behavior: smooth ? 'smooth' : 'auto' });
+      setActive(next);
+    };
+    const stop = () => { clearTimeout(timer); timer = null; };
+    const start = () => {
+      stop();
+      if (!mobileHomeCarousel.matches || reducedMotion.matches || document.hidden) return;
+      timer = setTimeout(() => { moveTo(active + 1); start(); }, 4800);
+    };
+    const onScroll = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const closest = visibleCards.reduce((best, card, index) => {
+          const distance = Math.abs(cardLeft(card) - grid.scrollLeft);
+          return distance < best.distance ? { index, distance } : best;
+        }, { index: 0, distance: Infinity });
+        setActive(closest.index);
+      });
+    };
+    const onVisibility = () => start();
+    grid.addEventListener('scroll', onScroll, { passive: true });
+    grid.addEventListener('pointerdown', stop, { passive: true });
+    grid.addEventListener('pointerup', start, { passive: true });
+    grid.addEventListener('pointercancel', start, { passive: true });
+    document.addEventListener('visibilitychange', onVisibility);
+    dotButtons.forEach((dot, index) => dot.addEventListener('click', () => { moveTo(index); start(); }));
+    grid.scrollLeft = 0;
+    start();
+    carousel.destroy = () => {
+      stop();
+      cancelAnimationFrame(frame);
+      grid.removeEventListener('scroll', onScroll);
+      grid.removeEventListener('pointerdown', stop);
+      grid.removeEventListener('pointerup', start);
+      grid.removeEventListener('pointercancel', start);
+      document.removeEventListener('visibilitychange', onVisibility);
+      if (viewAll && controls.contains(viewAll)) grid.insertAdjacentElement('afterend', viewAll);
+      controls.remove();
+    };
   }
 
   function applyLimit(selector) {
@@ -65,17 +205,24 @@
     if (!grid) return;
     const cards = [...grid.children].filter(node => node.nodeType === 1);
     if (!cards.length) return;
-    const limit = perRow(cards);
-
-    // While a search or category is active the filter owns what is visible.
-    if (selector === '#business-grid' && isFiltering()) {
-      document.querySelector('#business-grid-more')?.remove();
+    if (mobileHomeCarousel.matches && ['#business-grid', '#masjid-grid'].includes(selector)) {
+      cards.forEach((card, index) => { card.hidden = index >= 6; });
+      const business = selector === '#business-grid';
+      moreButton(grid, cards.length, 0, business ? 'businesses' : 'masjids', 'View all', true);
+      setupHomeCarousel(grid, cards, business ? 'business' : 'masjid');
       return;
     }
+    const limit = perRow(cards);
     cards.forEach((card, index) => { card.hidden = index >= limit; });
-    if (selector === '#business-grid') moreButton(grid, cards.length, limit, 'businesses', 'View all businesses');
-    else moreButton(grid, cards.length, limit, 'masjids', 'Browse all masjids');
+    if (selector === '#business-grid') {
+      setupHomeCarousel(grid, cards, 'business');
+      moreButton(grid, cards.length, limit, 'businesses', 'View all businesses');
+    } else {
+      setupHomeCarousel(grid, cards, 'masjid');
+      moreButton(grid, cards.length, limit, 'masjids', 'Browse all masjids');
+    }
   }
+  window.refreshHomeGrid = applyLimit;
 
   // A resize changes how many fit, so the row is recalculated.
   let resizeQueued = null;
@@ -95,13 +242,44 @@
     applyLimit(selector);
   });
 
-  // These run after the page's own handlers, so the limit is restored once a filter is cleared.
-  ['#category-chips'].forEach(selector => {
-    const element = document.querySelector(selector);
-    if (!element) return;
-    ['input', 'change', 'click'].forEach(type =>
-      element.addEventListener(type, () => setTimeout(() => applyLimit('#business-grid'), 0)));
-  });
+  mobileHomeCarousel.addEventListener?.('change', () => GRIDS.forEach(applyLimit));
+  addEventListener('masjidpoint:masjids-rendered', () => applyLimit('#masjid-grid'));
+
+  function applyJobCarousel() {
+    const grid = document.querySelector('#home-job-preview');
+    if (!grid) return;
+    const cards = [...grid.querySelectorAll('.job-card')];
+    if (!cards.length) {
+      document.querySelector('#home-job-preview-more')?.remove();
+      setupHomeCarousel(grid, cards, 'job');
+      return;
+    }
+    if (mobileHomeCarousel.matches) {
+      moreButton(grid, cards.length, 0, 'public-jobs', 'View all', true);
+      setupHomeCarousel(grid, cards, 'job');
+    } else {
+      setupHomeCarousel(grid, cards, 'job');
+      document.querySelector('#home-job-preview-more')?.remove();
+    }
+  }
+  const jobPreview = document.querySelector('#home-job-preview');
+  if (jobPreview) {
+    let jobQueued = null;
+    new MutationObserver(() => {
+      clearTimeout(jobQueued);
+      jobQueued = setTimeout(applyJobCarousel, 50);
+    }).observe(jobPreview, { childList: true });
+    applyJobCarousel();
+  }
+  mobileHomeCarousel.addEventListener?.('change', applyJobCarousel);
+
+  function applyHowCarousel() {
+    const grid = document.querySelector('#how-it-works .how-grid');
+    if (!grid) return;
+    setupHomeCarousel(grid, [...grid.querySelectorAll('article')], 'how');
+  }
+  applyHowCarousel();
+  mobileHomeCarousel.addEventListener?.('change', applyHowCarousel);
 
   // Counting up reads as "this is live", where a static number reads as marketing copy.
   function countUp(element, target, suffix = '') {

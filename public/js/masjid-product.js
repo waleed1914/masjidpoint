@@ -54,8 +54,24 @@
   };
   const saveCart = cart => localStorage.setItem(cartKey, JSON.stringify(cart));
   const count = () => loadCart().reduce((total, line) => total + (Number(line.quantity) || 0), 0);
-  const syncCount = () => { document.querySelector('#detail-cart-count').textContent = String(count()); };
-  document.querySelector('#view-cart').href = `${shopHref}&cart=open`;
+  const cartHref = `${shopHref}&cart=open`;
+  const actions = document.querySelector('.site-nav-actions');
+  if (actions && !document.querySelector('#product-header-cart')) {
+    const basket = document.createElement('a');
+    basket.id = 'product-header-cart';
+    basket.className = 'site-nav-basket';
+    basket.href = cartHref;
+    basket.setAttribute('aria-label', 'Open cart');
+    basket.innerHTML = `<svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" focusable="false"><path d="M3 4h2.2l2.3 11.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 1.95-1.55L21 8H6.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="20" r="1.4" fill="currentColor"/><circle cx="17.5" cy="20" r="1.4" fill="currentColor"/></svg><span>Cart</span><b id="product-header-cart-count">0</b>`;
+    actions.prepend(basket);
+  }
+  const syncCount = () => {
+    const value = String(count());
+    document.querySelector('#detail-cart-count').textContent = value;
+    const headerCount = document.querySelector('#product-header-cart-count');
+    if (headerCount) headerCount.textContent = value;
+  };
+  document.querySelector('#view-cart').href = cartHref;
   syncCount();
 
   document.querySelector('#detail-add').onclick = () => {
