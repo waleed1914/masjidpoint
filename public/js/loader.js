@@ -32,22 +32,7 @@
   // colour as it lifts. The body class is not readable yet, so the page name stands in for it.
   if (/^\/(admin|masjid|business)/.test(location.pathname)) document.documentElement.classList.add('portal-shell');
 
-  const MARK = `
-    <svg class="masjidpoint-loader-mark" viewBox="0 0 48 48" role="img" aria-label="MasjidPoint">
-      <defs>
-        <linearGradient id="mpl-bg" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="#17513f"/><stop offset="100%" stop-color="#0c3128"/>
-        </linearGradient>
-        <linearGradient id="mpl-gold" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#f0d295"/><stop offset="100%" stop-color="#c49a52"/>
-        </linearGradient>
-      </defs>
-      <rect width="48" height="48" rx="13" fill="url(#mpl-bg)"/>
-      <path d="M24 13c6.2 6 12.4 9.6 12.4 16.2 0 4.6-5.6 7.6-12.4 7.6s-12.4-3-12.4-7.6C11.6 22.6 17.8 19 24 13z" fill="url(#mpl-gold)"/>
-      <path d="M24 13c6.2 6 12.4 9.6 12.4 16.2 0 4.6-5.6 7.6-12.4 7.6z" fill="#000" opacity=".08"/>
-      <path d="M21 37v-6.2a3 3 0 0 1 6 0V37z" fill="#0c3128" opacity=".55"/>
-      <circle cx="24" cy="8.2" r="1.9" fill="#f0d295"/>
-    </svg>`;
+  const MARK = '<img class="masjidpoint-loader-mark" src="/assets/logo-mark.svg" alt="MasjidPoint">';
 
   let overlay = null;
   let done = false;

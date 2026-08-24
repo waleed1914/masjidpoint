@@ -2,8 +2,8 @@
 .site-nav{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:30px;height:76px;padding:0 max(5vw,22px);background:rgba(255,253,248,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
 .site-nav-brand{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:700;letter-spacing:-.5px;color:var(--green);white-space:nowrap}
 .site-nav-brand>span:last-child>span{color:var(--gold)}
-.site-nav-brand .brand-mark{width:30px;height:34px;background:var(--green);display:grid;place-items:center;clip-path:polygon(50% 0,95% 25%,95% 100%,5% 100%,5% 25%)}
-.site-nav-brand .brand-mark span{width:11px;height:19px;background:var(--cream);border-radius:11px 11px 0 0;margin-top:8px}
+.site-nav-brand .brand-mark{width:32px;height:38px;background:transparent url("assets/logo-mark.svg") center/contain no-repeat!important;display:block;clip-path:none!important;border-radius:0}
+.site-nav-brand .brand-mark span{display:none!important}
 
 .site-nav-links{display:flex;gap:26px;margin-right:auto;font-size:14px;font-weight:600}
 .site-nav-links a{color:var(--ink);padding:6px 0;border-bottom:2px solid transparent;transition:.18s}

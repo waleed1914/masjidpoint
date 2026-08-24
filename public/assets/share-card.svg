@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#0d4437"/>
+  <path d="M760 0a350 350 0 0 0 440 475M820 630a310 310 0 0 1 380-255" fill="none" stroke="#c79c4b" stroke-width="1" opacity=".35"/>
+  <image href="logo-mark.svg" x="82" y="58" width="110" height="130"/>
+  <path d="M82 246h48" stroke="#d3a854" stroke-width="3"/>
+  <text x="148" y="254" fill="#d7ad5c" font-family="Arial, sans-serif" font-size="18" font-weight="700" letter-spacing="4">COMMUNITY, CONNECTED</text>
+  <text x="82" y="354" fill="#fffdf8" font-family="Georgia, serif" font-size="76" font-weight="700">Masjid<tspan fill="#e1bb70">Point</tspan></text>
+  <text x="82" y="425" fill="#e5eee9" font-family="Arial, sans-serif" font-size="28">Trusted local businesses, jobs and community shops —</text>
+  <text x="82" y="466" fill="#e5eee9" font-family="Arial, sans-serif" font-size="28">through your masjid.</text>
+  <text x="82" y="552" fill="#9fc2b7" font-family="Arial, sans-serif" font-size="24">masjidpoint.co.uk</text>
+</svg>
