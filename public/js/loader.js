@@ -32,7 +32,7 @@
   // colour as it lifts. The body class is not readable yet, so the page name stands in for it.
   if (/^\/(admin|masjid|business)/.test(location.pathname)) document.documentElement.classList.add('portal-shell');
 
-  const MARK = '<img class="masjidpoint-loader-mark" src="/assets/logo-mark.svg" alt="MasjidPoint">';
+  const MARK = '<img class="masjidpoint-loader-mark" src="/assets/logo-mark.svg?v=2" alt="MasjidPoint">';
 
   let overlay = null;
   let done = false;

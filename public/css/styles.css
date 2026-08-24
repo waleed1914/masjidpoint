@@ -85,11 +85,11 @@ table,.money,[class*="-total"],[class*="-amount"],[class*="summary"] strong,[cla
    generic building. This is a drawn dome, crescent and minarets so the logo says masjid at
    any size, and it stays a single asset shared by every header and footer. */
 .brand-mark{width:36px;height:40px;background:none!important;clip-path:none!important;border-radius:0;
-  background-image:url("assets/logo-mark.svg")!important;background-size:contain;background-repeat:no-repeat;background-position:center;
+  background-image:url("/assets/logo-mark.svg?v=2")!important;background-size:contain;background-repeat:no-repeat;background-position:center;
   box-shadow:none}
 .brand-mark span{display:none!important}
 .brand-light .brand-mark{box-shadow:0 4px 14px rgba(0,0,0,.3)}
-.brand:not(:has(.brand-mark))::before{content:"";width:34px;height:40px;flex:none;background:url("assets/logo-mark.svg") center/contain no-repeat}
+.brand:not(:has(.brand-mark))::before{content:"";width:34px;height:40px;flex:none;background:url("/assets/logo-mark.svg?v=2") center/contain no-repeat}
 
 /* ---- home masjid cards ----
    The uploaded photo now fills the card when a masjid has one; the drawn dome remains the
