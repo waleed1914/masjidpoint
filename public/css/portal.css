@@ -51,3 +51,12 @@
 .settings-fields input.invalid{border-color:#b13f34;background:#fff6f4}
 .settings-photo-preview{aspect-ratio:16/10;height:auto}
 .business-logo-mark{position:relative;overflow:hidden;flex:0 0 34px}.business-logo-mark b{font:inherit}.business-logo-mark img{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:contain;background:#fff;padding:3px;box-sizing:border-box}
+
+/* The bell must occupy the same top-right anchor on every masjid portal page.
+   Header actions can change between sections, but must never move the bell. */
+.portal-topbar{position:relative}
+.portal-topbar .notification-centre{position:absolute;right:4vw;top:50%;transform:translateY(-50%);margin:0;z-index:5}
+.portal-topbar>.button{margin-left:auto;margin-right:66px}
+@media(max-width:720px){
+  .portal-topbar .notification-centre{right:18px}
+}
