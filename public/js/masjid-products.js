@@ -13,12 +13,8 @@
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const money = n => `£${Number(n || 0).toFixed(2)}`;
 
-  // Identity block, matching the dashboard.
-  const details = masjid.details || {};
-  const city = (details.Address || '').split(',').slice(-2, -1)[0]?.trim() || 'United Kingdom';
-  document.querySelector('.masjid-identity>span').textContent = masjid.name.split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
-  document.querySelector('.masjid-identity strong').textContent = masjid.name;
-  document.querySelector('.masjid-identity small').textContent = `${city} · Verified`;
+  // Keep the saved mosque photo and identity consistent with every other portal page.
+  window.MasjidIdentity?.apply(masjid);
   document.querySelector('#view-shop').href = `masjid-shop?reference=${encodeURIComponent(masjid.reference)}`;
 
   const products = (state.masjidPointProducts || [])

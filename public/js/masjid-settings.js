@@ -16,11 +16,7 @@ function strongPassword(value){return typeof value==='string'&&value.length>=12&
 
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const details = masjid.details || {};
-  const city = (details.Address || '').split(',').slice(-2, -1)[0]?.trim() || 'United Kingdom';
-
-  document.querySelector('.masjid-identity>span').textContent = masjid.name.split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
-  document.querySelector('.masjid-identity strong').textContent = masjid.name;
-  document.querySelector('.masjid-identity small').textContent = `${city} · Verified`;
+  window.MasjidIdentity?.apply(masjid);
   document.querySelector('#view-public').href = `masjid-adverts?reference=${encodeURIComponent(masjid.reference)}`;
 
   const toast = message => {
@@ -67,6 +63,8 @@ function strongPassword(value){return typeof value==='string'&&value.length>=12&
       empty.hidden = false;
       removeButton.hidden = true;
     }
+    // Reflect changes in the sidebar immediately instead of reverting to initials.
+    window.MasjidIdentity?.apply({ ...masjid, photo: dataUrl || '' });
   }
   showPhoto(masjid.photo);
 
