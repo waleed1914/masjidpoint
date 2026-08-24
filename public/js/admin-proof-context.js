@@ -6,7 +6,8 @@
   renderProofs=function(){
     const pending=proofs.filter(proof=>proof.status==='submitted').length;
     document.querySelector('#proof-pending-count').textContent=`${pending} awaiting review`;
-    document.querySelector('#proof-rows').innerHTML=[...proofs].reverse().map(proof=>`<article class="proof-row"><p><strong>${esc(proofOwner(proof))}</strong><small>${esc(proofContext(proof))}</small></p><strong>${money(proof.amount)}</strong><span class="proof-status ${esc(proof.status)}">${esc(proof.status)}</span><button data-proof="${esc(proof.id)}" type="button">${proof.status==='submitted'?'Review':'View'} →</button></article>`).join('');
+    const recentFirst=[...proofs].sort((a,b)=>(Date.parse(b.submittedAt||b.createdAt||b.date)||0)-(Date.parse(a.submittedAt||a.createdAt||a.date)||0));
+    document.querySelector('#proof-rows').innerHTML=recentFirst.map(proof=>`<article class="proof-row"><p><strong>${esc(proofOwner(proof))}</strong><small>${esc(proofContext(proof))}</small></p><strong>${money(proof.amount)}</strong><span class="proof-status ${esc(proof.status)}">${esc(proof.status)}</span><button data-proof="${esc(proof.id)}" type="button">${proof.status==='submitted'?'Review':'View'} →</button></article>`).join('');
     document.querySelector('#proof-empty').hidden=proofs.length>0;
     document.querySelectorAll('[data-proof]').forEach(button=>button.onclick=()=>openProofReview(button.dataset.proof));
   };
