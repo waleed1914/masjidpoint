@@ -121,8 +121,10 @@ function strongPassword(value){return typeof value==='string'&&value.length>=12&
     const data = new FormData(form);
     const current = String(data.get('currentPassword') || '');
     const next = String(data.get('newPassword') || '');
+    const confirmation = String(data.get('confirmNewPassword') || '');
     if (!current) { detailsError.textContent = 'Enter your current password to save changes.'; detailsError.hidden = false; return; }
     if (next && !strongPassword(next)) { detailsError.textContent = 'Use at least 12 characters with uppercase, lowercase, a number and a symbol.'; detailsError.hidden = false; return; }
+    if (next !== confirmation) { detailsError.textContent = 'The new passwords do not match.'; detailsError.hidden = false; return; }
 
     const button = document.querySelector('#save-details');
     button.disabled = true; button.textContent = 'Saving…';
@@ -143,6 +145,7 @@ function strongPassword(value){return typeof value==='string'&&value.length>=12&
       detailsSuccess.hidden = false;
       form.elements.currentPassword.value = '';
       form.elements.newPassword.value = '';
+      form.elements.confirmNewPassword.value = '';
       document.querySelector('#account-name').textContent = `Welcome back, ${result.customer.name.split(' ')[0]}`;
     } catch (problem) {
       detailsError.textContent = problem.message;
