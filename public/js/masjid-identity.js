@@ -24,9 +24,10 @@
 
     avatar.textContent = photo ? '' : initials(name);
     avatar.style.backgroundImage = photo ? `url("${photo.replace(/"/g, '%22')}")` : '';
-    avatar.style.backgroundSize = photo ? 'cover' : '';
+    avatar.style.backgroundSize = photo ? 'contain' : '';
     avatar.style.backgroundPosition = photo ? 'center' : '';
     avatar.style.backgroundRepeat = photo ? 'no-repeat' : '';
+    avatar.style.backgroundColor = photo ? '#fffdf8' : '';
     avatar.classList.toggle('has-photo', Boolean(photo));
     if (photo) avatar.setAttribute('aria-label', `${name} photo`);
     else avatar.removeAttribute('aria-label');
