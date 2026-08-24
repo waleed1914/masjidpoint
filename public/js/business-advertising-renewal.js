@@ -53,4 +53,8 @@
     } catch (error) { const message = document.querySelector('.renewal-error'); message.textContent = error.message; message.hidden = false; button.disabled = false; button.textContent = original; }
   };
   enhance();
+  // The account-isolation renderer replaces the initial placeholder cards after its API state
+  // arrives. Re-apply renewal controls to those final cards instead of letting them flash briefly
+  // on the placeholders and disappear with the replacement markup.
+  new MutationObserver(enhance).observe(host, { childList: true, subtree: true });
 })();
