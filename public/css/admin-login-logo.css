@@ -1,0 +1,12 @@
+.admin-login-intro .arch-mark {
+  border: 0;
+  border-radius: 0;
+  color: transparent;
+}
+
+.admin-login-intro .arch-mark img {
+  display: block;
+  width: 82px;
+  height: 94px;
+  object-fit: contain;
+}
