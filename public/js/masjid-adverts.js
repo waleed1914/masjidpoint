@@ -73,8 +73,9 @@
     const list = adverts.filter(a =>
       (category === 'all' || a.category === category)
       && (!q || `${a.name} ${a.description} ${a.category}`.toLowerCase().includes(q)));
-    document.querySelector('#advert-grid').innerHTML = list.map(a => `
-      <article class="advert-card in-view">
+    const grid = document.querySelector('#advert-grid');
+    grid.innerHTML = list.map(a => `
+      <article class="advert-card in-view" data-advert-id="${esc(a.id)}" style="display:flex;opacity:1;visibility:visible;transform:none">
         <header><span class="advert-mark" data-business-avatar data-business-reference="${esc(a.reference||a.id)}" data-business-name="${esc(a.name)}" data-button-class="business-image-trigger advert-image-trigger" data-image-class="advert-mark">${esc(initials(a.name))}</span><div><h3>${esc(a.name)}</h3><small>${esc(a.category || 'Local business')}</small></div></header>
         <p>${esc(a.description || '')}</p>
         <dl>
@@ -85,7 +86,7 @@
         <footer><span class="advert-verified">✓ Approved by ${esc(mosque.name)}</span></footer>
       </article>`).join('');
     document.querySelector('#advert-empty').hidden = list.length > 0;
-    document.querySelector('#advert-grid').hidden = !list.length;
+    grid.hidden = !list.length;
   }
 
   const salary = job => {
@@ -108,6 +109,25 @@
   document.querySelector('#advert-search').oninput = renderAdverts;
   categorySelect.onchange = renderAdverts;
   renderAdverts();
+
+  // A few desktop browsers restore form/layout state after the async directory render. If that
+  // removes a populated grid, restore it once the browser has finished that restoration pass.
+  const advertGrid = document.querySelector('#advert-grid');
+  let repairQueued = false;
+  new MutationObserver(() => {
+    if (repairQueued || advertGrid.querySelector('.advert-card')) return;
+    const q = document.querySelector('#advert-search').value.toLowerCase().trim();
+    const category = categorySelect.value;
+    const shouldHaveCards = adverts.some(a =>
+      (category === 'all' || a.category === category)
+      && (!q || `${a.name} ${a.description} ${a.category}`.toLowerCase().includes(q)));
+    if (!shouldHaveCards) return;
+    repairQueued = true;
+    requestAnimationFrame(() => {
+      repairQueued = false;
+      if (!advertGrid.querySelector('.advert-card')) renderAdverts();
+    });
+  }).observe(advertGrid, { childList: true });
 })();
 
 // ---------------------------------------------------------------------------
