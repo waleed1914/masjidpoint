@@ -74,7 +74,7 @@
       (category === 'all' || a.category === category)
       && (!q || `${a.name} ${a.description} ${a.category}`.toLowerCase().includes(q)));
     document.querySelector('#advert-grid').innerHTML = list.map(a => `
-      <article class="advert-card">
+      <article class="advert-card in-view">
         <header><span class="advert-mark" data-business-avatar data-business-reference="${esc(a.reference||a.id)}" data-business-name="${esc(a.name)}" data-button-class="business-image-trigger advert-image-trigger" data-image-class="advert-mark">${esc(initials(a.name))}</span><div><h3>${esc(a.name)}</h3><small>${esc(a.category || 'Local business')}</small></div></header>
         <p>${esc(a.description || '')}</p>
         <dl>
@@ -227,7 +227,7 @@
   function tag() {
     document.querySelectorAll('.adverts-block, .adverts-cta').forEach(block => {
       watch(block);
-      [...block.querySelectorAll('.advert-grid > *, .shop-preview-card, .advert-job, .advert-card')]
+      [...block.querySelectorAll('.shop-preview-card, .advert-job')]
         .forEach((item, index) => {
           if (item.dataset.reveal === undefined) item.style.setProperty('--reveal-delay', `${Math.min(index, 6) * 70}ms`);
           watch(item);

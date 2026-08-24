@@ -70,6 +70,18 @@ const D=require('../lib/directory-data.js');
  const href=await ev(`document.querySelector('.masjid-tile').getAttribute('href')`);
  assert(href.startsWith('masjid-adverts?reference='),`Masjid tile links to ${href}`);
 
+ // A paid business must remain visible on the mosque page at laptop width. This guards against
+ // dynamic reveal styles hiding the card after it has been rendered.
+ const withAdverts=mosques.find(mq=>adverts.some(a=>a.masjidReference===mq.reference||a.masjid===mq.name));
+ if(withAdverts){
+   const expected=adverts.filter(a=>a.masjidReference===withAdverts.reference||a.masjid===withAdverts.name).length;
+   await cdp('Emulation.setDeviceMetricsOverride',{width:1536,height:864,deviceScaleFactor:1,mobile:false});
+   await go(`${base}/masjid-adverts.html?reference=${encodeURIComponent(withAdverts.reference)}`,4200);
+   const cards=await ev(`[...document.querySelectorAll('#advert-grid .advert-card')].map(card=>({display:getComputedStyle(card).display,opacity:getComputedStyle(card).opacity}))`);
+   assert(cards.length===expected,`Laptop mosque page shows ${cards.length} businesses, expected ${expected}`);
+   assert(cards.every(card=>card.display!=='none'&&card.opacity==='1'),'A laptop business card is rendered but hidden');
+ }
+
  // 2b. "View role" on a masjid page must open that job's details with a working apply route,
  // not drop the visitor on the unfiltered jobs list.
  const withJobs=mosques.find(mq=>(db.masjidPointJobs||[]).some(j=>j.status==='live'&&j.enabled
