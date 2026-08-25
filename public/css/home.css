@@ -190,6 +190,100 @@
   .home-page #shop-preview span{min-height:48px;padding:8px 9px}
 }
 
+/* Compact mobile hero: the message leads, the mosque becomes supporting background artwork, and
+   search uses two short rows instead of three large stacked controls. */
+@media(max-width:560px){
+  .home-page .hero{
+    position:relative;
+    min-height:0;
+    padding:28px 16px 30px;
+    isolation:isolate;
+  }
+  .home-page .hero::after{
+    content:"";
+    position:absolute;
+    z-index:0;
+    top:12px;
+    right:-88px;
+    width:330px;
+    aspect-ratio:1.08;
+    background:url("assets/arch-scene.svg") center/contain no-repeat;
+    opacity:.14;
+    filter:saturate(.75);
+    pointer-events:none;
+  }
+  .home-page .hero-pattern{opacity:.13}
+  .home-page .hero-glow{opacity:.72}
+  .home-page .hero-inner{display:block;max-width:none}
+  .home-page .hero-inner>.hero-copy{position:relative;z-index:2;grid-column:auto;grid-row:auto}
+  .home-page .hero-inner>.hero-visual{display:none}
+  .home-page .hero .eyebrow{margin-bottom:10px;font-size:8px;letter-spacing:1px}
+  .home-page .hero h1{max-width:350px;margin-top:0;font-size:clamp(38px,11.2vw,46px);line-height:1.01;letter-spacing:-.035em}
+  .home-page .hero-intro{max-width:36ch;margin-top:13px;font-size:11px;line-height:1.6;color:#d0ded8}
+  .home-page .search-panel{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 92px;
+    gap:8px;
+    margin-top:18px;
+    padding:8px;
+    border-radius:13px;
+    background:rgba(255,253,248,.96);
+    border-color:rgba(255,255,255,.5);
+    box-shadow:0 14px 30px rgba(4,26,21,.2);
+    backdrop-filter:blur(8px);
+  }
+  .home-page .search-field{
+    min-width:0;
+    padding:0;
+    border:0;
+    gap:3px;
+  }
+  .home-page .search-field:first-child{grid-column:1/-1}
+  .home-page .search-field>span:first-child{
+    padding:0 8px;
+    color:#668078;
+    font-size:7px;
+    letter-spacing:.75px;
+  }
+  .home-page .field-row{
+    height:39px;
+    margin:0;
+    padding:0 10px;
+    border:1px solid rgba(18,63,53,.1);
+    border-radius:8px;
+    background:#fff;
+  }
+  .home-page .field-row input,
+  .home-page .field-row select{font-size:11px;font-weight:600}
+  .home-page .search-button{
+    grid-column:2;
+    height:39px;
+    min-width:0;
+    padding:0 10px;
+    border-radius:8px;
+    font-size:10px;
+  }
+  .home-page .hero-quick{
+    flex-wrap:nowrap;
+    gap:6px;
+    margin-top:12px;
+    padding-bottom:3px;
+    overflow-x:auto;
+    scrollbar-width:none;
+  }
+  .home-page .hero-quick::-webkit-scrollbar{display:none}
+  .home-page .hero-quick a{flex:0 0 auto;padding:7px 10px;font-size:9px}
+  .home-page .trust-row{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:8px;
+    margin-top:17px;
+    padding-top:15px;
+  }
+  .home-page .trust-row strong{font-size:23px}
+  .home-page .trust-row span{font-size:7px;line-height:1.25}
+}
+
 /* styles.css already styles a two-column .hero from the previous design. This page nests its own
    layout inside, so the outer element is reset to a plain block — otherwise the pattern and glow
    layers are treated as grid columns and the copy is squeezed into a sliver. */
@@ -570,4 +664,38 @@
     max-width:22px;
     background:var(--gold);
   }
+}
+
+/* These values intentionally sit after the legacy home-page compatibility rules above. */
+@media(max-width:560px){
+  .home-page .hero-intro{max-width:36ch;margin-top:13px;font-size:11px;line-height:1.6;color:#d0ded8}
+  .home-page .trust-row{gap:8px;margin-top:17px;padding-top:15px}
+  .home-page .trust-row strong{font-size:23px}
+  .home-page .trust-row span{font-size:7px;line-height:1.25}
+  .home-page :is(.promise-dots,.business-carousel-dots,.masjid-carousel-dots,.job-carousel-dots,.how-carousel-dots) button.is-active,
+  .home-page :is(.promise-dots,.business-carousel-dots,.masjid-carousel-dots,.job-carousel-dots,.how-carousel-dots) button.is-moving{
+    flex-basis:24px!important;
+    width:24px!important;
+    max-width:24px!important;
+    background:var(--gold)!important;
+    animation:home-dot-arrive .38s cubic-bezier(.2,.8,.2,1);
+  }
+}
+
+@keyframes home-dot-arrive{
+  0%{transform:scale(.7);opacity:.45}
+  55%{transform:scale(1.14);opacity:1}
+  100%{transform:scale(1);opacity:1}
+}
+
+@media(max-width:560px){
+  .home-page .faq.section{padding:28px 16px 30px}
+  .home-page .faq .section-heading{margin-bottom:13px}
+  .home-page .faq .eyebrow{margin-bottom:7px;font-size:8px;letter-spacing:1.2px}
+  .home-page .faq .section-heading h2{font-size:29px;line-height:1.05;letter-spacing:-.025em}
+  .home-page .faq-list{gap:6px}
+  .home-page .faq details{padding:0 13px;border-radius:10px}
+  .home-page .faq summary{min-height:42px;padding:10px 0;font-size:10px;line-height:1.35;gap:10px}
+  .home-page .faq summary:after{font-size:15px}
+  .home-page .faq details p{padding:0 0 12px;font-size:9px;line-height:1.55}
 }

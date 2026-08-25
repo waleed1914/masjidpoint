@@ -32,27 +32,34 @@
     const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
     let activePromise = 0;
     let promiseTimer = null;
+    let promiseMotionTimer = null;
+    let promiseVisible = false;
     const cardLeft = card => card.offsetLeft - promiseTrack.offsetLeft;
-    const setPromiseDot = index => {
+    const setPromiseDot = (index, moving = false) => {
       activePromise = index;
       promiseDots.forEach((dot, dotIndex) => {
-        if (dotIndex === index) dot.setAttribute('aria-current', 'true');
+        const selected = dotIndex === index;
+        dot.classList.toggle('is-active', selected);
+        dot.classList.toggle('is-moving', selected && moving);
+        if (selected) dot.setAttribute('aria-current', 'true');
         else dot.removeAttribute('aria-current');
       });
+      clearTimeout(promiseMotionTimer);
+      if (moving) promiseMotionTimer = setTimeout(() => promiseDots.forEach(dot => dot.classList.remove('is-moving')), 190);
     };
     const movePromise = (index, smooth = true) => {
       const next = (index + promiseCards.length) % promiseCards.length;
       promiseTrack.scrollTo({ left: cardLeft(promiseCards[next]), behavior: smooth ? 'smooth' : 'auto' });
-      setPromiseDot(next);
+      setPromiseDot(next, smooth);
     };
     const stopPromiseAuto = () => { clearTimeout(promiseTimer); promiseTimer = null; };
     const startPromiseAuto = () => {
       stopPromiseAuto();
-      if (!mobileCarousel.matches || reducedMotion.matches || document.hidden) return;
+      if (!mobileCarousel.matches || !promiseVisible || document.hidden) return;
       promiseTimer = setTimeout(() => {
-        movePromise(activePromise + 1);
+        movePromise(activePromise + 1, !reducedMotion.matches);
         startPromiseAuto();
-      }, 4500);
+      }, 3600);
     };
     let promiseFrame = null;
     promiseTrack.addEventListener('scroll', () => {
@@ -62,7 +69,7 @@
           const distance = Math.abs(cardLeft(card) - promiseTrack.scrollLeft);
           return distance < best.distance ? { index, distance } : best;
         }, { index: 0, distance: Infinity });
-        setPromiseDot(closest.index);
+        setPromiseDot(closest.index, true);
       });
     }, { passive: true });
     promiseDots.forEach((dot, index) => dot.addEventListener('click', () => {
@@ -79,7 +86,17 @@
       if (!mobileCarousel.matches) movePromise(0, false);
       startPromiseAuto();
     });
-    startPromiseAuto();
+    setPromiseDot(0);
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(entries => {
+        promiseVisible = entries[0]?.isIntersecting || false;
+        if (promiseVisible) startPromiseAuto();
+        else stopPromiseAuto();
+      }, { threshold: .28 }).observe(promiseTrack);
+    } else {
+      promiseVisible = true;
+      startPromiseAuto();
+    }
   }
 
   // The home page is a shop window, not the directory: show the newest few and send people to the
@@ -91,6 +108,7 @@
   const GRIDS = ['#business-grid', '#masjid-grid'];
   const FALLBACK = 4;
   const mobileHomeCarousel = matchMedia('(max-width: 560px)');
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
   const mobileCarouselState = {
     business: { destroy: () => {}, signature: '' },
     masjid: { destroy: () => {}, signature: '' },
@@ -143,7 +161,7 @@
     const dots = document.createElement('div');
     dots.className = `${kind}-carousel-dots`;
     dots.setAttribute('aria-label', `Choose a ${kind}`);
-    dots.innerHTML = visibleCards.map((_, index) => `<button type="button" aria-label="Show ${kind} ${index + 1}"${index === 0 ? ' aria-current="true"' : ''}></button>`).join('');
+    dots.innerHTML = visibleCards.map((_, index) => `<button type="button" aria-label="Show ${kind} ${index + 1}"${index === 0 ? ' class="is-active" aria-current="true"' : ''}></button>`).join('');
     controls.appendChild(dots);
     grid.insertAdjacentElement('afterend', controls);
     const viewAll = document.querySelector(`#${grid.id}-more`);
@@ -153,20 +171,30 @@
     let active = 0;
     let timer = null;
     let frame = null;
-    const setActive = index => {
+    let motionTimer = null;
+    let inViewport = false;
+    let visibilityObserver = null;
+    const setActive = (index, moving = false) => {
       active = index;
-      dotButtons.forEach((dot, dotIndex) => dot.toggleAttribute('aria-current', dotIndex === index));
+      dotButtons.forEach((dot, dotIndex) => {
+        const selected = dotIndex === index;
+        dot.classList.toggle('is-active', selected);
+        dot.classList.toggle('is-moving', selected && moving);
+        dot.toggleAttribute('aria-current', selected);
+      });
+      clearTimeout(motionTimer);
+      if (moving) motionTimer = setTimeout(() => dotButtons.forEach(dot => dot.classList.remove('is-moving')), 190);
     };
     const moveTo = (index, smooth = true) => {
       const next = (index + visibleCards.length) % visibleCards.length;
       grid.scrollTo({ left: cardLeft(visibleCards[next]), behavior: smooth ? 'smooth' : 'auto' });
-      setActive(next);
+      setActive(next, smooth);
     };
     const stop = () => { clearTimeout(timer); timer = null; };
     const start = () => {
       stop();
-      if (!mobileHomeCarousel.matches || reducedMotion.matches || document.hidden) return;
-      timer = setTimeout(() => { moveTo(active + 1); start(); }, 4800);
+      if (!mobileHomeCarousel.matches || !inViewport || document.hidden) return;
+      timer = setTimeout(() => { moveTo(active + 1, !reducedMotion.matches); start(); }, 3600);
     };
     const onScroll = () => {
       cancelAnimationFrame(frame);
@@ -175,7 +203,7 @@
           const distance = Math.abs(cardLeft(card) - grid.scrollLeft);
           return distance < best.distance ? { index, distance } : best;
         }, { index: 0, distance: Infinity });
-        setActive(closest.index);
+        setActive(closest.index, true);
       });
     };
     const onVisibility = () => start();
@@ -186,9 +214,21 @@
     document.addEventListener('visibilitychange', onVisibility);
     dotButtons.forEach((dot, index) => dot.addEventListener('click', () => { moveTo(index); start(); }));
     grid.scrollLeft = 0;
-    start();
+    if ('IntersectionObserver' in window) {
+      visibilityObserver = new IntersectionObserver(entries => {
+        inViewport = entries[0]?.isIntersecting || false;
+        if (inViewport) start();
+        else stop();
+      }, { threshold: .28 });
+      visibilityObserver.observe(grid);
+    } else {
+      inViewport = true;
+      start();
+    }
     carousel.destroy = () => {
       stop();
+      clearTimeout(motionTimer);
+      visibilityObserver?.disconnect();
       cancelAnimationFrame(frame);
       grid.removeEventListener('scroll', onScroll);
       grid.removeEventListener('pointerdown', stop);

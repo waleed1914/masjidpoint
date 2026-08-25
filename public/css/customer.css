@@ -87,3 +87,106 @@
 @media(max-width:900px){.customer-page .customer-main{grid-template-columns:minmax(0,680px);padding:32px 20px 60px}.customer-page .customer-aside{position:static;order:-1}.customer-page .customer-fields{grid-template-columns:1fr}}
 @media(max-width:560px){.customer-page .customer-main{padding:18px 12px 45px}.customer-page .customer-form-card{padding:31px 22px}.customer-page .customer-form-card h1{font-size:34px}.customer-page .customer-aside h2{font-size:21px}}
 .customer-verification{padding-top:8px}.customer-verification h2{font-family:"Source Serif 4",serif;font-size:2rem;margin:.35rem 0}.customer-verification label{display:grid;gap:8px;margin:24px 0 14px}.customer-verification input{border:1px solid #bcc9c3;padding:16px;font-size:1.35rem;letter-spacing:.35em;text-align:center}.customer-verification .setup-password{display:block;margin:16px auto 0;background:none;border:0;color:#174d3f;text-decoration:underline;cursor:pointer}
+
+/* Individual customer portal */
+.account-page{background:#f5f1e7}
+.account-page .account-hero{align-items:center;padding:42px max(5vw,24px) 34px;background:linear-gradient(120deg,#113f34 0%,#174d40 68%,#1d594a 100%);color:#fff;border:0}
+.account-page .account-welcome{max-width:720px}
+.account-page .account-welcome .eyebrow{color:#e5c27c;margin-bottom:12px}
+.account-page .account-welcome h1{font-size:clamp(34px,4.4vw,54px);line-height:1.02;margin-bottom:12px;color:#fff}
+.account-page .account-welcome>p{max-width:620px;color:rgba(255,255,255,.78);font-size:14px;line-height:1.6}
+.account-page .account-welcome>small{display:block;margin-top:9px;color:#e5c27c;font-size:11px}
+.account-page .account-hero-actions{display:flex;align-items:center;justify-content:flex-end;gap:9px;flex-wrap:wrap}
+.account-page .account-hero-actions .button{min-height:44px;padding:12px 17px;border:1px solid #e4c477;background:#e4c477;color:#123f35;font-size:12px}
+.account-page .account-hero-actions .button.secondary{border-color:rgba(255,255,255,.42);background:transparent;color:#fff}
+.account-page .account-hero-actions .button:hover{background:#fff;border-color:#fff;color:#123f35}
+.account-page .account-signout{min-height:44px;padding:0 8px;border:0;background:transparent;color:rgba(255,255,255,.82);font-size:11px;font-weight:700;text-decoration:underline;text-underline-offset:4px}
+
+.account-page .account-overview{position:relative;z-index:2;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;width:min(1280px,calc(100% - 48px));margin:-18px auto 22px}
+.account-page .account-overview>button{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:13px;min-width:0;padding:17px 18px;border:1px solid rgba(18,63,53,.14);border-radius:11px;background:#fffdf8;color:var(--ink);text-align:left;box-shadow:0 10px 28px rgba(18,63,53,.08);transition:.18s}
+.account-page .account-overview>button:hover{border-color:rgba(18,63,53,.35);transform:translateY(-2px);box-shadow:0 14px 34px rgba(18,63,53,.12)}
+.account-page .account-overview-icon{display:grid;place-items:center;width:43px;height:43px;border-radius:10px;background:#deebe3;color:#174d40;font-size:17px;font-weight:700}
+.account-page .account-overview>button>span:nth-child(2){display:grid;gap:2px;min-width:0}
+.account-page .account-overview small{font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#75837d}
+.account-page .account-overview strong{font-family:var(--font-display);font-size:24px;line-height:1;color:#123f35}
+.account-page .account-overview em{font-style:normal;font-size:10px;color:#718079;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.account-page .account-overview b{color:#bd8d39;font-size:18px}
+
+.account-page .account-tabs{position:sticky;top:70px;z-index:8;justify-content:center;padding:0 max(5vw,24px);background:rgba(255,253,248,.96);backdrop-filter:blur(10px)}
+.account-page .account-tabs button{display:flex;align-items:center;gap:8px;min-height:54px;padding:13px 24px}
+.account-page .account-tabs button>span{color:#bd8d39;font-size:13px}
+.account-page .account-tabs b{margin-left:1px}
+
+.account-page .account-body{width:min(1280px,100%);margin:0 auto;padding:22px max(4vw,20px) 72px}
+.account-page .account-section-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;padding:6px 2px 4px;background:transparent;border:0}
+.account-page .account-section-heading .eyebrow{margin:0 0 8px;font-size:9px}
+.account-page .account-section-heading h2{font-family:var(--font-display);font-size:clamp(25px,3vw,34px);line-height:1.1;margin:0 0 5px}
+.account-page .account-section-heading p:not(.eyebrow){margin:0;color:#708079;font-size:12px}
+.account-page .account-section-heading>a{flex:none;color:#174d40;font-size:11px;font-weight:800;text-decoration:underline;text-underline-offset:4px}
+.account-page #applications-list,.account-page #orders-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+
+.account-page .account-card{position:relative;display:flex;flex-direction:column;min-width:0;padding:20px;border:1px solid rgba(18,63,53,.15);border-radius:11px;background:#fffdf8;box-shadow:0 5px 18px rgba(18,63,53,.045);overflow:hidden}
+.account-page .account-card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:#c79a42}
+.account-page .account-card>header{align-items:center;margin-bottom:16px;padding-bottom:14px}
+.account-page .account-card h3{font-size:21px;line-height:1.15}
+.account-page .account-card header small{display:block;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.account-page .account-badge{border-radius:999px;padding:6px 10px;font-size:8px}
+.account-page .account-card dl{grid-template-columns:repeat(2,minmax(0,1fr));gap:13px 18px}
+.account-page .account-card dl div{padding-bottom:8px;border-bottom:1px solid rgba(18,63,53,.09)}
+.account-page .account-card dt{font-size:8px;font-weight:700}
+.account-page .account-card dd{font-size:12px;overflow-wrap:anywhere}
+.account-page .account-items{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:16px}
+.account-page .account-items span{min-width:0;padding:7px;background:#f4f0e6;border-radius:7px}
+.account-page .account-items img{width:42px;height:42px;border-radius:5px}
+.account-page .account-items b{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.account-page .account-link{align-self:flex-start;margin-top:auto;padding-top:16px;font-size:11px;text-underline-offset:4px}
+.account-page .account-empty{border-radius:12px;padding:62px 24px;background:#fffdf8;box-shadow:0 5px 18px rgba(18,63,53,.04)}
+
+.account-page .account-details{max-width:none;padding:28px;border-radius:12px;background:#fffdf8;box-shadow:0 6px 22px rgba(18,63,53,.05)}
+.account-page .account-details>h2{padding-bottom:11px;border-bottom:1px solid rgba(18,63,53,.12);font-size:25px}
+.account-page .account-details .customer-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+.account-page .account-details .customer-fields label.wide{grid-column:auto}
+.account-page .account-details .customer-fields label:has(input[name="line1"]),
+.account-page .account-details .customer-fields label:has(input[name="email"]),
+.account-page .account-details .customer-fields label:has(input[name="currentPassword"]){grid-column:1/-1}
+.account-page .account-details input{border-radius:7px;background:#fffdf8}
+.account-page .account-details button[type=submit]{min-width:190px}
+
+@media(max-width:860px){
+  .account-page .account-hero{align-items:flex-start;padding:28px 20px 35px}
+  .account-page .account-hero-actions{justify-content:flex-start}
+  .account-page .account-overview{grid-template-columns:1fr;width:calc(100% - 28px);margin-top:-14px}
+  .account-page .account-overview>button{padding:14px}
+  .account-page .account-tabs{top:61px;justify-content:flex-start;padding:0 8px}
+  .account-page #applications-list,.account-page #orders-list{grid-template-columns:1fr}
+}
+
+@media(max-width:560px){
+  .account-page .account-hero{padding:22px 15px 31px}
+  .account-page .account-welcome h1{font-size:31px}
+  .account-page .account-welcome>p{font-size:12px}
+  .account-page .account-hero-actions{display:grid;grid-template-columns:1fr 1fr;width:100%;margin-top:5px}
+  .account-page .account-hero-actions .button{display:flex;align-items:center;justify-content:center;padding:10px 8px;font-size:10px}
+  .account-page .account-signout{grid-column:1/-1;justify-self:start;min-height:30px}
+  .account-page .account-overview{display:flex;gap:8px;width:auto;margin:-12px 12px 15px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:5px;scrollbar-width:none}
+  .account-page .account-overview::-webkit-scrollbar{display:none}
+  .account-page .account-overview>button{flex:0 0 86%;scroll-snap-align:start;box-shadow:0 7px 20px rgba(18,63,53,.08)}
+  .account-page .account-tabs{top:58px}
+  .account-page .account-tabs button{flex:1;justify-content:center;min-width:104px;padding:12px 8px;font-size:10px}
+  .account-page .account-tabs button>span{display:none}
+  .account-page .account-body{padding:17px 10px 48px}
+  .account-page .account-section-heading{align-items:flex-start;padding:3px 4px 2px}
+  .account-page .account-section-heading h2{font-size:25px}
+  .account-page .account-section-heading p:not(.eyebrow){font-size:11px;line-height:1.5}
+  .account-page .account-section-heading>a{margin-top:22px;font-size:9px}
+  .account-page .account-card{padding:15px 14px 15px 17px;border-radius:9px}
+  .account-page .account-card h3{font-size:18px}
+  .account-page .account-card>header{align-items:flex-start;gap:8px}
+  .account-page .account-card dl{gap:10px}
+  .account-page .account-card dd{font-size:11px}
+  .account-page .account-items{grid-template-columns:1fr}
+  .account-page .account-details{padding:20px 15px}
+  .account-page .account-details .customer-fields{grid-template-columns:1fr}
+  .account-page .account-details .customer-fields label{grid-column:1!important}
+  .account-page .account-details button[type=submit]{width:100%}
+}

@@ -1,5 +1,6 @@
 <!doctype html><html lang="en-GB"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>My account — MasjidPoint</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="site-nav.css?v=1"><link rel="stylesheet" href="customer.css?v=1">  <link rel="stylesheet" href="mobile.css?v=1">
   <link rel="stylesheet" href="password-controls.css?v=2">
+  <link rel="stylesheet" href="customer.css?v=2">
   <script src="sha256.js?v=1"></script>
   <link rel="stylesheet" href="loader.css?v=1">
   <script src="loader.js?v=1"></script>
@@ -10,32 +11,58 @@
 <header data-site-nav></header><script src="site-nav.js?v=1"></script>
 
 <section class="account-hero">
-  <div>
+  <div class="account-welcome">
     <p class="eyebrow"><span></span> My account</p>
     <h1 id="account-name">Welcome back</h1>
-    <p id="account-email">—</p>
+    <p>Keep track of your applications, orders and personal details in one secure place.</p>
+    <small id="account-email">—</small>
   </div>
-  <button class="button secondary" id="sign-out" type="button">Sign out</button>
+  <div class="account-hero-actions">
+    <a class="button" href="public-jobs">Browse jobs</a>
+    <a class="button secondary" href="shops">Visit masjid shops</a>
+    <button class="account-signout" id="sign-out" type="button">Sign out</button>
+  </div>
+</section>
+
+<section class="account-overview" aria-label="Account overview">
+  <button type="button" data-open-tab="applications">
+    <span class="account-overview-icon">▣</span>
+    <span><small>Job applications</small><strong id="overview-applications">0</strong><em>View application progress</em></span>
+    <b aria-hidden="true">→</b>
+  </button>
+  <button type="button" data-open-tab="orders">
+    <span class="account-overview-icon">□</span>
+    <span><small>Shop orders</small><strong id="overview-orders">0</strong><em>Track purchases and collection</em></span>
+    <b aria-hidden="true">→</b>
+  </button>
+  <button type="button" data-open-tab="details">
+    <span class="account-overview-icon">◇</span>
+    <span><small>Account details</small><strong id="overview-profile">—</strong><em>Keep your contact details current</em></span>
+    <b aria-hidden="true">→</b>
+  </button>
 </section>
 
 <nav class="account-tabs" id="account-tabs">
-  <button class="active" data-tab="applications" type="button">Job applications <b id="count-applications">0</b></button>
-  <button data-tab="orders" type="button">Shop orders <b id="count-orders">0</b></button>
-  <button data-tab="details" type="button">My details</button>
+  <button class="active" data-tab="applications" type="button"><span>▣</span> Job applications <b id="count-applications">0</b></button>
+  <button data-tab="orders" type="button"><span>□</span> Shop orders <b id="count-orders">0</b></button>
+  <button data-tab="details" type="button"><span>◇</span> My details</button>
 </nav>
 
 <main class="account-body">
   <section id="panel-applications">
+    <header class="account-section-heading"><div><p class="eyebrow"><span></span> Opportunities</p><h2>My job applications</h2><p>See every application and its latest decision.</p></div><a href="public-jobs">Browse more jobs →</a></header>
     <div id="applications-list"></div>
     <p class="account-empty" id="applications-empty" hidden>You haven't applied for any jobs yet. <a href="public-jobs">Browse community jobs →</a></p>
   </section>
 
   <section id="panel-orders" hidden>
+    <header class="account-section-heading"><div><p class="eyebrow"><span></span> Purchases</p><h2>My shop orders</h2><p>Track payment, preparation, collection and delivery.</p></div><a href="shops">Browse masjid shops →</a></header>
     <div id="orders-list"></div>
     <p class="account-empty" id="orders-empty" hidden>You haven't ordered anything yet. <a href="shops">Visit a masjid shop →</a></p>
   </section>
 
   <section id="panel-details" hidden>
+    <header class="account-section-heading"><div><p class="eyebrow"><span></span> Profile</p><h2>Personal and security details</h2><p>Accurate details make future applications and orders faster.</p></div></header>
     <form class="account-details" id="details-form" novalidate>
       <h2>Your details</h2>
       <p class="customer-lede">We only ask for what we need. Fill in the rest whenever you like — it saves you typing next time you apply or order.</p>
@@ -70,5 +97,5 @@
 <script src="local-db.js?v=20"></script>
 <script src="shop-fulfilment.js?v=1"></script>
 <script src="password-controls.js?v=2"></script>
-<script src="my-account.js?v=2"></script>
+<script src="my-account.js?v=3"></script>
 </body></html>

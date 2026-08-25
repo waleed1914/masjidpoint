@@ -453,7 +453,7 @@ const state = {
       updatedAt: day(60)
     }
   },
-  masjidPointCustomers: [{ id: CUSTOMER.id, name: CUSTOMER.name, email: CUSTOMER.email, phone: CUSTOMER.phone, address: CUSTOMER.address, passwordHash: hash(CUSTOMER.password), createdAt: day(20) }],
+  masjidPointCustomers: [{ id: CUSTOMER.id, name: CUSTOMER.name, email: CUSTOMER.email, phone: CUSTOMER.phone, address: CUSTOMER.address, status: 'active', emailVerified: true, passwordHash: hash(CUSTOMER.password), createdAt: day(20) }],
   masjidPointNotifications: notifications,
   masjidPointAdminUsers: [{
     id: 'ADM-0001', name: 'Platform Owner', email: 'admin@masjidpoint.co.uk', role: 'super_admin',

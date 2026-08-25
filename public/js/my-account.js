@@ -45,7 +45,7 @@ function strongPassword(value){return typeof value==='string'&&value.length>=12&
     const job = (state.masjidPointJobs || []).find(j => j.id === a.jobId);
     const status = STATUS[a.status] || { label: a.status || 'Submitted', tone: 'pending' };
     const closed = job && !(job.status === 'live' && job.enabled);
-    return `<article class="account-card">
+    return `<article class="account-card application-card">
       <header>
         <div><h3>${esc(a.jobTitle || job?.title || 'Job application')}</h3><small>${esc(a.business || job?.business || '')}${job?.city ? ` · ${esc(job.city)}` : ''}</small></div>
         <span class="account-badge ${status.tone}">${esc(status.label)}</span>
@@ -61,6 +61,7 @@ function strongPassword(value){return typeof value==='string'&&value.length>=12&
   }).join('');
   document.querySelector('#applications-empty').hidden = applications.length > 0;
   document.querySelector('#count-applications').textContent = applications.length;
+  document.querySelector('#overview-applications').textContent = applications.length;
 
   /* --------------------------------------------------------------- shop orders */
   const orders = (state.masjidPointShopOrders || [])
@@ -71,10 +72,11 @@ function strongPassword(value){return typeof value==='string'&&value.length>=12&
     const method = ShopFulfilment.methodOf(o);
     const address = ShopFulfilment.addressLines(o);
     const done = o.status === 'delivered';
-    return `<article class="account-card">
+    const orderLabels = { ordered: 'Order received', preparing: 'Being prepared', ready_for_mosque: 'Ready at masjid', mosque_received: 'At the masjid', out_for_delivery: 'Out for delivery', delivered: 'Completed', payment_pending: 'Awaiting payment' };
+    return `<article class="account-card order-card">
       <header>
         <div><h3>Order ${esc(o.id)}</h3><small>${esc(o.collectionMasjidName || '')} · ${esc(date(o.placedAt))}</small></div>
-        <span class="account-badge ${done ? 'approved' : 'pending'}">${esc(String(o.status || '').replaceAll('_', ' '))}</span>
+        <span class="account-badge ${done ? 'approved' : 'pending'}">${esc(orderLabels[o.status] || String(o.status || '').replaceAll('_', ' '))}</span>
       </header>
       <div class="account-items">
         ${(o.items || []).map(i => `<span><img src="${esc(i.image || imageFor(i.productId))}" alt="" loading="lazy" onerror="this.hidden=true"><b>${esc(i.name)}</b><em>× ${Number(i.quantity || 0)}</em></span>`).join('')}
@@ -91,6 +93,11 @@ function strongPassword(value){return typeof value==='string'&&value.length>=12&
   }).join('');
   document.querySelector('#orders-empty').hidden = orders.length > 0;
   document.querySelector('#count-orders').textContent = orders.length;
+  document.querySelector('#overview-orders').textContent = orders.length;
+
+  const profileParts = [customer.name, customer.phone, customer.address?.line1, customer.address?.city, customer.address?.postcode];
+  const profilePercent = Math.round((profileParts.filter(value => String(value || '').trim()).length / profileParts.length) * 100);
+  document.querySelector('#overview-profile').textContent = profilePercent === 100 ? 'Complete' : `${profilePercent}%`;
 
 
   /* -------------------------------------------------------------------- tabs */
@@ -102,6 +109,10 @@ function strongPassword(value){return typeof value==='string'&&value.length>=12&
     if (!button) return;
     showAccountTab(button.dataset.tab);
   });
+  document.querySelectorAll('[data-open-tab]').forEach(button => button.addEventListener('click', () => {
+    showAccountTab(button.dataset.openTab);
+    tabs.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }));
   showAccountTab(sessionStorage.getItem(accountTabKey)||'applications');
 
   /* ----------------------------------------------------------------- details */
