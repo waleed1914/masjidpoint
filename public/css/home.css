@@ -153,7 +153,17 @@
   .promise-dots button{display:block!important;flex:0 0 7px!important;width:7px!important;min-width:7px!important;max-width:7px!important;height:7px!important;min-height:7px!important;max-height:7px!important;padding:0!important;margin:0!important;border:0!important;border-radius:999px;background:#b6c5be;box-shadow:none!important;cursor:pointer;line-height:0;appearance:none;transition:flex-basis .2s,width .2s,max-width .2s,background .2s}
   .promise-dots button[aria-current="true"]{flex-basis:23px!important;width:23px!important;max-width:23px!important;background:var(--gold)}
   .home-page .shop-banner h2{font-size:29px;line-height:1.08;letter-spacing:-.02em}
-  .home-page .shop-banner-copy #shop-cta{display:none!important}
+  /* Keep one clear shop action on mobile. The earlier duplicate lower action was
+     removed, so this primary action must remain visible above the previews. */
+  .home-page .shop-banner-copy #shop-cta{
+    display:inline-flex!important;
+    align-self:flex-start;
+    min-height:46px;
+    margin:14px 0 4px;
+    padding:12px 18px;
+    position:relative;
+    z-index:2;
+  }
   .home-page .shop-products-label{
     display:flex;
     align-items:center;
