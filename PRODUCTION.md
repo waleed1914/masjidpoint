@@ -54,6 +54,17 @@ Restore into a staging database first:
 npm run restore -- backups/state-YYYY-MM-DD....mpbackup
 ```
 
+### One-time test-data cleanup
+
+To start with real launch data, this guarded command first creates an encrypted backup, then
+removes all test records and private uploads. It keeps administrator accounts and platform bank
+settings. Run it once from the application directory using the service environment, then restart:
+
+```text
+sudo -u masjidpoint bash -c 'set -a; source /etc/masjidpoint.env; set +a; APPROVE_LIVE_DATA_RESET=DELETE_ALL_TEST_DATA npm run reset:production'
+sudo systemctl restart masjidpoint
+```
+
 Recommended schedule:
 
 - PostgreSQL point-in-time recovery: continuous, at least 14 days;
