@@ -108,33 +108,86 @@ formatSalary=function(job){if(!job.salaryFrom)return'Salary not specified';const
   }
 })();
 
-// The role drawer is created before the business-image helper sees it. Rebuild its
-// company mark each time a role opens so the same public owner photo/logo used on the
-// result cards is available here too.
-(function addBusinessImageToJobDrawer() {
+// Render a real business image immediately. The older shared helper first displayed
+// initials, then replaced them when the image request completed, which caused a visible
+// flash in the job page and left some deep-linked roles with only initials.
+function jobBusinessInitials(job) {
+  return String(job?.business || 'Business').split(/\s+/).filter(Boolean)
+    .map(word => word[0]).slice(0, 2).join('').toUpperCase() || 'B';
+}
+
+function jobBusinessMark(job, drawer) {
+  const business = job?.business || 'Business';
+  const reference = job?.businessReference || job?.businessCode;
+  const fallback = document.createElement('span');
+  fallback.className = drawer ? 'drawer-company' : 'company-initials';
+  fallback.textContent = jobBusinessInitials(job);
+  if (!reference) return fallback;
+
+  const encodedReference = encodeURIComponent(reference);
+  const ownerUrl = `/api/business-contact-photo?reference=${encodedReference}&publicOnly=1`;
+  const logoUrl = job.businessLogoUrl || `/api/business-logo?reference=${encodedReference}`;
+  const trigger = document.createElement('button');
+  trigger.type = 'button';
+  trigger.className = drawer
+    ? 'drawer-company job-drawer-image-trigger business-image-loading'
+    : 'job-business-image-trigger business-image-loading';
+  trigger.setAttribute('aria-label', `View ${business} image`);
+  trigger.dataset.businessImage = ownerUrl;
+  trigger.dataset.businessImageTitle = `${business} — business owner`;
+
+  const image = new Image();
+  image.className = drawer ? 'job-drawer-business-avatar' : 'job-business-avatar-image';
+  image.alt = `${business} — business owner`;
+  image.decoding = 'async';
+  image.onload = () => trigger.classList.remove('business-image-loading');
+  image.onerror = () => {
+    if (!image.dataset.usingLogo) {
+      image.dataset.usingLogo = 'true';
+      image.classList.add('business-logo-image');
+      image.alt = `${business} — business logo`;
+      trigger.dataset.businessImage = logoUrl;
+      trigger.dataset.businessImageTitle = `${business} — business logo`;
+      image.src = logoUrl;
+      return;
+    }
+    if (trigger.isConnected) trigger.replaceWith(fallback);
+  };
+  image.src = ownerUrl;
+  trigger.appendChild(image);
+  return trigger;
+}
+
+// Result cards are rebuilt by every search/filter. Replace their placeholder in the
+// same rendering pass, before the browser gets a chance to paint the old initials.
+(function showJobBusinessImagesImmediately() {
+  const previousRender = render;
+  render = function () {
+    previousRender();
+    document.querySelectorAll('#public-job-list .company-initials').forEach(mark => {
+      const id = mark.closest('.public-job-card')?.querySelector('[data-public-job]')?.dataset.publicJob;
+      const job = typeof byId === 'function' ? byId(id) : null;
+      if (job) mark.replaceWith(jobBusinessMark(job, false));
+    });
+  };
+
   const previousOpenJob = openJob;
   openJob = function (id) {
     previousOpenJob(id);
     const job = typeof byId === 'function' ? byId(id) : null;
     const current = document.querySelector('.drawer-company');
-    if (!current || !job) return;
-
-    const business = job.business || 'Business';
-    const initials = business.split(/\s+/).map(word => word[0]).slice(0, 2).join('').toUpperCase();
-    const mark = document.createElement('span');
-    mark.className = 'drawer-company';
-    mark.textContent = initials;
-    const reference = job.businessReference || job.businessCode;
-    if (reference) {
-      mark.dataset.businessAvatar = '';
-      mark.dataset.businessReference = reference;
-      mark.dataset.businessName = business;
-      mark.dataset.businessImageUrl = job.businessLogoUrl || '';
-      mark.dataset.buttonClass = 'drawer-company job-drawer-image-trigger';
-      mark.dataset.imageClass = 'job-drawer-business-avatar';
-    }
-    current.replaceWith(mark);
+    if (current && job) current.replaceWith(jobBusinessMark(job, true));
   };
+
+  // Correct the initial synchronous render too.
+  render();
+
+  // A masjid page opens a role through ?job=<id> before this enhancement is defined.
+  // Re-open that already-visible drawer once so its company image is replaced as well.
+  const linkedJobId = new URLSearchParams(location.search).get('job');
+  if (linkedJobId && document.querySelector('#public-job-drawer')?.classList.contains('open')) {
+    openJob(linkedJobId);
+  }
 })();
 
 // Arriving from a masjid page with ?masjid=<name> should land on that masjid's roles, not the
@@ -186,29 +239,6 @@ formatSalary=function(job){if(!job.salaryFrom)return'Salary not specified';const
     clearTimeout(timer);
     timer = setTimeout(() => { if (typeof render === 'function') render(); }, 120);
   }));
-})();
-
-// Job cards use the business owner's public photo first, then the business logo, and only keep
-// their initials when neither image is available. Re-run after every filter render.
-(function setupJobBusinessImages() {
-  const list = document.querySelector('#public-job-list');
-  if (!list) return;
-  const hydrate = () => list.querySelectorAll('.company-initials:not([data-business-avatar])').forEach(node => {
-    const id = node.closest('.public-job-card')?.querySelector('[data-public-job]')?.dataset.publicJob;
-    const job = typeof byId === 'function' ? byId(id) : null;
-    const reference = job?.businessReference || job?.businessCode;
-    if (!reference) return;
-    node.dataset.businessAvatar = '';
-    node.dataset.businessReference = reference;
-    node.dataset.businessName = job.business || 'Business';
-    node.dataset.businessImageUrl = job.businessLogoUrl || '';
-    node.dataset.buttonClass = 'job-business-image-trigger';
-    node.dataset.imageClass = 'job-business-avatar-image';
-    // Replacing the prepared node lets the shared avatar observer resolve its secure image URL.
-    node.replaceWith(node.cloneNode(true));
-  });
-  new MutationObserver(hydrate).observe(list, { childList: true, subtree: true });
-  hydrate();
 })();
 
 // The masjid filter shipped with two hardcoded demo names, so it could never match a real job.
