@@ -108,6 +108,35 @@ formatSalary=function(job){if(!job.salaryFrom)return'Salary not specified';const
   }
 })();
 
+// The role drawer is created before the business-image helper sees it. Rebuild its
+// company mark each time a role opens so the same public owner photo/logo used on the
+// result cards is available here too.
+(function addBusinessImageToJobDrawer() {
+  const previousOpenJob = openJob;
+  openJob = function (id) {
+    previousOpenJob(id);
+    const job = typeof byId === 'function' ? byId(id) : null;
+    const current = document.querySelector('.drawer-company');
+    if (!current || !job) return;
+
+    const business = job.business || 'Business';
+    const initials = business.split(/\s+/).map(word => word[0]).slice(0, 2).join('').toUpperCase();
+    const mark = document.createElement('span');
+    mark.className = 'drawer-company';
+    mark.textContent = initials;
+    const reference = job.businessReference || job.businessCode;
+    if (reference) {
+      mark.dataset.businessAvatar = '';
+      mark.dataset.businessReference = reference;
+      mark.dataset.businessName = business;
+      mark.dataset.businessImageUrl = job.businessLogoUrl || '';
+      mark.dataset.buttonClass = 'drawer-company job-drawer-image-trigger';
+      mark.dataset.imageClass = 'job-drawer-business-avatar';
+    }
+    current.replaceWith(mark);
+  };
+})();
+
 // Arriving from a masjid page with ?masjid=<name> should land on that masjid's roles, not the
 // full list. The filter options are built from the jobs once they load, so this waits for the
 // option to exist before selecting it.
@@ -172,6 +201,7 @@ formatSalary=function(job){if(!job.salaryFrom)return'Salary not specified';const
     node.dataset.businessAvatar = '';
     node.dataset.businessReference = reference;
     node.dataset.businessName = job.business || 'Business';
+    node.dataset.businessImageUrl = job.businessLogoUrl || '';
     node.dataset.buttonClass = 'job-business-image-trigger';
     node.dataset.imageClass = 'job-business-avatar-image';
     // Replacing the prepared node lets the shared avatar observer resolve its secure image URL.

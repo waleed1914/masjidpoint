@@ -16,7 +16,9 @@
     if (!reference) return;
     const token = encodeURIComponent(reference);
     const cacheToken = Date.now();
+    const suppliedImage = node.dataset.businessImageUrl;
     const candidates = [
+      ...(suppliedImage ? [{ url: suppliedImage, title: `${name} — business logo`, logo: true }] : []),
       { url: `/api/business-contact-photo?reference=${token}&publicOnly=1&v=${cacheToken}`, title: `${name} — business owner`, logo: false },
       { url: `/api/business-logo?reference=${token}&v=${cacheToken}`, title: `${name} — business logo`, logo: true }
     ];

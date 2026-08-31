@@ -115,7 +115,7 @@
     preview.innerHTML = recent.map(job => {
       const days = Math.max(0, Math.round((Date.now() - new Date(job.submittedAt || Date.now())) / 86400000));
       return `<a class="job-card" href="public-jobs?job=${encodeURIComponent(job.id)}">
-        <span class="job-logo">${esc(String(job.business || '?')[0])}</span>
+        <span class="job-logo" data-business-avatar data-business-reference="${esc(job.businessReference || job.businessCode || '')}" data-business-name="${esc(job.business || 'Business')}" data-business-image-url="${esc(job.businessLogoUrl || '')}" data-button-class="job-logo home-job-business-trigger" data-image-class="home-job-business-avatar">${esc(String(job.business || '?')[0])}</span>
         <div><h3>${esc(job.title)}</h3><p>${esc(job.business)} · ${esc(job.city)}</p><small>${esc(job.employmentType)} &nbsp;•&nbsp; ${days === 0 ? 'Posted today' : `Posted ${days} day${days === 1 ? '' : 's'} ago`}</small></div>
         <span class="job-arrow">→</span>
       </a>`;

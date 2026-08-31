@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" role="img" aria-labelledby="title desc">
+  <title id="title">Noor Opticians test logo</title>
+  <desc id="desc">A simple green and gold eye symbol used to test business logos.</desc>
+  <rect width="240" height="240" rx="34" fill="#123f35"/>
+  <circle cx="120" cy="120" r="88" fill="none" stroke="#d1aa59" stroke-width="7"/>
+  <path d="M43 120c25-35 50-52 77-52s52 17 77 52c-25 35-50 52-77 52s-52-17-77-52Z" fill="#f8f4e9" stroke="#d1aa59" stroke-width="6"/>
+  <circle cx="120" cy="120" r="29" fill="#d1aa59"/>
+  <circle cx="120" cy="120" r="13" fill="#123f35"/>
+  <path d="M120 35v20M120 185v20M35 120h20M185 120h20" stroke="#d1aa59" stroke-width="6" stroke-linecap="round"/>
+</svg>
