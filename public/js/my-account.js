@@ -24,6 +24,16 @@ function strongPassword(value){return typeof value==='string'&&value.length>=12&
   const hash = async value => masjidSha256(value);
 
   const email = String(customer.email).toLowerCase();
+  const portalSeen = customer.portalSeen || {};
+  const applicationSignature = application => `${application.status || 'Submitted'}|${application.decidedAt || application.updatedAt || application.submittedAt || ''}`;
+  const orderSignature = order => `${order.status || ''}|${order.paymentStatus || ''}|${order.paymentProofId || ''}|${order.updatedAt || order.placedAt || ''}`;
+  const setBadge = (id, count) => {
+    const badge = document.querySelector(id);
+    if (!badge) return;
+    badge.textContent = count;
+    badge.hidden = count === 0;
+    badge.setAttribute('aria-label', count ? `${count} unread update${count === 1 ? '' : 's'}` : 'No unread updates');
+  };
   document.querySelector('#account-name').textContent = `Welcome back, ${customer.name.split(' ')[0]}`;
   document.querySelector('#account-email').textContent = customer.email;
 
@@ -80,7 +90,6 @@ function strongPassword(value){return typeof value==='string'&&value.length>=12&
   };
   applicationFilter.onchange = renderApplications;
   renderApplications();
-  document.querySelector('#count-applications').textContent = applications.length;
 
   /* --------------------------------------------------------------- shop orders */
   const orders = (state.masjidPointShopOrders || [])
@@ -133,13 +142,38 @@ function strongPassword(value){return typeof value==='string'&&value.length>=12&
   };
   orderFilter.onchange = renderOrders;
   renderOrders();
-  document.querySelector('#count-orders').textContent = orders.length;
+  const refreshUnreadBadges = () => {
+    const seenApplications = portalSeen.applications || {};
+    const seenOrders = portalSeen.orders || {};
+    setBadge('#count-applications', applications.filter(application => seenApplications[application.reference] !== applicationSignature(application)).length);
+    setBadge('#count-orders', orders.filter(order => seenOrders[order.id] !== orderSignature(order)).length);
+  };
+  const markTabRead = async tab => {
+    if (!['applications', 'orders'].includes(tab)) return;
+    const rows = tab === 'applications' ? applications : orders;
+    const signature = tab === 'applications' ? applicationSignature : orderSignature;
+    portalSeen[tab] = Object.fromEntries(rows.map(row => [tab === 'applications' ? row.reference : row.id, signature(row)]));
+    refreshUnreadBadges();
+    try {
+      const response = await fetch('/api/customer/portal-read', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-MasjidPoint-Session': session.token || '' },
+        body: JSON.stringify({ tab })
+      });
+      if (!response.ok) throw new Error('Could not mark updates as seen.');
+    } catch (error) {
+      // Keep the portal usable if a transient network issue prevents syncing. A later visit will
+      // retry, and the server remains the source of truth for other devices.
+      console.warn(error.message);
+    }
+  };
+  refreshUnreadBadges();
 
 
   /* -------------------------------------------------------------------- tabs */
   const tabs = document.querySelector('#account-tabs');
   const accountTabKey='masjidPointIndividualAccountTab';
-  const showAccountTab=name=>{const button=tabs.querySelector(`[data-tab="${name}"]`)||tabs.querySelector('[data-tab]');if(!button)return;tabs.querySelectorAll('button').forEach(item=>item.classList.toggle('active',item===button));['applications','orders','details'].forEach(panel=>document.querySelector(`#panel-${panel}`).hidden=panel!==button.dataset.tab);sessionStorage.setItem(accountTabKey,button.dataset.tab)};
+  const showAccountTab=name=>{const button=tabs.querySelector(`[data-tab="${name}"]`)||tabs.querySelector('[data-tab]');if(!button)return;tabs.querySelectorAll('button').forEach(item=>item.classList.toggle('active',item===button));['applications','orders','details'].forEach(panel=>document.querySelector(`#panel-${panel}`).hidden=panel!==button.dataset.tab);sessionStorage.setItem(accountTabKey,button.dataset.tab);markTabRead(button.dataset.tab)};
   tabs.addEventListener('click', event => {
     const button = event.target.closest('[data-tab]');
     if (!button) return;

@@ -1236,6 +1236,24 @@ const server=http.createServer(async (req,res)=>{
       const customerToken=issueSession({role:'customer',email:customer.email,id:customer.id});
       await save(db);return json(res,200,{ok:true,customer:safe,session:customerToken,expiresAt:Date.now()+SESSION_MINUTES*60000},sessionCookie(customerToken,req));
     }
+    // The individual portal badges represent unread state changes, not the total number of
+    // records. Keep this on the customer account so it follows them across browsers and devices.
+    if (url.pathname==='/api/customer/portal-read' && req.method==='POST') {
+      const input=await body(req),session=readSession(req),db=await load();
+      if(session?.role!=='customer')return json(res,401,{error:'Please sign in again.'});
+      const customer=(db.masjidPointCustomers||[]).find(item=>item.id===session.id);
+      const tab=String(input.tab||'');
+      if(!customer||!['applications','orders'].includes(tab))return json(res,400,{error:'Choose a valid customer portal tab.'});
+      const email=String(customer.email||'').toLowerCase();
+      const records=tab==='applications'
+        ? (db.masjidPointJobApplications||[]).filter(item=>String(item.email||'').toLowerCase()===email).map(item=>[item.reference,`${item.status||'Submitted'}|${item.decidedAt||item.updatedAt||item.submittedAt||''}`])
+        : (db.masjidPointShopOrders||[]).filter(item=>String(item.customer?.email||'').toLowerCase()===email&&item.status!=='payment_pending'&&!(item.paymentStatus==='awaiting_bank_transfer'&&!item.paymentProofId)).map(item=>[item.id,`${item.status||''}|${item.paymentStatus||''}|${item.paymentProofId||''}|${item.updatedAt||item.placedAt||''}`]);
+      customer.portalSeen=customer.portalSeen||{};
+      customer.portalSeen[tab]=Object.fromEntries(records);
+      customer.portalSeenUpdatedAt=new Date().toISOString();
+      await save(db);
+      return json(res,200,{ok:true,tab,seen:customer.portalSeen[tab]});
+    }
     // Individuals give very little up front, so the portal lets them fill in the rest later.
     if (url.pathname==='/api/customer/profile' && req.method==='POST') {
       const input=await body(req),{id,name,phone,address}=input,db=await load();
