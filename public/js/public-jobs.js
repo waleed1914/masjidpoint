@@ -162,14 +162,31 @@ function jobBusinessMark(job, drawer) {
 // same rendering pass, before the browser gets a chance to paint the old initials.
 (function showJobBusinessImagesImmediately() {
   const previousRender = render;
-  render = function () {
-    previousRender();
+  const resultList = document.querySelector('#public-job-list');
+  const hydrateResultCards = () => {
     document.querySelectorAll('#public-job-list .company-initials').forEach(mark => {
       const id = mark.closest('.public-job-card')?.querySelector('[data-public-job]')?.dataset.publicJob;
       const job = typeof byId === 'function' ? byId(id) : null;
       if (job) mark.replaceWith(jobBusinessMark(job, false));
     });
   };
+
+  render = function () {
+    previousRender();
+    hydrateResultCards();
+  };
+
+  // Asynchronous filter setup can still trigger the older render callback. Keep
+  // placeholders from returning after a refreshed results list is inserted.
+  if (resultList) new MutationObserver(hydrateResultCards).observe(resultList, {
+    childList: true,
+    subtree: true
+  });
+
+  ['masjid-job-filter', 'type-filter', 'arrangement-filter', 'sort-jobs'].forEach(id => {
+    const control = document.querySelector(`#${id}`);
+    if (control) control.onchange = render;
+  });
 
   const previousOpenJob = openJob;
   openJob = function (id) {
