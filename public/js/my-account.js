@@ -37,11 +37,24 @@ function strongPassword(value){return typeof value==='string'&&value.length>=12&
     Submitted: { label: 'Submitted', tone: 'pending' },
     Reviewed: { label: 'Under review', tone: 'pending' },
     Shortlisted: { label: 'Shortlisted', tone: 'approved' },
+    Accepted: { label: 'Accepted', tone: 'approved' },
     Rejected: { label: 'Not selected', tone: 'rejected' },
     Withdrawn: { label: 'Withdrawn', tone: 'quiet' }
   };
 
-  document.querySelector('#applications-list').innerHTML = applications.map(a => {
+  const applicationState = application => {
+    const status = String(application.status || 'Submitted').toLowerCase();
+    if (['accepted', 'shortlisted'].includes(status)) return 'accepted';
+    if (status === 'rejected') return 'rejected';
+    if (status === 'reviewed') return 'under_review';
+    if (status === 'withdrawn') return 'withdrawn';
+    return 'submitted';
+  };
+  const applicationFilter = document.querySelector('#application-status-filter');
+  const renderApplications = () => {
+    const selected = applicationFilter.value;
+    const visible = applications.filter(application => selected === 'all' || applicationState(application) === selected);
+    document.querySelector('#applications-list').innerHTML = visible.map(a => {
     const job = (state.masjidPointJobs || []).find(j => j.id === a.jobId);
     const status = STATUS[a.status] || { label: a.status || 'Submitted', tone: 'pending' };
     const closed = job && !(job.status === 'live' && job.enabled);
@@ -58,8 +71,15 @@ function strongPassword(value){return typeof value==='string'&&value.length>=12&
       </dl>
       ${job && !closed ? `<a class="account-link" href="public-jobs?job=${encodeURIComponent(job.id)}">View the role →</a>` : ''}
     </article>`;
-  }).join('');
-  document.querySelector('#applications-empty').hidden = applications.length > 0;
+    }).join('');
+    const empty = document.querySelector('#applications-empty');
+    empty.hidden = visible.length > 0;
+    empty.innerHTML = selected === 'all'
+      ? `You haven't applied for any jobs yet. <a href="public-jobs">Browse community jobs →</a>`
+      : 'No job applications match this status.';
+  };
+  applicationFilter.onchange = renderApplications;
+  renderApplications();
   document.querySelector('#count-applications').textContent = applications.length;
 
   /* --------------------------------------------------------------- shop orders */
@@ -67,7 +87,22 @@ function strongPassword(value){return typeof value==='string'&&value.length>=12&
     .filter(o => String(o.customer?.email || '').toLowerCase() === email && o.status !== 'payment_pending' && !(o.paymentStatus === 'awaiting_bank_transfer' && !o.paymentProofId))
     .sort((a, b) => String(b.placedAt || '').localeCompare(String(a.placedAt || '')));
 
-  document.querySelector('#orders-list').innerHTML = orders.map(o => {
+  const orderState = order => {
+    const status = String(order.status || '').toLowerCase();
+    const payment = String(order.paymentStatus || '').toLowerCase();
+    if (['cancelled', 'refunded'].includes(status)) return 'cancelled';
+    if (status === 'delivered') return 'completed';
+    if (['ready_for_mosque', 'mosque_received', 'out_for_delivery'].includes(status)) return 'ready';
+    if (['ordered', 'preparing'].includes(status)) return 'processing';
+    if (['submitted', 'pending'].includes(payment)) return 'payment_sent';
+    if (['awaiting_bank_transfer', 'rejected', 'unpaid'].includes(payment) || status === 'payment_pending') return 'awaiting_payment';
+    return 'processing';
+  };
+  const orderFilter = document.querySelector('#order-status-filter');
+  const renderOrders = () => {
+    const selected = orderFilter.value;
+    const visible = orders.filter(order => selected === 'all' || orderState(order) === selected);
+    document.querySelector('#orders-list').innerHTML = visible.map(o => {
     const method = ShopFulfilment.methodOf(o);
     const address = ShopFulfilment.addressLines(o);
     const done = o.status === 'delivered';
@@ -89,8 +124,15 @@ function strongPassword(value){return typeof value==='string'&&value.length>=12&
       </dl>
       <a class="account-link" href="/api/shop/invoice.pdf?order=${encodeURIComponent(o.id)}" target="_blank" rel="noopener">Download invoice ${esc(o.invoiceNumber || '')} ↓</a>
     </article>`;
-  }).join('');
-  document.querySelector('#orders-empty').hidden = orders.length > 0;
+    }).join('');
+    const empty = document.querySelector('#orders-empty');
+    empty.hidden = visible.length > 0;
+    empty.innerHTML = selected === 'all'
+      ? `You haven't ordered anything yet. <a href="shops">Visit a masjid shop →</a>`
+      : 'No shop orders match this status.';
+  };
+  orderFilter.onchange = renderOrders;
+  renderOrders();
   document.querySelector('#count-orders').textContent = orders.length;
 
 
