@@ -73,6 +73,12 @@
       <div class="site-nav-menu" hidden>
         <p><strong>${esc(name)}</strong><small>${esc(session.email || '')}</small></p>
         <a href="${portal.href}">${esc(portal.label)}</a>
+        <div class="site-nav-menu-public" aria-label="Explore MasjidPoint">
+          <a href="businesses">Businesses</a>
+          <a href="masjids">Masjids</a>
+          <a href="shops">Masjid shops</a>
+          <a href="public-jobs">Jobs</a>
+        </div>
         <button type="button" data-sign-out>Sign out</button>
       </div>
     </div>`;

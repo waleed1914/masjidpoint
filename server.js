@@ -304,6 +304,17 @@ function publicState(db){
     masjidPointEmailTokens: []
   };
 }
+function hasPublishableDonationBankDetails(bank){
+  const sortCode=String(bank?.sortCode||'').replace(/\D/g,'');
+  const accountNumber=String(bank?.accountNumber||'').replace(/\D/g,'');
+  return Boolean(
+    bank?.active===true&&
+    String(bank.accountName||'').trim()&&
+    String(bank.bankName||'').trim()&&
+    sortCode.length===6&&
+    accountNumber.length===8
+  );
+}
 function stateForSession(db,session){
   const safe=publicState(db);
   if(process.env.MASJIDPOINT_TEST_MODE==='1'||isAdminSession(session)) return safe;
@@ -313,12 +324,12 @@ function stateForSession(db,session){
     accountStatus:app.accountStatus,businessCode:app.businessCode,submittedAt:app.submittedAt,
     activatedAt:app.activatedAt,category:app.category,postcode:app.postcode||app.details?.Postcode,
     address:app.address||app.details?.Address,location:app.location,photo:app.type==='masjid'?(app.photo||''):'',
-    donationBankDetails:app.donationBankDetails?.active?app.donationBankDetails:{active:true,unavailable:true,message:'Donation bank details have not been published for this mosque yet.'}
+    donationBankDetails:hasPublishableDonationBankDetails(app.donationBankDetails)?app.donationBankDetails:{active:false,unavailable:true}
   }));
   const result={
     masjidPointJobs:(db.masjidPointJobs||[]).filter(job=>job.status==='live'||job.enabled),
     masjidPointFinance:{accounts:[],unmatched:[],settled:{},settlementHistory:[],audit:[],cashRemittances:[]},
-    masjidPointPaymentProofs:[],masjidPointBusinessRequests:(db.masjidPointBusinessRequests||[]).filter(item=>item.status==='approved'&&item.paymentStatus==='paid'&&item.listing==='enabled').map(item=>({id:item.id,reference:item.reference,masjid:item.masjid,masjidReference:item.masjidReference,name:item.name,category:item.category,email:item.email,phone:item.phone,description:item.description,website:item.website,status:item.status,paymentStatus:item.paymentStatus,listing:item.listing,publicPhotoConsent:Boolean(item.publicPhotoConsent),hasLogo:Boolean(item.logo),hasPublicContactPhoto:Boolean(item.publicPhotoConsent&&item.contactPhoto)})),
+    masjidPointPaymentProofs:[],masjidPointBusinessRequests:(db.masjidPointBusinessRequests||[]).filter(item=>item.status==='approved'&&['paid','trial'].includes(item.paymentStatus)&&item.listing==='enabled').map(item=>({id:item.id,reference:item.reference,businessCode:item.businessCode,masjid:item.masjid,masjidReference:item.masjidReference,name:item.name,category:item.category,email:item.email,phone:item.phone,description:item.description,website:item.website,status:item.status,paymentStatus:item.paymentStatus,listing:item.listing,publicPhotoConsent:Boolean(item.publicPhotoConsent),hasLogo:Boolean(item.logo),hasPublicContactPhoto:Boolean(item.publicPhotoConsent&&item.contactPhoto)})),
     masjidPointBusinessListings:(db.masjidPointBusinessListings||[]).filter(item=>item.status==='live'||item.enabled),
     masjidPointAdminApplications:publicApplications,masjidPointActivatedAccounts:[],
     masjidPointJobApplications:[],masjidPointMasjidPricing:db.masjidPointMasjidPricing||[],
@@ -896,10 +907,10 @@ const server=http.createServer(async (req,res)=>{
       const details={'Business name':request.name,'Category':request.category,'Selected masjid':mosque.name,'Agreed monthly price':`£${price.toFixed(2)}`,'Admin cut':`${adminPercent}%`,'Mosque share':`${mosquePercent}%`,'Contact name':request.contact,'Contact number':request.contactNumber,'Contact email':request.contactEmail,'Masjid attendance':attendanceFrequency||'Not provided','Public photo permission':request.publicPhotoConsent?'Granted':'Not granted','Business email':email,'Business phone':request.phone,'Website':request.website||'Not provided','Description':request.description};db.masjidPointBusinessRequests=db.masjidPointBusinessRequests||[];db.masjidPointBusinessRequests.unshift(request);db.masjidPointAdminApplications=db.masjidPointAdminApplications||[];db.masjidPointAdminApplications.unshift({...request,details});notify(db,`masjid:${mosque.reference}`,'New business application',`${request.name} wants to advertise through your mosque.`,`masjid-portal?request=${encodeURIComponent(reference)}#requests`,`business-request-${reference}`);notify(db,'admin','New business application',`${request.name} applied to advertise through ${mosque.name} (${reference}).`,`admin-applications?application=${encodeURIComponent(reference)}`,`business-application-${reference}`);await save(db);return json(res,201,{ok:true,reference,submittedAt,masjid:mosque.name});
     }
     if(url.pathname==='/api/business-contact-photo'&&req.method==='GET'){
-      const db=await load(),reference=String(url.searchParams.get('reference')||''),request=(db.masjidPointBusinessRequests||[]).find(item=>item.reference===reference||item.id===reference);if(!request?.contactPhoto)return json(res,404,{error:'No photo is available.'});const session=readSession(req),app=session?accountApplication(db,session):null,isOwner=app?.type==='business'&&(app.reference===request.reference||app.businessCode===request.businessCode),isMosque=app?.type==='masjid'&&(app.reference===request.masjidReference||app.name===request.masjid),isPublic=request.publicPhotoConsent&&request.status==='approved'&&request.paymentStatus==='paid'&&request.listing==='enabled',publicOnly=url.searchParams.get('publicOnly')==='1';if((publicOnly&&!isPublic)||(!publicOnly&&!isPublic&&!isAdminSession(session)&&!isOwner&&!isMosque))return json(res,403,{error:'This photo is private.'});return privateFile(res,request.contactPhoto);
+      const db=await load(),reference=String(url.searchParams.get('reference')||''),request=(db.masjidPointBusinessRequests||[]).find(item=>item.reference===reference||item.id===reference);if(!request?.contactPhoto)return json(res,404,{error:'No photo is available.'});const session=readSession(req),app=session?accountApplication(db,session):null,isOwner=app?.type==='business'&&(app.reference===request.reference||app.businessCode===request.businessCode),isMosque=app?.type==='masjid'&&(app.reference===request.masjidReference||app.name===request.masjid),isPublic=request.publicPhotoConsent&&request.status==='approved'&&['paid','trial'].includes(request.paymentStatus)&&request.listing==='enabled',publicOnly=url.searchParams.get('publicOnly')==='1';if((publicOnly&&!isPublic)||(!publicOnly&&!isPublic&&!isAdminSession(session)&&!isOwner&&!isMosque))return json(res,403,{error:'This photo is private.'});return privateFile(res,request.contactPhoto);
     }
     if(url.pathname==='/api/business-logo'&&req.method==='GET'){
-      const db=await load(),reference=String(url.searchParams.get('reference')||''),request=(db.masjidPointBusinessRequests||[]).find(item=>item.reference===reference||item.id===reference);if(!request?.logo)return json(res,404,{error:'No business logo is available.'});const session=readSession(req),app=session?accountApplication(db,session):null,isOwner=app?.type==='business'&&(app.reference===request.reference||app.businessCode===request.businessCode),isMosque=app?.type==='masjid'&&(app.reference===request.masjidReference||app.name===request.masjid),isPublic=request.status==='approved'&&request.paymentStatus==='paid'&&request.listing==='enabled';if(!isPublic&&!isAdminSession(session)&&!isOwner&&!isMosque)return json(res,403,{error:'This logo is private.'});return privateFile(res,request.logo);
+      const db=await load(),reference=String(url.searchParams.get('reference')||''),request=(db.masjidPointBusinessRequests||[]).find(item=>item.reference===reference||item.id===reference);if(!request?.logo)return json(res,404,{error:'No business logo is available.'});const session=readSession(req),app=session?accountApplication(db,session):null,isOwner=app?.type==='business'&&(app.reference===request.reference||app.businessCode===request.businessCode),isMosque=app?.type==='masjid'&&(app.reference===request.masjidReference||app.name===request.masjid),isPublic=request.status==='approved'&&['paid','trial'].includes(request.paymentStatus)&&request.listing==='enabled';if(!isPublic&&!isAdminSession(session)&&!isOwner&&!isMosque)return json(res,403,{error:'This logo is private.'});return privateFile(res,request.logo);
     }
     if(url.pathname==='/api/public/job-application'&&req.method==='POST'){
       const input=await body(req),db=await load(),job=(db.masjidPointJobs||[]).find(item=>item.id===input.jobId&&(item.status==='live'||item.enabled));if(!job)return json(res,404,{error:'This job is no longer accepting applications.'});

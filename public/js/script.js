@@ -4,8 +4,17 @@ const menuButton = document.querySelector('.menu-toggle');
 const navigation = document.querySelector('.main-nav');
 const searchForm = document.querySelector('#search-form');
 const searchInput = document.querySelector('#search-input');
-const masjidFilter = document.querySelector('#masjid-filter');
+const searchButton = searchForm?.querySelector('.search-button');
 const emptyState = document.querySelector('#empty-state');
+
+function syncHomeSearchButton() {
+  if (!searchButton) return;
+  const ready = Boolean((searchInput?.value || '').trim());
+  searchButton.disabled = !ready;
+  searchButton.setAttribute('aria-disabled', String(!ready));
+}
+searchInput?.addEventListener('input', syncHomeSearchButton);
+syncHomeSearchButton();
 
 menuButton?.addEventListener('click', () => {
   const isOpen = navigation.classList.toggle('open');
@@ -41,16 +50,19 @@ document.querySelector('#category-chips')?.addEventListener('click', event => {
 
 searchForm?.addEventListener('submit', event => {
   event.preventDefault();
+  const query = (searchInput?.value || '').trim();
+  if (!query) {
+    syncHomeSearchButton();
+    searchInput?.focus();
+    return;
+  }
   const firstResult = document.querySelector('#home-search-results a');
   if (firstResult) {
     window.location.href = firstResult.href;
     return;
   }
   const params = new URLSearchParams();
-  const query = (searchInput?.value || '').trim();
-  const masjid = masjidFilter?.value || '';
   if (query) params.set('q', query);
-  if (masjid) params.set('masjid', masjid);
   window.location.href = `businesses${params.toString() ? `?${params}` : ''}`;
 });
 
@@ -123,10 +135,8 @@ searchForm?.addEventListener('submit', event => {
   };
   const showResults = () => {
     const query = normal(searchInput.value);
-    const selectedMasjid = normal(masjidFilter?.value);
     if (!query) { closeResults(); return; }
-    const matches = entries.filter(item => normal(item.search).includes(query)
-      && (!selectedMasjid || normal(item.mosque) === selectedMasjid)).slice(0, 8);
+    const matches = entries.filter(item => normal(item.search).includes(query)).slice(0, 8);
     results.replaceChildren();
     if (!matches.length) {
       const empty = document.createElement('p');
@@ -161,7 +171,6 @@ searchForm?.addEventListener('submit', event => {
 
   searchInput.addEventListener('input', showResults);
   searchInput.addEventListener('focus', showResults);
-  masjidFilter?.addEventListener('change', showResults);
   searchInput.addEventListener('keydown', event => {
     const links = [...results.querySelectorAll('a')];
     if (event.key === 'Escape') closeResults();

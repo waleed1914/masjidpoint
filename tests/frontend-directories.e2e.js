@@ -49,6 +49,14 @@ const D=require('../lib/directory-data.js');
  assert(nav.includes('masjids')&&nav.includes('businesses'),`Nav is missing a directory: ${nav.join(', ')}`);
  assert(nav.includes('shops'),`Nav "Masjid Shop" still scrolls instead of opening a page: ${nav.join(', ')}`);
 
+ // Jobs use the same tucked-away, remembered filter pattern as the other public directories.
+ await go(`${base}/public-jobs.html`,2600);
+ const jobFiltersClosed=await ev(`({expanded:document.querySelector('#jobs-filter-toggle').getAttribute('aria-expanded'),visible:getComputedStyle(document.querySelector('#public-job-search')).display!=='none',back:document.querySelector('.jobs-back-home')?.getAttribute('href')})`);
+ assert(jobFiltersClosed.expanded==='false'&&!jobFiltersClosed.visible&&jobFiltersClosed.back==='/',`Job filters do not start compact: ${JSON.stringify(jobFiltersClosed)}`);
+ await ev(`document.querySelector('#jobs-filter-toggle').click()`);await sleep(150);
+ const jobFiltersOpen=await ev(`({expanded:document.querySelector('#jobs-filter-toggle').getAttribute('aria-expanded'),visible:getComputedStyle(document.querySelector('#public-job-search')).display!=='none',remembered:localStorage.getItem('masjidPoint.jobsDirectoryFilters'),controls:[...document.querySelectorAll('#public-job-search input,#public-job-search select')].map(x=>x.id)})`);
+ assert(jobFiltersOpen.expanded==='true'&&jobFiltersOpen.visible&&jobFiltersOpen.remembered==='open'&&['keyword','location','masjid-job-filter','type-filter','arrangement-filter'].every(id=>jobFiltersOpen.controls.includes(id)),`Job filters are incomplete or not remembered: ${JSON.stringify(jobFiltersOpen)}`);
+
  // The three impact figures remain one horizontal row on a phone instead of wrapping the
  // support total beneath the other two.
  await cdp('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});
@@ -58,6 +66,8 @@ const D=require('../lib/directory-data.js');
  assert(mobileStats.promiseDisplay==='flex'&&mobileStats.promiseScrollable&&mobileStats.nextCardPeeks&&mobileStats.dotsVisible&&mobileStats.dotHeight<=8,`Mobile promise carousel is not discoverable: ${JSON.stringify(mobileStats)}`);
  assert(mobileStats.categoriesRemoved&&mobileStats.headingLines===2&&mobileStats.headingSpanDisplay.every(display=>display==='block'),`Mobile business heading or filters are incorrect: ${JSON.stringify(mobileStats)}`);
  assert(mobileStats.visibleBusinesses>0&&mobileStats.visibleBusinesses<=6&&(!mobileStats.businessScrollable||mobileStats.businessDots===mobileStats.visibleBusinesses)&&mobileStats.businessDotHeight<=8,`Mobile business carousel is incorrect: ${JSON.stringify(mobileStats)}`);
+ const homeBusinessLink=await ev(`(()=>{const card=document.querySelector('#business-grid .business-card'),link=card?.querySelector('.business-profile-link');return card&&link?{cardTarget:card.dataset.detail,linkTarget:link.getAttribute('href'),role:card.getAttribute('role'),tabindex:card.getAttribute('tabindex')}:null})()`);
+ assert(homeBusinessLink&&homeBusinessLink.cardTarget?.startsWith('business-detail?reference=')&&homeBusinessLink.linkTarget===homeBusinessLink.cardTarget&&homeBusinessLink.role==='link'&&homeBusinessLink.tabindex==='0',`Homepage business card does not open its detail page: ${JSON.stringify(homeBusinessLink)}`);
  assert(mobileStats.topLinkHidden&&mobileStats.bottomLinkWidth<180&&mobileStats.bottomLinkText==='View all →',`Mobile business action is not a small text link: ${JSON.stringify(mobileStats)}`);
  const businessControls=await ev(`(()=>{const row=document.querySelector('.business-carousel-controls'),dots=document.querySelector('.business-carousel-dots'),link=document.querySelector('#business-grid-more');if(!row||!dots||!link)return null;const r=row.getBoundingClientRect(),d=dots.getBoundingClientRect(),l=link.getBoundingClientRect();return {display:getComputedStyle(row).display,rowCenter:Math.round(r.left+r.width/2),dotsCenter:Math.round(d.left+d.width/2),dotCenterY:Math.round(d.top+d.height/2),linkCenterY:Math.round(l.top+l.height/2),dotsLeft:Math.round(d.left),linkLeft:Math.round(l.left)}})()`);
  assert(businessControls&&businessControls.display==='flex'&&Math.abs(businessControls.rowCenter-businessControls.dotsCenter)<=2&&Math.abs(businessControls.dotCenterY-businessControls.linkCenterY)<=2&&businessControls.linkLeft>businessControls.dotsLeft,`Carousel dots are not fixed at the centre: ${JSON.stringify(businessControls)}`);

@@ -1,6 +1,6 @@
 <!doctype html><html lang="en-GB"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>My account — MasjidPoint</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="site-nav.css?v=1"><link rel="stylesheet" href="customer.css?v=1">  <link rel="stylesheet" href="mobile.css?v=1">
   <link rel="stylesheet" href="password-controls.css?v=2">
-  <link rel="stylesheet" href="customer.css?v=2">
+  <link rel="stylesheet" href="customer.css?v=4">
   <script src="sha256.js?v=1"></script>
   <link rel="stylesheet" href="loader.css?v=1">
   <script src="loader.js?v=1"></script>
@@ -22,24 +22,6 @@
     <a class="button secondary" href="shops">Visit masjid shops</a>
     <button class="account-signout" id="sign-out" type="button">Sign out</button>
   </div>
-</section>
-
-<section class="account-overview" aria-label="Account overview">
-  <button type="button" data-open-tab="applications">
-    <span class="account-overview-icon">▣</span>
-    <span><small>Job applications</small><strong id="overview-applications">0</strong><em>View application progress</em></span>
-    <b aria-hidden="true">→</b>
-  </button>
-  <button type="button" data-open-tab="orders">
-    <span class="account-overview-icon">□</span>
-    <span><small>Shop orders</small><strong id="overview-orders">0</strong><em>Track purchases and collection</em></span>
-    <b aria-hidden="true">→</b>
-  </button>
-  <button type="button" data-open-tab="details">
-    <span class="account-overview-icon">◇</span>
-    <span><small>Account details</small><strong id="overview-profile">—</strong><em>Keep your contact details current</em></span>
-    <b aria-hidden="true">→</b>
-  </button>
 </section>
 
 <nav class="account-tabs" id="account-tabs">
@@ -76,9 +58,9 @@
       </div>
       <h2>Change password</h2>
       <div class="customer-fields">
+        <label class="wide"><span>Current password <em>*</em></span><input name="currentPassword" type="password" required autocomplete="current-password"><small>Needed to save any change.</small></label>
         <label class="wide"><span>New password <small>(leave blank to keep your current one)</small></span><input name="newPassword" type="password" minlength="12" autocomplete="new-password"></label>
         <label class="wide"><span>Confirm new password</span><input name="confirmNewPassword" type="password" minlength="12" autocomplete="new-password"></label>
-        <label class="wide"><span>Current password <em>*</em></span><input name="currentPassword" type="password" required autocomplete="current-password"><small>Needed to save any change.</small></label>
       </div>
       <p class="customer-error" id="details-error" hidden></p>
       <p class="customer-success" id="details-success" hidden>Your details have been saved.</p>
@@ -97,5 +79,5 @@
 <script src="local-db.js?v=20"></script>
 <script src="shop-fulfilment.js?v=1"></script>
 <script src="password-controls.js?v=2"></script>
-<script src="my-account.js?v=3"></script>
+<script src="my-account.js?v=4"></script>
 </body></html>

@@ -27,14 +27,14 @@
   const initials = name => String(name || '?').split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
 
   grid.innerHTML = listings.map(request => `
-    <article class="business-card" data-category="${esc(request.category || 'Other')}" data-request-id="${esc(request.id)}" data-masjid="${esc(request.masjid || '')}">
+    <article class="business-card" role="link" tabindex="0" data-detail="business-detail?reference=${encodeURIComponent(request.reference || request.id)}" data-category="${esc(request.category || 'Other')}" data-request-id="${esc(request.id)}" data-masjid="${esc(request.masjid || '')}">
       <div class="card-image ${TONES[request.category] || 'tone-default'}">
         <span class="verified">✓ Masjid verified</span>
         <span class="card-mark" data-business-avatar data-business-reference="${esc(request.reference||request.id)}" data-business-name="${esc(request.name)}" data-image-class="card-person-photo">${esc(initials(request.name))}</span>
       </div>
       <div class="card-body">
         <span class="category">${esc(request.category || 'Local business')}</span>
-        <h3>${esc(request.name)}</h3>
+        <h3><a class="business-profile-link" href="business-detail?reference=${encodeURIComponent(request.reference || request.id)}">${esc(request.name)}</a></h3>
         <p>${esc(request.description || `Supporting the community through ${request.masjid}.`)}</p>
         <div class="card-meta">
           <span>⌂ ${esc(request.masjid)}</span>
@@ -42,6 +42,21 @@
         </div>
       </div>
     </article>`).join('');
+
+  // The complete card opens the business profile. The mosque link remains an independent action.
+  grid.addEventListener('click', event => {
+    if (event.target.closest('a, button')) return;
+    if (window.getSelection && String(window.getSelection()).trim()) return;
+    const detail = event.target.closest('.business-card')?.dataset.detail;
+    if (detail) location.href = detail;
+  });
+  grid.addEventListener('keydown', event => {
+    if (!['Enter', ' '].includes(event.key) || event.target.closest('a, button')) return;
+    const detail = event.target.closest('.business-card')?.dataset.detail;
+    if (!detail) return;
+    event.preventDefault();
+    location.href = detail;
+  });
 
   grid.hidden = !listings.length;
   const empty = document.querySelector('#empty-state');

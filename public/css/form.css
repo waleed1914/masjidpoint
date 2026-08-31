@@ -2,6 +2,12 @@
 @media(max-width:900px){.application-shell{grid-template-columns:300px}.application-aside{padding:50px 30px}.application-aside h1{font-size:35px}.application-main{padding:55px 5vw}}
 @media(max-width:700px){.application-shell{display:block}.application-aside{display:none}.application-main{padding:35px 22px}.mobile-progress{display:block;margin-bottom:35px;color:var(--green);font-size:10px;font-weight:700}.mobile-progress>div{height:3px;background:var(--line);margin-top:9px}.mobile-progress i{display:block;width:25%;height:100%;background:var(--gold);transition:.3s}.form-step h2,.success-step h2{font-size:33px}.fields-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.review-grid{grid-template-columns:1fr}.review-grid .wide{grid-column:auto}.back-link{font-size:0}.back-link:after{content:"← Back";font-size:12px}.masjid-option{grid-template-columns:auto 1fr}.masjid-option>i{display:none}}
 
+/* Mosque photos in the first business-registration step. */
+.masjid-option .option-icon{width:68px;height:52px;overflow:hidden;border-radius:3px;position:relative}
+.masjid-option .option-icon img{width:100%;height:100%;display:block;object-fit:cover;object-position:center}
+.masjid-option .option-icon.has-photo b{display:none}
+@media(max-width:700px){.masjid-option .option-icon{width:72px;height:56px}}
+
 /* Masjid search and reliable visibility states */
 .form-page [hidden]{display:none!important}
 .masjid-search{height:52px;border:1px solid var(--line);background:white;display:flex;align-items:center;gap:11px;padding:0 15px;margin-bottom:16px;color:var(--green)}

@@ -1,0 +1,55 @@
+/* Compact donation journey for phones and small tablets. */
+@media(max-width:700px){
+  .donations-page .donation-hero{padding:34px 16px 28px}
+  .donations-page .donation-hero-inner{max-width:none;text-align:left}
+  .donations-page .donation-hero .eyebrow{justify-content:flex-start;margin:0 0 13px;font-size:9px}
+  .donations-page .donation-hero h1{max-width:350px;margin:0 0 12px;font-size:36px;line-height:1;letter-spacing:-.025em}
+  .donations-page .donation-hero-inner>p:not(.eyebrow){max-width:350px;margin:0;color:#d4e1dc;font-size:12px;line-height:1.5}
+  .donations-page .donation-search{width:100%;height:52px;margin:20px 0 0;border:1px solid rgba(255,255,255,.25);border-radius:12px;box-shadow:0 12px 28px rgba(0,0,0,.14);overflow:hidden}
+  .donations-page .donation-search>span{padding-left:15px;font-size:20px}
+  .donations-page .donation-search input{min-width:0;padding:15px 9px;font-size:13px;background:white}
+  .donations-page .donation-search button{height:100%;padding:0 14px;font-size:11px}
+
+  .donations-page .donation-directory{padding:27px 12px 32px}
+  .donations-page .donation-heading{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:8px 12px;margin-bottom:16px}
+  .donations-page .donation-heading>div{min-width:0}
+  .donations-page .donation-heading .eyebrow{margin-bottom:8px;font-size:8px;white-space:nowrap}
+  .donations-page .donation-heading h2{max-width:260px;font-size:27px;line-height:1.02;letter-spacing:-.02em}
+  .donations-page .donation-heading>p{align-self:end;display:flex;align-items:center;gap:4px;max-width:96px;margin:0 0 2px;padding:7px 8px;border-radius:999px;background:#e3ece6;color:#365e53;font-size:8px;line-height:1.25}
+  .donations-page .donation-heading>p strong{margin:0;font-size:18px;line-height:1}
+  .donations-page .donation-grid{gap:9px}
+  .donations-page .donation-card{grid-template-columns:104px minmax(0,1fr);min-height:126px;border-color:#c9d4ce;border-radius:12px;box-shadow:0 5px 16px rgba(14,56,46,.055)}
+  .donations-page .donation-mosque-photo,
+  .donations-page .mosque-arch{width:104px;min-height:126px}
+  .donations-page .donation-card-body{padding:12px}
+  .donations-page .donation-card h3{font-size:18px;line-height:1.08}
+  .donations-page .donation-card-body>span{display:flex;align-items:center;justify-content:space-between;padding-top:8px;color:var(--green)}
+  .donations-page .donation-card-body>span:after{content:'›';font-size:20px;line-height:.7;color:#bf963e}
+  .donations-page .donation-empty{padding:45px 18px;border-radius:12px}
+  .donations-page .donation-empty h3{font-size:22px}
+
+  .donations-page .donation-trust{display:flex;gap:10px;padding:12px 12px 20px;overflow-x:auto;scroll-snap-type:x mandatory;background:#eee8dc;border:0;scrollbar-width:none}
+  .donations-page .donation-trust::-webkit-scrollbar{display:none}
+  .donations-page .donation-trust article{flex:0 0 82vw;min-height:105px;padding:16px;border:1px solid #d7d2c7;border-radius:12px;scroll-snap-align:center;box-shadow:0 5px 14px rgba(14,56,46,.04)}
+  .donations-page .donation-trust article>span{width:36px;height:36px;flex-basis:36px}
+  .donations-page .donation-trust strong{font-size:12px}
+  .donations-page .donation-trust p{margin-top:4px;font-size:10px}
+
+  .donations-page .donation-modal{align-items:end!important;padding:0!important}
+  .donations-page .donation-dialog{width:100%;max-width:none;max-height:92dvh;border-radius:18px 18px 0 0;box-shadow:0 -16px 50px rgba(0,0,0,.28);overscroll-behavior:contain}
+  .donations-page .donation-dialog>header{position:sticky;top:0;z-index:2;align-items:center;padding:17px 16px 15px;border-radius:18px 18px 0 0}
+  .donations-page .donation-dialog header small{font-size:8px;letter-spacing:1.3px}
+  .donations-page .donation-dialog h2{max-width:285px;margin-top:3px;font-size:25px;line-height:1.05}
+  .donations-page .donation-dialog header button{display:grid;place-items:center;width:44px;height:44px;padding:0;border-radius:50%;font-size:27px}
+  .donations-page .donation-dialog>section{padding:16px}
+  .donations-page .donation-message{text-align:left;margin:0;font-size:18px;line-height:1.25}
+  .donations-page .bank-detail-list{margin-top:15px;border-radius:10px;overflow:hidden}
+  .donations-page .bank-detail-list>div{min-height:61px;padding:10px 11px}
+  .donations-page .bank-detail-list small{font-size:7px}
+  .donations-page .bank-detail-list strong{font-size:14px}
+  .donations-page .bank-detail-list button{min-width:82px;min-height:40px;padding:8px 10px;border-radius:7px}
+  .donations-page .donation-guidance{margin-top:12px;padding:12px;border-radius:9px;font-size:12px}
+  .donations-page .donation-dialog>footer{position:sticky;bottom:0;z-index:2;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:#fffdf8}
+  .donations-page .donation-dialog>footer button{width:100%;min-height:48px;border-radius:8px;font-size:14px}
+  .donations-page .copy-toast{bottom:calc(76px + env(safe-area-inset-bottom));border-radius:999px;font-size:12px}
+}

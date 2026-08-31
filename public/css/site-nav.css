@@ -2,7 +2,7 @@
 .site-nav{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:30px;height:76px;padding:0 max(5vw,22px);background:rgba(255,253,248,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
 .site-nav-brand{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:700;letter-spacing:-.5px;color:var(--green);white-space:nowrap}
 .site-nav-brand>span:last-child>span{color:var(--gold)}
-.site-nav-brand .brand-mark{width:32px;height:38px;background:transparent url("/assets/logo-mark.svg?v=3") center/contain no-repeat!important;display:block;clip-path:none!important;border-radius:0}
+.site-nav-brand .brand-mark{width:32px;height:38px;background:transparent url("/assets/logo-mark.svg?v=5") center/contain no-repeat!important;display:block;clip-path:none!important;border-radius:0}
 .site-nav-brand .brand-mark span{display:none!important}
 
 .site-nav-links{display:flex;gap:26px;margin-right:auto;font-size:14px;font-weight:600}
@@ -52,6 +52,8 @@
 .site-nav-menu p small{color:var(--muted);font-size:11px;overflow:hidden;text-overflow:ellipsis}
 .site-nav-menu a,.site-nav-menu button{display:block;width:100%;text-align:left;border:0;background:none;padding:11px 13px;font-size:13px;font-weight:600;color:var(--ink);transition:.18s}
 .site-nav-menu a:hover,.site-nav-menu button:hover{background:var(--green-3);color:var(--green)}
+.site-nav-menu-public{display:grid;grid-template-columns:1fr 1fr;margin:3px 0;padding:3px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.site-nav-menu-public a{font-size:12px}
 .site-nav-menu [data-sign-out]{color:#8c3229}
 @media(max-width:900px){
   .site-nav-who{display:none}

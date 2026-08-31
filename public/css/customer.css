@@ -1,5 +1,6 @@
 .customer-page{background:var(--cream);min-height:100vh;display:flex;flex-direction:column}
 .customer-page>footer{margin-top:auto}
+.customer-page>footer .brand-light .brand-mark{box-shadow:none}
 
 /* --- sign-up --- */
 .customer-main{flex:1;display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:22px;align-items:start;padding:48px 6vw 64px;max-width:1140px;margin:0 auto;width:100%}
@@ -102,16 +103,6 @@
 .account-page .account-hero-actions .button:hover{background:#fff;border-color:#fff;color:#123f35}
 .account-page .account-signout{min-height:44px;padding:0 8px;border:0;background:transparent;color:rgba(255,255,255,.82);font-size:11px;font-weight:700;text-decoration:underline;text-underline-offset:4px}
 
-.account-page .account-overview{position:relative;z-index:2;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;width:min(1280px,calc(100% - 48px));margin:-18px auto 22px}
-.account-page .account-overview>button{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:13px;min-width:0;padding:17px 18px;border:1px solid rgba(18,63,53,.14);border-radius:11px;background:#fffdf8;color:var(--ink);text-align:left;box-shadow:0 10px 28px rgba(18,63,53,.08);transition:.18s}
-.account-page .account-overview>button:hover{border-color:rgba(18,63,53,.35);transform:translateY(-2px);box-shadow:0 14px 34px rgba(18,63,53,.12)}
-.account-page .account-overview-icon{display:grid;place-items:center;width:43px;height:43px;border-radius:10px;background:#deebe3;color:#174d40;font-size:17px;font-weight:700}
-.account-page .account-overview>button>span:nth-child(2){display:grid;gap:2px;min-width:0}
-.account-page .account-overview small{font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#75837d}
-.account-page .account-overview strong{font-family:var(--font-display);font-size:24px;line-height:1;color:#123f35}
-.account-page .account-overview em{font-style:normal;font-size:10px;color:#718079;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.account-page .account-overview b{color:#bd8d39;font-size:18px}
-
 .account-page .account-tabs{position:sticky;top:70px;z-index:8;justify-content:center;padding:0 max(5vw,24px);background:rgba(255,253,248,.96);backdrop-filter:blur(10px)}
 .account-page .account-tabs button{display:flex;align-items:center;gap:8px;min-height:54px;padding:13px 24px}
 .account-page .account-tabs button>span{color:#bd8d39;font-size:13px}
@@ -155,8 +146,6 @@
 @media(max-width:860px){
   .account-page .account-hero{align-items:flex-start;padding:28px 20px 35px}
   .account-page .account-hero-actions{justify-content:flex-start}
-  .account-page .account-overview{grid-template-columns:1fr;width:calc(100% - 28px);margin-top:-14px}
-  .account-page .account-overview>button{padding:14px}
   .account-page .account-tabs{top:61px;justify-content:flex-start;padding:0 8px}
   .account-page #applications-list,.account-page #orders-list{grid-template-columns:1fr}
 }
@@ -168,9 +157,6 @@
   .account-page .account-hero-actions{display:grid;grid-template-columns:1fr 1fr;width:100%;margin-top:5px}
   .account-page .account-hero-actions .button{display:flex;align-items:center;justify-content:center;padding:10px 8px;font-size:10px}
   .account-page .account-signout{grid-column:1/-1;justify-self:start;min-height:30px}
-  .account-page .account-overview{display:flex;gap:8px;width:auto;margin:-12px 12px 15px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:5px;scrollbar-width:none}
-  .account-page .account-overview::-webkit-scrollbar{display:none}
-  .account-page .account-overview>button{flex:0 0 86%;scroll-snap-align:start;box-shadow:0 7px 20px rgba(18,63,53,.08)}
   .account-page .account-tabs{top:58px}
   .account-page .account-tabs button{flex:1;justify-content:center;min-width:104px;padding:12px 8px;font-size:10px}
   .account-page .account-tabs button>span{display:none}

@@ -17,6 +17,10 @@ const state=()=>fetch(`${base}/api/state`).then(r=>r.json());
  const liveAdverts=(db.masjidPointBusinessRequests||[]).filter(r=>r.status==='approved'&&r.paymentStatus==='paid'&&r.listing==='enabled');
  const liveJobs=(db.masjidPointJobs||[]).filter(j=>j.status==='live'&&j.enabled);
  const pendingMosque=(db.masjidPointAdminApplications||[]).find(a=>a.type==='masjid'&&a.status==='pending');
+ const donationMosques=(db.masjidPointAdminApplications||[]).filter(a=>{
+   const bank=a.donationBankDetails||{},sort=String(bank.sortCode||'').replace(/\D/g,''),account=String(bank.accountNumber||'').replace(/\D/g,'');
+   return a.type==='masjid'&&['approved','activated'].includes(a.status)&&!['blocked','deactivated'].includes(a.accountStatus)&&bank.active===true&&String(bank.accountName||'').trim()&&String(bank.bankName||'').trim()&&sort.length===6&&account.length===8;
+ });
  const shopMosque=accounts.shopMosque(db);
  assert(operational.length&&liveAdverts.length&&liveJobs.length,'Seed must provide mosques, adverts and jobs');
 
@@ -26,12 +30,12 @@ const state=()=>fetch(`${base}/api/state`).then(r=>r.json());
  // 1. Home page is built from real records, not placeholders.
  await go(`${base}/index.html`,3400);
  assert(!exceptions.length,`Home raised: ${exceptions.join(', ')}`);
- const home=await ev(`({masjids:document.querySelectorAll('#masjid-grid .masjid-card').length,businesses:document.querySelectorAll('#business-grid .business-card').length,stats:{b:document.querySelector('#stat-businesses').textContent,m:document.querySelector('#stat-masjids').textContent,s:document.querySelector('#stat-support').textContent},chips:[...document.querySelectorAll('#category-chips .chip')].map(c=>c.dataset.category),filterOptions:[...document.querySelector('#masjid-filter').options].map(o=>o.value),jobPreview:document.querySelectorAll('#home-job-preview .job-card').length,externalImages:[...document.images].filter(i=>/^https?:/.test(i.getAttribute('src')||'')).length,deadLinks:[...document.querySelectorAll('a[href="#"]')].length})`);
+ const home=await ev(`({masjids:document.querySelectorAll('#masjid-grid .masjid-card').length,businesses:document.querySelectorAll('#business-grid .business-card').length,stats:{b:document.querySelector('#stat-businesses').textContent,m:document.querySelector('#stat-masjids').textContent,s:document.querySelector('#stat-support').textContent},chips:[...document.querySelectorAll('#category-chips .chip')].map(c=>c.dataset.category),hasMasjidFilter:Boolean(document.querySelector('#masjid-filter')),jobPreview:document.querySelectorAll('#home-job-preview .job-card').length,externalImages:[...document.images].filter(i=>/^https?:/.test(i.getAttribute('src')||'')).length,deadLinks:[...document.querySelectorAll('a[href="#"]')].length})`);
  assert(home.masjids===operational.length,`Home shows ${home.masjids} masjids, expected ${operational.length}`);
  assert(home.businesses===liveAdverts.length,`Home shows ${home.businesses} businesses, expected ${liveAdverts.length}`);
  assert(home.stats.b===String(liveAdverts.length)&&home.stats.m===String(operational.length),`Hero counters are wrong: ${JSON.stringify(home.stats)}`);
  assert(home.stats.s.startsWith('£'),'Raised-for-masjids counter is not a money figure');
- assert(home.filterOptions.length===operational.length+1,'Masjid filter does not list every masjid');
+ assert(!home.hasMasjidFilter,'Homepage still shows the unused masjid dropdown');
  assert(home.chips.length>1,'Category chips were not derived from the listings');
  assert(home.jobPreview>0,'Home job preview is empty');
  assert(home.externalImages===0,`Home still loads ${home.externalImages} external images`);
@@ -92,5 +96,12 @@ const state=()=>fetch(`${base}/api/state`).then(r=>r.json());
  assert(board.rows===liveJobs.length,`Jobs board shows ${board.rows}, expected ${liveJobs.length}`);
  assert(String(board.count)===String(liveJobs.length),`Jobs counter says ${board.count}, expected ${liveJobs.length}`);
 
- console.log(JSON.stringify({passed:true,masjids:operational.length,adverts:liveAdverts.length,jobs:liveJobs.length,shopProducts:expectedProducts,checks:['home built from real records','no external images or dead links','category filter narrows directory','masjid card opens its directory','directory counts match its lists','advertise form preselects the masjid','pending masjid is not public','shop respects stock and methods','jobs board lists live roles only']},null,2));
+ // 8. Only mosques with complete, enabled bank details enter the donation directory.
+ await go(`${base}/donations.html`,2800);
+ assert(!exceptions.length,`Donation directory raised: ${exceptions.join(', ')}`);
+ const donations=await ev(`({cards:document.querySelectorAll('#donation-grid .donation-card').length,count:Number(document.querySelector('#donation-count').textContent),empty:!document.querySelector('#donation-empty').hidden})`);
+ assert(donations.cards===donationMosques.length&&donations.count===donationMosques.length,`Donation directory shows ${donations.cards}, expected ${donationMosques.length}`);
+ assert(donations.empty===(donationMosques.length===0),'Donation directory empty state is incorrect');
+
+ console.log(JSON.stringify({passed:true,masjids:operational.length,adverts:liveAdverts.length,jobs:liveJobs.length,shopProducts:expectedProducts,checks:['home built from real records','no external images or dead links','category filter narrows directory','masjid card opens its directory','directory counts match its lists','advertise form preselects the masjid','pending masjid is not public','shop respects stock and methods','jobs board lists live roles only','donations require complete enabled bank details']},null,2));
 })().catch(e=>{console.error('FAIL',e.message);process.exitCode=1}).finally(()=>{try{ws?.close()}catch{}try{browser?.kill()}catch{}});

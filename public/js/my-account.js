@@ -61,7 +61,6 @@ function strongPassword(value){return typeof value==='string'&&value.length>=12&
   }).join('');
   document.querySelector('#applications-empty').hidden = applications.length > 0;
   document.querySelector('#count-applications').textContent = applications.length;
-  document.querySelector('#overview-applications').textContent = applications.length;
 
   /* --------------------------------------------------------------- shop orders */
   const orders = (state.masjidPointShopOrders || [])
@@ -93,11 +92,6 @@ function strongPassword(value){return typeof value==='string'&&value.length>=12&
   }).join('');
   document.querySelector('#orders-empty').hidden = orders.length > 0;
   document.querySelector('#count-orders').textContent = orders.length;
-  document.querySelector('#overview-orders').textContent = orders.length;
-
-  const profileParts = [customer.name, customer.phone, customer.address?.line1, customer.address?.city, customer.address?.postcode];
-  const profilePercent = Math.round((profileParts.filter(value => String(value || '').trim()).length / profileParts.length) * 100);
-  document.querySelector('#overview-profile').textContent = profilePercent === 100 ? 'Complete' : `${profilePercent}%`;
 
 
   /* -------------------------------------------------------------------- tabs */
@@ -109,10 +103,6 @@ function strongPassword(value){return typeof value==='string'&&value.length>=12&
     if (!button) return;
     showAccountTab(button.dataset.tab);
   });
-  document.querySelectorAll('[data-open-tab]').forEach(button => button.addEventListener('click', () => {
-    showAccountTab(button.dataset.openTab);
-    tabs.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }));
   showAccountTab(sessionStorage.getItem(accountTabKey)||'applications');
 
   /* ----------------------------------------------------------------- details */

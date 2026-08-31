@@ -127,6 +127,60 @@ formatSalary=function(job){if(!job.salaryFrom)return'Salary not specified';const
   })();
 })();
 
+// Keep the large search form out of the way until the visitor asks for it, then remember that
+// preference on both desktop and mobile. Search text updates the results as it is entered.
+(function setupRememberedJobFilters() {
+  const hero = document.querySelector('#jobs-directory-hero');
+  const toggle = document.querySelector('#jobs-filter-toggle');
+  const form = document.querySelector('#public-job-search');
+  if (!hero || !toggle || !form) return;
+
+  const preferenceKey = 'masjidPoint.jobsDirectoryFilters';
+  let open = false;
+  try { open = localStorage.getItem(preferenceKey) === 'open'; } catch (_) {}
+
+  const paint = () => {
+    hero.classList.toggle('filters-open', open);
+    toggle.setAttribute('aria-expanded', String(open));
+    const label = toggle.querySelector('span:last-child');
+    if (label) label.textContent = open ? 'Hide search and filters' : 'Show search and filters';
+  };
+  toggle.addEventListener('click', () => {
+    open = !open;
+    try { localStorage.setItem(preferenceKey, open ? 'open' : 'closed'); } catch (_) {}
+    paint();
+  });
+  paint();
+
+  let timer;
+  ['keyword', 'location'].forEach(id => document.querySelector(`#${id}`)?.addEventListener('input', () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => { if (typeof render === 'function') render(); }, 120);
+  }));
+})();
+
+// Job cards use the business owner's public photo first, then the business logo, and only keep
+// their initials when neither image is available. Re-run after every filter render.
+(function setupJobBusinessImages() {
+  const list = document.querySelector('#public-job-list');
+  if (!list) return;
+  const hydrate = () => list.querySelectorAll('.company-initials:not([data-business-avatar])').forEach(node => {
+    const id = node.closest('.public-job-card')?.querySelector('[data-public-job]')?.dataset.publicJob;
+    const job = typeof byId === 'function' ? byId(id) : null;
+    const reference = job?.businessReference || job?.businessCode;
+    if (!reference) return;
+    node.dataset.businessAvatar = '';
+    node.dataset.businessReference = reference;
+    node.dataset.businessName = job.business || 'Business';
+    node.dataset.buttonClass = 'job-business-image-trigger';
+    node.dataset.imageClass = 'job-business-avatar-image';
+    // Replacing the prepared node lets the shared avatar observer resolve its secure image URL.
+    node.replaceWith(node.cloneNode(true));
+  });
+  new MutationObserver(hydrate).observe(list, { childList: true, subtree: true });
+  hydrate();
+})();
+
 // The masjid filter shipped with two hardcoded demo names, so it could never match a real job.
 // It is rebuilt from the masjids that actually have live roles, after which an incoming
 // ?masjid=<name> (from a masjid's own page) can select one.

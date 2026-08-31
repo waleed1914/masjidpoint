@@ -6,8 +6,7 @@
     <clipPath id="pinClip"><path d="M64 3C30.3 3 7 28.7 7 61.5c0 40.1 35.4 70.4 57 84.5 21.6-14.1 57-44.4 57-84.5C121 28.7 97.7 3 64 3Z"/></clipPath>
   </defs>
   <ellipse cx="64" cy="147" rx="30" ry="3" fill="#c79c4b" opacity=".88"/>
-  <path d="M64 3C30.3 3 7 28.7 7 61.5c0 40.1 35.4 70.4 57 84.5 21.6-14.1 57-44.4 57-84.5C121 28.7 97.7 3 64 3Z" fill="url(#pin)" stroke="#e6c875" stroke-width="2.5" stroke-linejoin="round"/>
-  <g clip-path="url(#pinClip)"><circle cx="64" cy="61" r="47.5" fill="none" stroke="#f5dda0" stroke-width="4"/><circle cx="64" cy="61" r="41.5" fill="none" stroke="#c79c4b" stroke-width="1.5" opacity=".9"/></g>
+  <path d="M64 3C30.3 3 7 28.7 7 61.5c0 40.1 35.4 70.4 57 84.5 21.6-14.1 57-44.4 57-84.5C121 28.7 97.7 3 64 3Z" fill="url(#pin)"/>
   <g fill="url(#gold)">
     <path d="M49 105V71.7C49 58.8 55.7 51.3 64 44c8.3 7.3 15 14.8 15 27.7V105H49Z"/><path d="M45 72.5h38v5H45z"/><path d="M53.5 105V82.5a10.5 10.5 0 0 1 21 0V105h-21Z"/>
     <path d="M28 105V68h10v37H28Zm62 0V68h10v37H90Z"/><path d="M24.5 68c0-5.8 5.6-8.5 8.5-14 2.9 5.5 8.5 8.2 8.5 14h-17Zm62 0c0-5.8 5.6-8.5 8.5-14 2.9 5.5 8.5 8.2 8.5 14h-17Z"/>
